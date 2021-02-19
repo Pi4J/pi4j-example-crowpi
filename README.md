@@ -2,6 +2,8 @@
  Pi4J V2 :: Java I/O Library for Raspberry Pi :: CrowPi example application
 ===========================================================================
 
+[![Build Status](https://github.com/pi4j/pi4j-example-crowpi/workflows/Maven/badge.svg)](https://github.com/Pi4J/pi4j-example-crowpi/actions/workflows/maven.yml)
+
 This project contains an example application which uses the Pi4J (V2) library and runs on the CrowPi to get introduced
 into electronics programming. Full description is available on 
 [the Pi4J website](https://v2.pi4j.com/getting-started/introduction-to-electronics-with-crowpi/).
