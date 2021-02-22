@@ -31,6 +31,12 @@ IntelliJ like this:
 
 ![Screenshot of the IntelliJ startup arguments](assets/screenshot_intellij_arguments.png)
 
+For Visual Studio Code the launch.json file is used to configure additional arguments. Change to the Run window to 
+select which launch file you want to use to run the application.
+
+TODO find solution how to run as sudo as PiGpio requires this....
+
+
 ## BUILD DEPENDENCIES & INSTRUCTIONS
 
 This project can be built with [Apache Maven](https://maven.apache.org/) 3.6 

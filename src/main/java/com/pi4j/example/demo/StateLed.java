@@ -16,7 +16,7 @@ public class StateLed {
         for (int bcm : Arrays.asList(bcmList)) {
             try {
                 var ledConfig = DigitalOutput.newConfigBuilder(pi4j)
-                        .id("led")
+                        .id("BCM" + bcm)
                         .name("LED Flasher")
                         .address(bcm)
                         .shutdown(DigitalState.LOW)
