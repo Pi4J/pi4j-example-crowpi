@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 public class StateLed {
 
-    private static Integer[] bcmList = new Integer[]{ 2, 3, 4, 17};
+    private static Integer[] bcmList = new Integer[]{2,3,4,17,27,22,10,9,11,0,5,6,13,19,26,14,15,18,23,24,25,8,7,1,12,16,20,21};
 
     public static void toggleAll(Context pi4j, boolean printInfo, Console console) {
         for (int bcm : Arrays.asList(bcmList)) {
