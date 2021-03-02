@@ -37,9 +37,6 @@ import com.pi4j.util.Console;
 
 /**
  * <p>This example application can run different demos on the CrowPi</p>
- *
- * @author Frank Delporte (<a href="https://www.webtechie.be">https://www.webtechie.be</a>)
- * @version $Id: $Id
  */
 public class CrowPiApp {
 
