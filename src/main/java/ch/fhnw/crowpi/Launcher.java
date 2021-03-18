@@ -11,12 +11,12 @@ import picocli.CommandLine.Model.CommandSpec;
 import com.pi4j.Pi4J;
 import com.pi4j.context.Context;
 
-import ch.fhnw.crowpi.applications.DummyApp;
+import ch.fhnw.crowpi.applications.BuzzerApp;
 
 @Command(name = "CrowPi Example Launcher", synopsisSubcommandLabel = "COMMAND", mixinStandardHelpOptions = true)
 public final class Launcher {
     private static final List<Application> APPLICATIONS = new ArrayList<>(Arrays.asList(
-        new DummyApp()
+        new BuzzerApp()
     ));
 
     private final CommandLine cmdLine;
