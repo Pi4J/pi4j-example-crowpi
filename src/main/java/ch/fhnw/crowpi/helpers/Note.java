@@ -1,5 +1,6 @@
 package ch.fhnw.crowpi.helpers;
 
+@SuppressWarnings("unused")
 public enum Note {
   B0(31),
   C1(33),
@@ -92,7 +93,7 @@ public enum Note {
   DS8(4978),
   PAUSE(0);
 
-  private int frequency = 0;
+  private final int frequency;
 
   Note(int frequency) {
     this.frequency = frequency;

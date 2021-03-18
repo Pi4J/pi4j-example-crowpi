@@ -80,7 +80,7 @@
       <version>${slf4j.version}</version>
     </dependency>
 
-    <!-- picocli -->
+    <!-- PicoCLI -->
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
@@ -115,12 +115,13 @@
             </path>
           </annotationProcessorPaths>
           <compilerArgs>
+            <!-- Used by PicoCLI annotation processor -->
             <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
           </compilerArgs>
         </configuration>
       </plugin>
 
-      <!-- Download runtime dependencies -->
+      <!-- Copy runtime dependencies into distribution folder -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -141,29 +142,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-
-      <!-- Default execution target -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>verify</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <executable>java</executable>
-          <arguments>
-            <argument>--module-path</argument>
-            <argument>${project.build.directory}/distribution</argument>
-            <argument>--module</argument>
-            <argument>ch.fhnw.crowpi/ch.fhnw.crowpi.Launcher</argument>
-          </arguments>
-        </configuration>
       </plugin>
 
       <!-- Build final JAR file -->
