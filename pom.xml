@@ -264,7 +264,7 @@
                                         <!-- Run application on Raspberry Pi -->
                                         <sshexec host="${crowpi.remote.host}" port="${crowpi.remote.port}"
                                                  username="${crowpi.remote.username}" password="${crowpi.remote.password}" trust="true"
-                                                 failonerror="false"
+                                                 failonerror="false" useSystemIn="true"
                                                  command="java ${crowpi.remote.jvmOptions} --module-path ${crowpi.remote.target} --module ${crowpi.launcher.class} ${crowpi.launcher.args}"/>
                                     </target>
                                 </configuration>
@@ -285,11 +285,6 @@
         <!-- Activate JDWP server on CrowPi, can be used for local and remote runs -->
         <profile>
             <id>debug</id>
-            <activation>
-                <property>
-                    <name>crowpi.remote.host</name>
-                </property>
-            </activation>
             <properties>
                 <crowpi.remote.jvmOptions>
                     -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005

@@ -1,20 +1,16 @@
 package ch.fhnw.crowpi;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import ch.fhnw.crowpi.applications.BuzzerApp;
+import com.pi4j.Pi4J;
+import com.pi4j.context.Context;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 
-import com.pi4j.Pi4J;
-import com.pi4j.context.Context;
+import java.util.*;
 
-import ch.fhnw.crowpi.applications.BuzzerApp;
-
-@Command(name = "CrowPi Example Launcher", synopsisSubcommandLabel = "COMMAND", mixinStandardHelpOptions = true)
-public final class Launcher {
+@Command(name = "CrowPi Example Launcher", mixinStandardHelpOptions = true)
+public final class Launcher implements Runnable {
     /**
      * This list must contain all applications which should be executable through the launcher.
      * Each class instance must implement the Application interface and gets automatically added as a subcommand.
@@ -25,6 +21,7 @@ public final class Launcher {
 
     private final CommandLine cmdLine;
     private final Context pi4j;
+    private final List<ApplicationRunner> runners = new ArrayList<>();
 
     public static void main(String[] args) {
         final var launcher = new Launcher();
@@ -47,7 +44,49 @@ public final class Launcher {
     }
 
     /**
+     * When the user does not specify any sub-command and therefore does not explicitly state which application should be launched,
+     * a manual console based selection menu of all known applications will be shown. This allows to easily run any desired application
+     * without having to mess with the arguments passed to the launcher.
+     */
+    @Override
+    public void run() {
+        // Print informational header that no application has been specified
+        System.out.println("> No application has been specified, defaulting to manual selection");
+        System.out.println("> Run this launcher with --help for further information");
+
+        // Print list of possible choices
+        System.out.println("> The following applications can be launched:");
+        for (int i = 0; i < this.runners.size(); i++) {
+            final var runner = this.runners.get(i);
+            final var appName = runner.getApp().getName();
+            final var appDescription = runner.getApp().getDescription();
+
+            System.out.println((i + 1) + ") " + appName + " (" + appDescription + ")");
+        }
+
+        // Read stdin until user has made a valid choice
+        // We have to use println() here due to buffering in exec-maven-plugin
+        final var in = new Scanner(System.in);
+        var choice = 0;
+        while (choice < 1 || choice > this.runners.size()) {
+            System.out.println("> Please choose your desired application by typing the appropriate number:");
+            try {
+                choice = in.nextInt();
+            } catch (InputMismatchException ignored) {
+                in.next();
+            }
+        }
+
+        // Launch chosen application
+        final var runner = this.runners.get(choice - 1);
+        final var appName = runner.getApp().getName();
+        System.out.println("> Launching application " + appName + "...");
+        runner.run();
+    }
+
+    /**
      * Uses PicoCLI to parse the given command line arguments and returns an appropriate POSIX exit code.
+     *
      * @param args List of command line arguments to parse, usually provided by the main entrypoint of a Java application
      * @return Exit code after running the requested command
      */
@@ -64,12 +103,13 @@ public final class Launcher {
             // Create new application runner for the given instance.
             // This is required to represent the application as an actual Runnable.
             final var runner = new ApplicationRunner(app);
+            this.runners.add(runner);
 
-            // Create command specification with custom options for the runner.
+            // Create command specification with custom options
             final var cmd = CommandSpec.forAnnotatedObject(runner).name(app.getName());
             cmd.usageMessage().description(app.getDescription());
 
-            // Add command specification as sub-command.
+            // Add command specification as sub-command
             this.cmdLine.addSubcommand(cmd);
         }
     }
@@ -89,6 +129,10 @@ public final class Launcher {
         @Override
         public void run() {
             this.app.execute(Launcher.this.pi4j);
+        }
+
+        private Application getApp() {
+            return this.app;
         }
     }
 }
