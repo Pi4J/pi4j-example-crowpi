@@ -2,6 +2,7 @@ module ch.fhnw.crowpi {
   // Pi4J Modules
   requires com.pi4j;
   requires com.pi4j.plugin.pigpio;
+  requires com.pi4j.plugin.raspberrypi;
   uses com.pi4j.extension.Extension;
   uses com.pi4j.provider.Provider;
 

@@ -1,6 +1,8 @@
 package ch.fhnw.crowpi;
 
-import ch.fhnw.crowpi.applications.*;
+import ch.fhnw.crowpi.applications.BuzzerApp;
+import ch.fhnw.crowpi.applications.ExampleApp;
+import ch.fhnw.crowpi.helpers.CrowPiPlatform;
 import com.pi4j.Pi4J;
 import com.pi4j.context.Context;
 import picocli.CommandLine;
@@ -38,7 +40,11 @@ public final class Launcher implements Runnable {
         this.cmdLine = new CommandLine(this);
 
         // Initialize Pi4J context
-        this.pi4j = Pi4J.newAutoContext();
+        this.pi4j = Pi4J.newContextBuilder()
+            .noAutoDetectPlatforms()
+            .addPlatform(new CrowPiPlatform())
+            .autoDetectProviders()
+            .build();
 
         // Register application runners as subcommands
         this.registerApplicationRunners();

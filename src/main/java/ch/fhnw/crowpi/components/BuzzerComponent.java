@@ -35,6 +35,17 @@ public class BuzzerComponent {
     }
 
     /**
+     * Plays a tone with the given frequency in Hz indefinitely.
+     * This method is non-blocking and returns immediately.
+     * A frequency of zero causes the buzzer to play silence.
+     *
+     * @param frequency Frequency in Hz
+     */
+    public void playTone(int frequency) {
+        playTone(frequency, 0);
+    }
+
+    /**
      * Plays a tone with the given frequency in Hz for a specific duration.
      * This method is blocking and will sleep until the specified duration has passed.
      * A frequency of zero causes the buzzer to play silence.
@@ -50,7 +61,7 @@ public class BuzzerComponent {
             pwm.on(50, frequency);
 
             // If the duration is larger than zero, the tone should be automatically stopped after the given duration.
-            if(duration > 0) {
+            if (duration > 0) {
                 try {
                     Thread.sleep(duration);
                 } catch (InterruptedException ignored) {
@@ -85,6 +96,15 @@ public class BuzzerComponent {
     }
 
     /**
+     * Returns the created PWM instance for the buzzer
+     *
+     * @return PWM instance
+     */
+    protected Pwm getPwm() {
+        return this.pwm;
+    }
+
+    /**
      * Builds a new PWM configuration for the buzzer
      *
      * @param pi4j    Pi4J context
@@ -99,7 +119,6 @@ public class BuzzerComponent {
             .pwmType(PwmType.HARDWARE)
             .initial(0)
             .shutdown(0)
-            .provider("pigpio-pwm")
             .build();
     }
 }
