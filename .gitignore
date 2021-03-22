@@ -1,11 +1,2 @@
-# IntelliJ
-/crowpi-examples.iml
-
-# Eclipse
-/.classpath
-/.factorypath
-/.project
-/.settings
-
 # Maven
 /target/
