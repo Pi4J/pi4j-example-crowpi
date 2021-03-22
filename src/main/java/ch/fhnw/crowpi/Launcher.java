@@ -24,10 +24,11 @@ public final class Launcher implements Runnable {
 
     private final CommandLine cmdLine;
     private final Context pi4j;
+    private final List<Application> applications;
     private final List<ApplicationRunner> runners = new ArrayList<>();
 
     public static void main(String[] args) {
-        final var launcher = new Launcher();
+        final var launcher = new Launcher(APPLICATIONS);
         System.exit(launcher.execute(args));
     }
 
@@ -35,7 +36,7 @@ public final class Launcher implements Runnable {
      * Creates a new launcher with an eagerly initialized Pi4J context and PicoCLI instance.
      * All applications specified in APPLICATIONS are being automatically registered.
      */
-    public Launcher() {
+    public Launcher(List<Application> applications) {
         // Initialize PicoCLI instance
         this.cmdLine = new CommandLine(this);
 
@@ -47,6 +48,7 @@ public final class Launcher implements Runnable {
             .build();
 
         // Register application runners as subcommands
+        this.applications = applications;
         this.registerApplicationRunners();
     }
 
@@ -106,7 +108,7 @@ public final class Launcher implements Runnable {
      * This must only be called once to avoid duplicating sub-commands.
      */
     private void registerApplicationRunners() {
-        for (Application app : APPLICATIONS) {
+        for (Application app : applications) {
             // Create new application runner for the given instance.
             // This is required to represent the application as an actual Runnable.
             final var runner = new ApplicationRunner(app);
