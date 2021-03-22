@@ -29,6 +29,7 @@
         <pi4j.version>2.0-SNAPSHOT</pi4j.version>
         <slf4j.version>2.0.0-alpha1</slf4j.version>
         <picocli.version>4.6.1</picocli.version>
+        <junit.version>4.13</junit.version>
 
         <!-- Maven Dependencies -->
         <maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
@@ -82,6 +83,14 @@
             <version>${pi4j.version}</version>
         </dependency>
 
+        <!-- Pi4J Mock Platform -->
+        <dependency>
+            <groupId>com.pi4j</groupId>
+            <artifactId>pi4j-plugin-mock</artifactId>
+            <version>${pi4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- SLF4J API -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -107,7 +116,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
