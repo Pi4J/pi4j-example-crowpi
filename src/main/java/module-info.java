@@ -1,4 +1,8 @@
 module ch.fhnw.crowpi {
+  // Module Exports
+  exports ch.fhnw.crowpi.components;
+  exports ch.fhnw.crowpi.helpers;
+
   // Pi4J Modules
   requires com.pi4j;
   requires com.pi4j.plugin.pigpio;
