@@ -11,6 +11,9 @@ import ch.fhnw.crowpi.helpers.Note;
  * Notes taken from https://www.hackster.io/jrance/super-mario-theme-song-w-piezo-buzzer-and-arduino-1cc2e4
  */
 public class BuzzerApp implements Application {
+    /**
+     * Array of notes which should be played by this example
+     */
     private static final Note[] NOTES = new Note[]{
         Note.E7, Note.E7, Note.PAUSE, Note.E7,
         Note.PAUSE, Note.C7, Note.E7, Note.PAUSE,
@@ -38,7 +41,11 @@ public class BuzzerApp implements Application {
         Note.D7, Note.B6, Note.PAUSE, Note.PAUSE,
     };
 
-    private static final int[] BEATS = new int[]{
+    /**
+     * Array of note types, e.g. 4 represents a quarter-note with 0.25s duration.
+     * Must have the same length as the NOTES array.
+     */
+    private static final int[] TEMPO = new int[]{
         12, 12, 12, 12,
         12, 12, 12, 12,
         12, 12, 12, 12,
@@ -72,8 +79,9 @@ public class BuzzerApp implements Application {
 
         // Loop through all notes and play them one-by-one
         for (int i = 0; i < NOTES.length; i++) {
-            // Calculate duration of note
-            final var duration = 1000 / BEATS[i];
+            // Calculate duration of note by dividing one second with tempo
+            // Tempo represents the actual note type, e.g. tempo=4 -> quarter note -> 0.25s
+            final var duration = 1000 / TEMPO[i];
 
             // Print note to standard output, play over buzzer
             System.out.print(NOTES[i] + "(" + duration + ") ");
