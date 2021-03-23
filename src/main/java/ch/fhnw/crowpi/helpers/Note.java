@@ -1,7 +1,13 @@
 package ch.fhnw.crowpi.helpers;
 
+/**
+ * Mapping of well-known piano keys 1 - 100 to their appropriate frequency in Hz
+ * Values based on https://en.wikipedia.org/wiki/Piano_key_frequencies#List
+ */
 @SuppressWarnings("unused")
 public enum Note {
+  A0(28),
+  AS0(29),
   B0(31),
   C1(33),
   CS1(35),

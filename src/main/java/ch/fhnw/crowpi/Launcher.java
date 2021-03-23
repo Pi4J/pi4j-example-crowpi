@@ -35,6 +35,8 @@ public final class Launcher implements Runnable {
     /**
      * Creates a new launcher with an eagerly initialized Pi4J context and PicoCLI instance.
      * All applications specified in APPLICATIONS are being automatically registered.
+     *
+     * @param applications List of applications to register
      */
     public Launcher(List<Application> applications) {
         // Initialize PicoCLI instance

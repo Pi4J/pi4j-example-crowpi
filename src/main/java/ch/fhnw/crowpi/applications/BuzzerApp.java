@@ -67,8 +67,10 @@ public class BuzzerApp implements Application {
 
     @Override
     public void execute(Context pi4j) {
+        // Initialize buzzer component with default pin
         final var buzzer = new BuzzerComponent(pi4j);
 
+        // Loop through all notes and play them one-by-one
         for (int i = 0; i < NOTES.length; i++) {
             // Calculate duration of note
             final var duration = 1000 / BEATS[i];
