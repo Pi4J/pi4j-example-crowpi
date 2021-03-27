@@ -15,24 +15,24 @@ public class SevenSegmentComponent extends HT16K33 {
     private static final int[] CHAR_POSITIONS = new int[]{0, 2, 6, 8};
 
     private static final Map<Character, Byte> CHAR_BITSETS = Map.ofEntries(
-        Map.entry(' ', (byte) 0x00),
-        Map.entry('-', (byte) 0x40),
-        Map.entry('0', (byte) 0x3F),
-        Map.entry('1', (byte) 0x06),
-        Map.entry('2', (byte) 0x5B),
-        Map.entry('3', (byte) 0x4F),
-        Map.entry('4', (byte) 0x66),
-        Map.entry('5', (byte) 0x6D),
-        Map.entry('6', (byte) 0x7D),
-        Map.entry('7', (byte) 0x07),
-        Map.entry('8', (byte) 0x7F),
-        Map.entry('9', (byte) 0x6F),
-        Map.entry('A', (byte) 0x77),
-        Map.entry('B', (byte) 0x7C),
-        Map.entry('C', (byte) 0x39),
-        Map.entry('D', (byte) 0x5E),
-        Map.entry('E', (byte) 0x79),
-        Map.entry('F', (byte) 0x71)
+        Map.entry(' ', withSegments()),
+        Map.entry('-', withSegments(Segment.CENTER)),
+        Map.entry('0', withSegments(Segment.TOP, Segment.LEFT_TOP, Segment.RIGHT_TOP, Segment.LEFT_BOTTOM, Segment.RIGHT_BOTTOM, Segment.BOTTOM)),
+        Map.entry('1', withSegments(Segment.RIGHT_TOP, Segment.RIGHT_BOTTOM)),
+        Map.entry('2', withSegments(Segment.TOP, Segment.RIGHT_TOP, Segment.CENTER, Segment.LEFT_BOTTOM, Segment.BOTTOM)),
+        Map.entry('3', withSegments(Segment.TOP, Segment.RIGHT_TOP, Segment.CENTER, Segment.RIGHT_BOTTOM, Segment.BOTTOM)),
+        Map.entry('4', withSegments(Segment.LEFT_TOP, Segment.RIGHT_TOP, Segment.CENTER, Segment.RIGHT_BOTTOM)),
+        Map.entry('5', withSegments(Segment.TOP, Segment.LEFT_TOP, Segment.CENTER, Segment.RIGHT_BOTTOM, Segment.BOTTOM)),
+        Map.entry('6', withSegments(Segment.TOP, Segment.LEFT_TOP, Segment.CENTER, Segment.LEFT_BOTTOM, Segment.RIGHT_BOTTOM, Segment.BOTTOM)),
+        Map.entry('7', withSegments(Segment.TOP, Segment.RIGHT_TOP, Segment.RIGHT_BOTTOM)),
+        Map.entry('8', withSegments(Segment.LEFT_TOP, Segment.TOP, Segment.RIGHT_TOP, Segment.CENTER, Segment.LEFT_BOTTOM, Segment.RIGHT_BOTTOM, Segment.BOTTOM)),
+        Map.entry('9', withSegments(Segment.TOP, Segment.LEFT_TOP, Segment.RIGHT_TOP, Segment.CENTER, Segment.RIGHT_BOTTOM, Segment.BOTTOM)),
+        Map.entry('A', withSegments(Segment.TOP, Segment.LEFT_TOP, Segment.RIGHT_TOP, Segment.CENTER, Segment.LEFT_BOTTOM, Segment.RIGHT_BOTTOM)),
+        Map.entry('B', withSegments(Segment.LEFT_TOP, Segment.CENTER, Segment.LEFT_BOTTOM, Segment.RIGHT_BOTTOM, Segment.BOTTOM)),
+        Map.entry('C', withSegments(Segment.TOP, Segment.LEFT_TOP, Segment.LEFT_BOTTOM, Segment.BOTTOM)),
+        Map.entry('D', withSegments(Segment.RIGHT_TOP, Segment.CENTER, Segment.LEFT_BOTTOM, Segment.RIGHT_BOTTOM, Segment.BOTTOM)),
+        Map.entry('E', withSegments(Segment.TOP, Segment.LEFT_TOP, Segment.CENTER, Segment.LEFT_BOTTOM, Segment.BOTTOM)),
+        Map.entry('F', withSegments(Segment.TOP, Segment.LEFT_TOP, Segment.CENTER, Segment.LEFT_BOTTOM))
     );
 
     public SevenSegmentComponent(Context pi4j) {
@@ -49,6 +49,17 @@ public class SevenSegmentComponent extends HT16K33 {
         } else {
             buffer[COLON_POSITION] = 0x00;
         }
+    }
+
+    public void setDecimal(int index, boolean enabled) {
+        byte value = getCharacter(index);
+        if (enabled) {
+            value |= Segment.DECIMAL_POINT.getValue();
+        } else {
+            value &= ~Segment.DECIMAL_POINT.getValue();
+        }
+
+        setCharacter(index, value);
     }
 
     public void setDigit(int index, int digit) {
@@ -71,8 +82,12 @@ public class SevenSegmentComponent extends HT16K33 {
         setCharacter(index, CHAR_BITSETS.get(c));
     }
 
+    public void setSegments(int index, Segment... segments) {
+        setCharacter(index, withSegments(segments));
+    }
+
     private void setCharacter(int index, byte bitmask) {
-        // Ensure position is within bounds
+        // Ensure index is within bounds
         final var maxIndex = CHAR_POSITIONS.length - 1;
         if (index < 0 || index > maxIndex)
             throw new IllegalArgumentException("Index must be an integer in the range 0-" + maxIndex);
@@ -82,6 +97,17 @@ public class SevenSegmentComponent extends HT16K33 {
         buffer[position] = bitmask;
     }
 
+    private byte getCharacter(int index) {
+        // Ensure index is within bounds
+        final var maxIndex = CHAR_POSITIONS.length - 1;
+        if (index < 0 || index > maxIndex)
+            throw new IllegalArgumentException("Index must be an integer in the range 0-" + maxIndex);
+
+        // Read bitmask from buffer
+        final var position = CHAR_POSITIONS[index];
+        return buffer[position];
+    }
+
     private static I2CConfig buildI2CConfig(Context pi4j, int bus, int device) {
         return I2C.newConfigBuilder(pi4j)
             .id("I2C-" + device + "@" + bus)
@@ -89,5 +115,34 @@ public class SevenSegmentComponent extends HT16K33 {
             .bus(bus)
             .device(device)
             .build();
+    }
+
+    public static byte withSegments(Segment... segments) {
+        byte result = 0;
+        for (Segment segment : segments) {
+            result |= segment.getValue();
+        }
+        return result;
+    }
+
+    public enum Segment {
+        TOP(0),
+        RIGHT_TOP(1),
+        RIGHT_BOTTOM(2),
+        BOTTOM(3),
+        LEFT_BOTTOM(4),
+        LEFT_TOP(5),
+        CENTER(6),
+        DECIMAL_POINT(7);
+
+        private final byte value;
+
+        Segment(int bit) {
+            this.value = (byte) (1 << bit);
+        }
+
+        byte getValue() {
+            return this.value;
+        }
     }
 }
