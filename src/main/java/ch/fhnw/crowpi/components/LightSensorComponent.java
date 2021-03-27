@@ -15,6 +15,10 @@ public class LightSensorComponent {
      */
     private static final int DEFAULT_BUS = 0x1;
     private static final int DEFAULT_DEVICE = 0x5c;
+    /**
+     *  Define the factor which is used to calculate lux from the measurement value. BH1750 = 1.2
+     */
+    private static final double DEFAULT_MEASUREMENT_TO_LUX_FACTOR = 1.2;
 
     // Start measurement at 1lx resolution. Time typically 120ms
     private static final int ONE_TIME_HIGH_RES_MODE_1 = 0x20;
@@ -33,7 +37,7 @@ public class LightSensorComponent {
     }
 
     /**
-     * Creates a new buzzer component with a custom BCM pin.
+     * Creates a new light sensor component with custom bus, device address
      *
      * @param pi4j   Pi4J context
      * @param bus    Custom I2C bus address
@@ -67,8 +71,7 @@ public class LightSensorComponent {
                 break;
         }
 
-        // Measurement divided by 1.2 gives a value in lux. According to BH1750 manual.
-        return i2c.readRegisterWord(resolutionRegisterValue) / 1.2;
+        return calculateLux(i2c.readRegisterWord(resolutionRegisterValue));
     }
 
     /**
@@ -77,8 +80,26 @@ public class LightSensorComponent {
      * @return current light in lux
      */
     public double readLight() {
-        // Measurement divided by 1.2 gives a value in lux. According to BH1750 manual.
-        return i2c.readRegisterWord(ONE_TIME_HIGH_RES_MODE_1) / 1.2;
+        return calculateLux(i2c.readRegisterWord(ONE_TIME_HIGH_RES_MODE_1));
+    }
+
+    /**
+     * Calculates Lux values from measurement values
+     *
+     * @param measurementValue measurement value from light sensor
+     * @return calculated value in lux
+     */
+    protected double calculateLux(double measurementValue) {
+        return measurementValue / DEFAULT_MEASUREMENT_TO_LUX_FACTOR;
+    }
+
+    /**
+     * Returns the created PWM instance for the buzzer
+     *
+     * @return I2C Instance
+     */
+    protected I2C getI2C() {
+        return this.i2c;
     }
 
     /**
