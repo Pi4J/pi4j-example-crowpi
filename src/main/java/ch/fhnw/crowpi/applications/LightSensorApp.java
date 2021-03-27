@@ -19,6 +19,9 @@ public class LightSensorApp implements Application {
         final double DARK_VALUE = 150;
         final double BRIGHT_VALUE = 3000;
 
+        // Start the measurements:
+        System.out.println("Starting new Measurements ...");
+
         // Loop until number of loops is reached
         for (int i = 0; i < NUMBER_OF_LOOPS; i++) {
             // Loop a measurement until a button is pressed
