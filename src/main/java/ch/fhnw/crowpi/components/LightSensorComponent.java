@@ -16,7 +16,7 @@ public class LightSensorComponent {
     private static final int DEFAULT_BUS = 0x1;
     private static final int DEFAULT_DEVICE = 0x5c;
     /**
-     *  Define the factor which is used to calculate lux from the measurement value. BH1750 = 1.2
+     * Define the factor which is used to calculate lux from the measurement value. BH1750 = 1.2
      */
     private static final double MEASUREMENT_TO_LUX_FACTOR = 1.2;
 
@@ -48,10 +48,10 @@ public class LightSensorComponent {
     }
 
     /**
-     * Read current light strength in lux with custom resolution settings
+     * Read current light intensity in lux with custom resolution settings
      *
      * @param resolution Defines resolution of measurements: 0 = 4lx Resolution / 1 = 1lx Resolution / 2 = 0.5lx Resolution
-     * @return current light in lux
+     * @return Light intensity in lux
      */
     public double readLight(int resolution) {
         if (resolution > 2 || resolution < 0) {
@@ -75,9 +75,9 @@ public class LightSensorComponent {
     }
 
     /**
-     * Measure current light with default resolution (1lx)
+     * Measure current light intensity with default resolution (1lx)
      *
-     * @return current light in lux
+     * @return Light intensity in lux
      */
     public double readLight() {
         return calculateLux(i2c.readRegisterWord(ONE_TIME_HIGH_RES_MODE_1));
@@ -86,8 +86,8 @@ public class LightSensorComponent {
     /**
      * Calculates Lux values from measurement values
      *
-     * @param measurementValue measurement value from light sensor
-     * @return calculated value in lux
+     * @param measurementValue Measurement value from light sensor
+     * @return Calculated value in lux
      */
     protected double calculateLux(double measurementValue) {
         return measurementValue / MEASUREMENT_TO_LUX_FACTOR;
@@ -96,7 +96,7 @@ public class LightSensorComponent {
     /**
      * Returns the created PWM instance for the buzzer
      *
-     * @return I2C Instance
+     * @return I2C instance
      */
     protected I2C getI2C() {
         return this.i2c;

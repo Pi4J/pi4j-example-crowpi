@@ -17,7 +17,7 @@ public class LightSensorComponentTest extends ComponentTest {
     }
 
     @Test
-    public void testCustomBusConfigurationSet () {
+    public void testCustomBusConfigurationSet() {
         // given
         LightSensorComponent testObject = new LightSensorComponent(pi4j, 10, 0x5c);
 
@@ -30,7 +30,7 @@ public class LightSensorComponentTest extends ComponentTest {
     }
 
     @Test
-    public void testCustomDeviceConfigurationSet () {
+    public void testCustomDeviceConfigurationSet() {
         // given
         LightSensorComponent testObject = new LightSensorComponent(pi4j, 1, 0x99);
 

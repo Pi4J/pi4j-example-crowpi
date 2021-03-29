@@ -29,14 +29,14 @@ public class LightSensorApp implements Application {
         final var sensor = new LightSensorComponent(pi4j);
 
         // Start the measurements:
-        System.out.println("Starting new Measurements ...");
+        System.out.println("Starting new measurements ...");
 
         // Loop until number of loops is reached
         for (int i = 0; i < NUMBER_OF_LOOPS; i++) {
             // Read the current illumination from sensor
             double value = sensor.readLight(2);
 
-            // Work with the measure value to define some actions
+            // Analyze measured value and react accordingly
             if (value < DARK_VALUE) {
                 System.out.println("Whoo that's dark... You should turn on light");
             } else if (value >= DARK_VALUE && value < BRIGHT_VALUE) {
@@ -45,7 +45,7 @@ public class LightSensorApp implements Application {
                 System.out.println("Oh no .. it's so bright ... please ... please turn off the light");
             }
 
-            // Delay the thread
+            // Sleep before continuing with next measurement
             try {
                 Thread.sleep(DELAY);
             } catch (InterruptedException ignored) {
