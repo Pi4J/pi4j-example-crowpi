@@ -8,7 +8,7 @@ public class LightSensorApp implements Application {
 
     /**
      * Define a measurement interval in millis (to short interval can't be handled by the sensor)
-      */
+     */
     private static final int DELAY = 1000;
     /**
      * Define a number of loops until the App shuts down
