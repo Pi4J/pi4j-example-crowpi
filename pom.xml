@@ -301,7 +301,7 @@
                                         <!-- Run application on Raspberry Pi -->
                                         <sshexec host="${crowpi.remote.host}" port="${crowpi.remote.port}"
                                                  username="${crowpi.remote.username}" password="${crowpi.remote.password}" trust="true"
-                                                 failonerror="false" useSystemIn="true"
+                                                 failonerror="false" usepty="true" useSystemIn="true"
                                                  command="java ${crowpi.remote.jvmOptions} --module-path ${crowpi.remote.target} --module ${crowpi.launcher.class} ${crowpi.launcher.args}"/>
                                     </target>
                                 </configuration>
