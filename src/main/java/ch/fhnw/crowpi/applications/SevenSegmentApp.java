@@ -13,11 +13,11 @@ public class SevenSegmentApp implements Application {
         segment.setBrightness(15);
 
         segment.setColon(true);
+        segment.setDecimalPoint(0, true);
         segment.setDigit(0, 1);
-        segment.setDecimal(0, true);
         segment.setDigit(1, 2);
-        segment.setCharacter(2, '3');
-        segment.setCharacter(3, '4');
+        segment.setDigit(2, 'a');
+        segment.setDigit(3, 'b');
         segment.refresh();
     }
 }
