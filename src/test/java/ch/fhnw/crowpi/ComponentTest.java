@@ -11,13 +11,13 @@ import com.pi4j.plugin.mock.provider.i2c.MockI2CProvider;
 import com.pi4j.plugin.mock.provider.pwm.MockPwmProvider;
 import com.pi4j.plugin.mock.provider.serial.MockSerialProvider;
 import com.pi4j.plugin.mock.provider.spi.MockSpiProvider;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public abstract class ComponentTest {
     protected Context pi4j;
 
-    @Before
+    @BeforeEach
     public final void setUpBase() throws Exception {
         pi4j = Pi4J.newContextBuilder()
             .add(new MockPlatform())
@@ -34,7 +34,7 @@ public abstract class ComponentTest {
             .build();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         pi4j.shutdown();
     }

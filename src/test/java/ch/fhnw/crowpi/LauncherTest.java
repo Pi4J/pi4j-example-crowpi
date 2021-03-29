@@ -1,8 +1,8 @@
 package ch.fhnw.crowpi;
 
 import com.pi4j.context.Context;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LauncherTest {
     protected static final List<Application> TEST_APPLICATIONS = new ArrayList<>(Arrays.asList(
@@ -21,7 +21,7 @@ public class LauncherTest {
     protected static boolean EXECUTED_APP_A, EXECUTED_APP_B;
     protected Launcher launcher;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         this.launcher = new Launcher(TEST_APPLICATIONS);
 

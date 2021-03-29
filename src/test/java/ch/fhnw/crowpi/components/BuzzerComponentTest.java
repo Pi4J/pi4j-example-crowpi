@@ -2,11 +2,11 @@ package ch.fhnw.crowpi.components;
 
 import ch.fhnw.crowpi.ComponentTest;
 import com.pi4j.io.pwm.Pwm;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BuzzerComponentTest extends ComponentTest {
     protected static final double DUTY_CYCLE_DELTA = 0.1;
@@ -14,7 +14,7 @@ public class BuzzerComponentTest extends ComponentTest {
     protected BuzzerComponent buzzer;
     protected Pwm buzzerPwm;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.buzzer = new BuzzerComponent(pi4j);
         this.buzzerPwm = this.buzzer.getPwm();
