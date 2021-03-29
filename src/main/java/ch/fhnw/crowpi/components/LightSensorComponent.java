@@ -103,6 +103,8 @@ public class LightSensorComponent {
     }
 
     /**
+     * Build a I2C Configuration to use the light Sensor
+     *
      * @param pi4j   PI4J Context
      * @param bus    I2C Bus address
      * @param device I2C Device address
