@@ -6,6 +6,13 @@ import ch.fhnw.crowpi.applications.LightSensorApp;
 import ch.fhnw.crowpi.helpers.CrowPiPlatform;
 import com.pi4j.Pi4J;
 import com.pi4j.context.Context;
+import com.pi4j.library.pigpio.PiGpio;
+import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalInputProvider;
+import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalOutputProvider;
+import com.pi4j.plugin.pigpio.provider.i2c.PiGpioI2CProvider;
+import com.pi4j.plugin.pigpio.provider.pwm.PiGpioPwmProvider;
+import com.pi4j.plugin.pigpio.provider.serial.PiGpioSerialProvider;
+import com.pi4j.plugin.pigpio.provider.spi.PiGpioSpiProvider;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -44,11 +51,22 @@ public final class Launcher implements Runnable {
         // Initialize PicoCLI instance
         this.cmdLine = new CommandLine(this);
 
-        // Initialize Pi4J context
+        // Initialize PiGPIO
+        final var piGpio = PiGpio.newNativeInstance();
+
+        // Initialize Pi4J context by manually specifying the desired platform and providers
+        // FIXME: This can probably be replaced by `.newAutoContext()` once https://github.com/Pi4J/pi4j-v2/issues/17 has been resolved
         this.pi4j = Pi4J.newContextBuilder()
-            .noAutoDetectPlatforms()
-            .addPlatform(new CrowPiPlatform())
-            .autoDetectProviders()
+            .noAutoDetect()
+            .add(new CrowPiPlatform())
+            .add(
+                PiGpioDigitalInputProvider.newInstance(piGpio),
+                PiGpioDigitalOutputProvider.newInstance(piGpio),
+                PiGpioPwmProvider.newInstance(piGpio),
+                PiGpioI2CProvider.newInstance(piGpio),
+                PiGpioSerialProvider.newInstance(piGpio),
+                PiGpioSpiProvider.newInstance(piGpio)
+            )
             .build();
 
         // Register application runners as subcommands
