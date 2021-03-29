@@ -3,7 +3,10 @@ package ch.fhnw.crowpi.components;
 import com.pi4j.context.Context;
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalInputConfig;
+import com.pi4j.io.gpio.digital.DigitalState;
 import com.pi4j.io.gpio.digital.PullResistance;
+
+import java.util.concurrent.TimeUnit;
 
 public class TouchSensorComponent {
     protected final DigitalInput din;
@@ -18,19 +21,14 @@ public class TouchSensorComponent {
         this.din = pi4j.create(buildDinConfig(pi4j, address, pullResistance));
     }
 
-    protected DigitalInput getDin() {
+    public DigitalState testReadState() {
+        System.out.println(din.toString());
+        System.out.println(din.provider().toString());
+        return din.state();
+    }
+
+    protected DigitalInput getDigitalInput() {
         return din;
-    }
-
-    public boolean isHigh() {
-        return din.isHigh();
-    }
-
-    public void test() {
-        din.addListener(event -> {
-            Integer count = (Integer) event.source().metadata().get("count").value();
-            System.out.println(event + " === " + count);
-        });
     }
 
     protected DigitalInputConfig buildDinConfig(Context pi4j, int address, PullResistance pullResistance) {
