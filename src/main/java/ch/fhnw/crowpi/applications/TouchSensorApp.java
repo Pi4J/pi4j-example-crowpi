@@ -9,13 +9,13 @@ import static java.lang.Thread.sleep;
 public class TouchSensorApp implements Application {
     @Override
     public void execute(Context pi4j) {
-        System.out.println("Neu Neu Neu");
+        System.out.println("Reloading?");
 
         final var touchSensor = new TouchSensorComponent(pi4j);
 
         for (int i = 0; i < 10; i++) {
 
-            System.out.println("State: " + touchSensor.isHigh());
+            System.out.println("State: " + touchSensor.testReadState());
 
             try {
                 sleep(1000);
