@@ -39,8 +39,7 @@ public class LightSensorApp implements Application {
             // Delay the thread
             try {
                 Thread.sleep(DELAY);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            } catch (InterruptedException ignored) {
             }
         }
     }

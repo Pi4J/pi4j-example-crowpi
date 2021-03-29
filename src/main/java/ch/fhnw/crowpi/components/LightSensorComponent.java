@@ -18,7 +18,7 @@ public class LightSensorComponent {
     /**
      *  Define the factor which is used to calculate lux from the measurement value. BH1750 = 1.2
      */
-    private static final double DEFAULT_MEASUREMENT_TO_LUX_FACTOR = 1.2;
+    private static final double MEASUREMENT_TO_LUX_FACTOR = 1.2;
 
     // Start measurement at 1lx resolution. Time typically 120ms
     private static final int ONE_TIME_HIGH_RES_MODE_1 = 0x20;
@@ -90,7 +90,7 @@ public class LightSensorComponent {
      * @return calculated value in lux
      */
     protected double calculateLux(double measurementValue) {
-        return measurementValue / DEFAULT_MEASUREMENT_TO_LUX_FACTOR;
+        return measurementValue / MEASUREMENT_TO_LUX_FACTOR;
     }
 
     /**
