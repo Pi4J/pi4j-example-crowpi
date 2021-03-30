@@ -36,12 +36,7 @@ public class TouchSensorComponent {
     }
 
     protected DigitalStateChangeListener createStateChangeListener(Consumer<DigitalState> consumer) {
-        return new DigitalStateChangeListener() {
-            @Override
-            public void onDigitalStateChange(DigitalStateChangeEvent event) {
-                consumer.accept(event.state());
-            }
-        };
+        return event -> consumer.accept(event.state());
     }
 
     protected DigitalInput getDigitalInput() {
