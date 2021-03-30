@@ -1,10 +1,7 @@
 package ch.fhnw.crowpi.components;
 
 import com.pi4j.context.Context;
-import com.pi4j.event.Listener;
 import com.pi4j.io.gpio.digital.*;
-
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 public class TouchSensorComponent {

@@ -13,7 +13,7 @@ public class TouchSensorApp implements Application {
 
         final var touchSensor = new TouchSensorComponent(pi4j);
 
-        var listener = touchSensor.addListener(state ->  {
+        Object listenerObject = touchSensor.addListener(state ->  {
             System.out.println("State Changed! New State: " + state);
         });
 
@@ -28,7 +28,7 @@ public class TouchSensorApp implements Application {
             }
         }
 
-        touchSensor.removeListener(listener);
+        touchSensor.removeListener(listenerObject);
 
         for (int i = 0; i < 10; i++) {
 
