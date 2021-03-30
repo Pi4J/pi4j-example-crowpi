@@ -27,18 +27,24 @@ public class TouchSensorComponent {
         return din.state();
     }
 
-    public void addListener(Callable<Boolean> onTouched) {
-        din.addListener(event -> {
-            try {
-                onTouched.call();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+    public Object addListener(Consumer<DigitalState> onTouched) {
+        DigitalStateChangeListener digitalStateChangeListener = createStateChangeListener(onTouched);
+        din.addListener(digitalStateChangeListener);
+
+        return digitalStateChangeListener;
     }
 
-    public void removeListener(DigitalStateChangeListener listener) {
-        din.removeListener(listener);
+    public void removeListener(Object stateChangeListenerObject) {
+        din.removeListener((DigitalStateChangeListener) stateChangeListenerObject);
+    }
+
+    protected DigitalStateChangeListener createStateChangeListener(Consumer<DigitalState> consumer) {
+        return new DigitalStateChangeListener() {
+            @Override
+            public void onDigitalStateChange(DigitalStateChangeEvent event) {
+                consumer.accept(event.state());
+            }
+        };
     }
 
     protected DigitalInput getDigitalInput() {
