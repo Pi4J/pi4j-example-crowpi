@@ -7,12 +7,6 @@ import com.pi4j.io.gpio.digital.*;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
-@FunctionalInterface
-public interface DigitalEvent {
-    void onTouch();
-}
-
-
 public class TouchSensorComponent {
     protected final DigitalInput din;
     protected static final int DEFAULT_PIN = 17;
@@ -33,8 +27,14 @@ public class TouchSensorComponent {
         return din.state();
     }
 
-    public void addListener(Callable<boolean> onTouched) {
-        din.addListener(event -> { onTouched(); });
+    public void addListener(Callable<Boolean> onTouched) {
+        din.addListener(event -> {
+            try {
+                onTouched.call();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public void removeListener(DigitalStateChangeListener listener) {

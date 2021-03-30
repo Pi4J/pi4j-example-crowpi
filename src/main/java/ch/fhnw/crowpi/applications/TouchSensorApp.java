@@ -29,7 +29,9 @@ public class TouchSensorApp implements Application {
         }
     }
 
-    public void onTouched() {
+    public Boolean onTouched() {
         System.out.println("HO HO HO");
+
+        return null;
     }
 }
