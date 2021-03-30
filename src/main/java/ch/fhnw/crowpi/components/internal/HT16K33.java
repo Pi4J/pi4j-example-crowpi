@@ -83,7 +83,7 @@ public class HT16K33 {
      * This method expects an integer value within the range 0-3, with 0 being equal to no blinking and 3 being the fastest choice.
      * The whole display is affected by this command which gets immediately applied.
      *
-     * @param rate Desired blinking rate from 0-3
+     * @param rate Desired blink rate from 0-3
      */
     public void setBlinkRate(int rate) {
         if (rate < 0 || rate > 3)
