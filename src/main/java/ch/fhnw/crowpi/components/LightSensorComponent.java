@@ -9,7 +9,6 @@ import com.pi4j.io.i2c.I2CConfig;
  */
 public class LightSensorComponent {
     private final I2C i2c;
-
     /**
      * Those default address are to use this class with default CrowPi setup
      */

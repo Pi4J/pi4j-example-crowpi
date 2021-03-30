@@ -9,35 +9,31 @@ import static java.lang.Thread.sleep;
 public class TouchSensorApp implements Application {
     @Override
     public void execute(Context pi4j) {
-        System.out.println("Reloading?");
+        System.out.println("Touch Sensor is now activated.");
 
         final var touchSensor = new TouchSensorComponent(pi4j);
 
-        Object listenerObject = touchSensor.addListener(state ->  {
+        Object listenerObject = touchSensor.addListener(state -> {
             System.out.println("State Changed! New State: " + state);
         });
 
-        for (int i = 0; i < 10; i++) {
-
-            System.out.println("Loop1: " + touchSensor.isTouched());
+        for (int i = 20; i > 0; i--) {
+            System.out.println("Time until Eventlistener is killed: " + i + " seconds...");
 
             try {
                 sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (InterruptedException ignored) {
             }
         }
 
         touchSensor.removeListener(listenerObject);
 
-        for (int i = 0; i < 10; i++) {
+        System.out.println("Press again to end this application");
 
-            System.out.println("Loop2: " + touchSensor.isTouched());
-
+        while (!touchSensor.isTouched()) {
             try {
-                sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                sleep(10);
+            } catch (InterruptedException ignored) {
             }
         }
     }
