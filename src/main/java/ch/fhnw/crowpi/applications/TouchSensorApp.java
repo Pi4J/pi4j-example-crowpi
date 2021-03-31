@@ -6,6 +6,10 @@ import com.pi4j.context.Context;
 
 import static java.lang.Thread.sleep;
 
+/**
+ * Writes some Text output on Button Events. After 20 seconds event handling is disable and the App waits for
+ * termination by a final touch sensor press.
+ */
 public class TouchSensorApp implements Application {
     @Override
     public void execute(Context pi4j) {

@@ -5,6 +5,9 @@ import com.pi4j.io.gpio.digital.*;
 
 import java.util.function.Consumer;
 
+/**
+ * Implementation of the CrowPi touch sensor using GPIO with Pi4J
+ */
 public class TouchSensorComponent {
     protected final DigitalInput din;
     /**
@@ -39,7 +42,7 @@ public class TouchSensorComponent {
     /**
      * Method to check if touch sensor is currently touched
      *
-     * @return true if touch sensor is currently touched
+     * @return True if touch sensor is currently touched
      */
     public boolean isTouched() {
         return din.state().isHigh();
@@ -58,7 +61,7 @@ public class TouchSensorComponent {
      * Create event listener on touch sensor
      *
      * @param onTouched provide an consumer with runs when an event is fired
-     * @return returns created listener object. This object is needed to remove the listener afterwards
+     * @return Returns created listener object. This object is needed to remove the listener afterwards
      */
     public Object addListener(Consumer<DigitalState> onTouched) {
         DigitalStateChangeListener digitalStateChangeListener = createStateChangeListener(onTouched);
@@ -80,7 +83,7 @@ public class TouchSensorComponent {
      * Encapsulate pi4j event listener objects
      *
      * @param consumer action with is executed when event is fired
-     * @return listener which can be attached to digital input
+     * @return Listener which can be attached to digital input
      */
     protected DigitalStateChangeListener createStateChangeListener(Consumer<DigitalState> consumer) {
         return event -> consumer.accept(event.state());
@@ -89,7 +92,7 @@ public class TouchSensorComponent {
     /**
      * Get current Digital Input instance
      *
-     * @return return digital input instance
+     * @return Return digital input instance
      */
     protected DigitalInput getDigitalInput() {
         return din;
@@ -101,7 +104,7 @@ public class TouchSensorComponent {
      * @param pi4j     PI4J Context
      * @param address  GPIO Address of touch sensor
      * @param debounce debounce time in microseconds
-     * @return return Digital Input configuration
+     * @return Return Digital Input configuration
      */
     protected DigitalInputConfig buildDigitalInputConfig(Context pi4j, int address, long debounce) {
         return DigitalInput.newConfigBuilder(pi4j)

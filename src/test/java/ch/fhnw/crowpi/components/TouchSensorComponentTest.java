@@ -23,7 +23,7 @@ public class TouchSensorComponentTest extends ComponentTest {
 
     @Test
     public void testGetSensorState() {
-        //given
+        // given
         DigitalState resultState;
 
         // when
