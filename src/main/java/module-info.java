@@ -1,4 +1,4 @@
-module ch.fhnw.crowpi {
+open module ch.fhnw.crowpi {
   // Module Exports
   exports ch.fhnw.crowpi.components;
   exports ch.fhnw.crowpi.helpers;
@@ -17,7 +17,4 @@ module ch.fhnw.crowpi {
 
   // PicoCLI Modules
   requires info.picocli;
-
-  // Open this package for Pi4J and PicoCLI
-  opens ch.fhnw.crowpi to com.pi4j, info.picocli;
 }
