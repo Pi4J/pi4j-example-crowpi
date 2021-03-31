@@ -34,7 +34,7 @@ public class SevenSegmentComponent extends HT16K33 {
      * Mapping of characters to their respective byte representation.
      * Each byte is a bitset where each bit specifies if a specific segment should be enabled (1) or disabled (0).
      */
-    private static final Map<Character, Byte> CHAR_BITSETS = Map.ofEntries(
+    protected static final Map<Character, Byte> CHAR_BITSETS = Map.ofEntries(
         Map.entry(' ', fromSegments()),
         Map.entry('-', fromSegments(Segment.CENTER)),
         Map.entry('0', fromSegments(Segment.TOP, Segment.LEFT_TOP, Segment.RIGHT_TOP, Segment.LEFT_BOTTOM, Segment.RIGHT_BOTTOM, Segment.BOTTOM)),
@@ -344,10 +344,6 @@ public class SevenSegmentComponent extends HT16K33 {
 
         byte getValue() {
             return this.value;
-        }
-
-        public static byte test(Segment... segments) {
-            return 0;
         }
     }
 }
