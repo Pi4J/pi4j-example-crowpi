@@ -229,6 +229,17 @@ public class SevenSegmentComponent extends HT16K33 {
     }
 
     /**
+     * Sets the digit at the specified position to match the given segments.
+     * This will only affect the internal buffer and does not get displayed until {@link #refresh()} gets called.
+     *
+     * @param position Desired position of digit from 0-3.
+     * @param segments Segments which should be displayed.
+     */
+    public void setDigit(int position, Segment... segments) {
+        setRawDigit(position, fromSegments(segments));
+    }
+
+    /**
      * Sets the raw digit at the specified position. This method will take a byte value which gets processed by the underlying chip.
      * The byte represents a bitset where each bit belongs to a specific segment and decides if its enabled (1) or disabled (0).
      * Valid values can be crafted using the {@link #fromSegments(Segment...)} method.
@@ -237,7 +248,7 @@ public class SevenSegmentComponent extends HT16K33 {
      * @param position Desired position of digit from 0-3.
      * @param value    Raw byte value to be displayed.
      */
-    public void setRawDigit(int position, byte value) {
+    protected void setRawDigit(int position, byte value) {
         buffer[resolveDigitIndex(position)] = value;
     }
 
@@ -248,7 +259,7 @@ public class SevenSegmentComponent extends HT16K33 {
      * @param position Desired position of digit from 0-3.
      * @return Raw byte value at specified position.
      */
-    public byte getRawDigit(int position) {
+    protected byte getRawDigit(int position) {
         return buffer[resolveDigitIndex(position)];
     }
 
@@ -277,7 +288,7 @@ public class SevenSegmentComponent extends HT16K33 {
      * @param segments Segments which should be enabled to together
      * @return Raw digit value as byte
      */
-    public static byte fromSegments(Segment... segments) {
+    protected static byte fromSegments(Segment... segments) {
         byte result = 0;
         for (Segment segment : segments) {
             result |= segment.getValue();
@@ -324,6 +335,10 @@ public class SevenSegmentComponent extends HT16K33 {
 
         byte getValue() {
             return this.value;
+        }
+
+        public static byte test(Segment... segments) {
+            return 0;
         }
     }
 }
