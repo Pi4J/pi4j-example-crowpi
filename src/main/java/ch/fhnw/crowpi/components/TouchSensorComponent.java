@@ -98,8 +98,8 @@ public class TouchSensorComponent {
     /**
      * Configure Digital Input
      *
-     * @param pi4j PI4J Context
-     * @param address GPIO Address of touch sensor
+     * @param pi4j     PI4J Context
+     * @param address  GPIO Address of touch sensor
      * @param debounce debounce time in microseconds
      * @return return Digital Input configuration
      */
