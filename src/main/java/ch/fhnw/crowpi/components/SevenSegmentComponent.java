@@ -281,6 +281,15 @@ public class SevenSegmentComponent extends HT16K33 {
     }
 
     /**
+     * Returns the created I2C instance for the seven-segment display
+     *
+     * @return I2C instance
+     */
+    protected I2C getI2C() {
+        return this.i2c;
+    }
+
+    /**
      * Helper method for creating a raw digit value (byte) from 0-n segments.
      * This can be used together with the {@link Segment} enumeration to create and display your own digits.
      * All segments passed to this method will be flagged as active and enabled when passed to {@link #setRawDigit(int, byte)}

@@ -34,7 +34,7 @@ public class HT16K33 {
      * Internal buffer where all digits get stored before being flushed to the display.
      */
     protected final byte[] buffer = new byte[BUFFER_SIZE];
-    private final I2C i2c;
+    protected final I2C i2c;
 
     /**
      * Creates a new HT16K33 instance using the given I2C instance from Pi4J.
