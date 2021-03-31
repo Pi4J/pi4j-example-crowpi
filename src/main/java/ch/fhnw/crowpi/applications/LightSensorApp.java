@@ -4,6 +4,9 @@ import ch.fhnw.crowpi.Application;
 import ch.fhnw.crowpi.components.LightSensorComponent;
 import com.pi4j.context.Context;
 
+/**
+ * Measures the current illuminance with the CrowPi Light sensor and prints some outputs to the user.
+ */
 public class LightSensorApp implements Application {
 
     /**

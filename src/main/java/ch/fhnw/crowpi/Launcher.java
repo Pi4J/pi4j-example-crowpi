@@ -3,6 +3,7 @@ package ch.fhnw.crowpi;
 import ch.fhnw.crowpi.applications.BuzzerApp;
 import ch.fhnw.crowpi.applications.ExampleApp;
 import ch.fhnw.crowpi.applications.LightSensorApp;
+import ch.fhnw.crowpi.applications.TouchSensorApp;
 import ch.fhnw.crowpi.helpers.CrowPiPlatform;
 import com.pi4j.Pi4J;
 import com.pi4j.context.Context;
@@ -28,6 +29,7 @@ public final class Launcher implements Runnable {
     private static final List<Application> APPLICATIONS = new ArrayList<>(Arrays.asList(
         new BuzzerApp(),
         new LightSensorApp(),
+        new TouchSensorApp(),
         new ExampleApp()
     ));
 
