@@ -133,13 +133,20 @@ public class SevenSegmentComponent extends HT16K33 {
             // Set digit to character at current index and advance
             setDigit(pos, s.charAt(idx++));
 
-            // Determine next char or exit early if we reached the end
-            if (idx >= s.length()) break;
+            // Exit early if we reached the end
+            if (idx >= s.length()) {
+                break;
+            }
 
             // Set decimal point if next character is dot
             if (s.charAt(idx) == '.') {
                 setDecimalPoint(pos, true);
                 idx++;
+            }
+
+            // Exit early if we reached the end
+            if (idx >= s.length()) {
+                break;
             }
 
             // Advance to next digit
@@ -273,8 +280,9 @@ public class SevenSegmentComponent extends HT16K33 {
     private int resolveDigitIndex(int position) {
         // Ensure position is within bounds
         final var maxPosition = DIGIT_INDICES.length - 1;
-        if (position < 0 || position > maxPosition)
+        if (position < 0 || position > maxPosition) {
             throw new IndexOutOfBoundsException("Digit position is outside of range 0-" + maxPosition);
+        }
 
         // Lookup actual index based on position
         return DIGIT_INDICES[position];
