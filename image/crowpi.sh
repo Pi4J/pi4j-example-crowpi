@@ -25,9 +25,10 @@ done
 echo 'root:crowpi' | chpasswd
 echo 'pi:crowpi' | chpasswd
 
-# Install software packages
+# Install and upgrade software packages
 export DEBIAN_FRONTEND=noninteractive
 apt-get -qqy update
+apt-get -qqy -o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-confold' upgrade
 apt-get -qqy install \
   git \
   imagemagick \
