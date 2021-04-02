@@ -1,5 +1,5 @@
 [Unit]
-Description=Set dynamic FHNW wallpaper
+Description=Update FHNW wallpaper
 
 [Service]
 Type=oneshot
