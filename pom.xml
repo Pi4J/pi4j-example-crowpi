@@ -20,7 +20,7 @@
         <crowpi.remote.host/>
         <crowpi.remote.port>22</crowpi.remote.port>
         <crowpi.remote.username>pi</crowpi.remote.username>
-        <crowpi.remote.password>raspberry</crowpi.remote.password>
+        <crowpi.remote.password>crowpi</crowpi.remote.password>
         <crowpi.remote.target>/home/pi/deploy</crowpi.remote.target>
         <crowpi.remote.jvmOptions/>
 
@@ -262,8 +262,8 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <executable>java</executable>
-                            <commandlineArgs>--module-path ${project.build.directory}/distribution --module ${crowpi.launcher.class} ${crowpi.launcher.args}</commandlineArgs>
+                            <executable>sudo</executable>
+                            <commandlineArgs>java --module-path ${project.build.directory}/distribution --module ${crowpi.launcher.class} ${crowpi.launcher.args}</commandlineArgs>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -308,7 +308,7 @@
                                         <sshexec host="${crowpi.remote.host}" port="${crowpi.remote.port}"
                                                  username="${crowpi.remote.username}" password="${crowpi.remote.password}" trust="true"
                                                  failonerror="false" usepty="true" useSystemIn="true"
-                                                 command="java ${crowpi.remote.jvmOptions} --module-path ${crowpi.remote.target} --module ${crowpi.launcher.class} ${crowpi.launcher.args}"/>
+                                                 command="sudo java ${crowpi.remote.jvmOptions} --module-path ${crowpi.remote.target} --module ${crowpi.launcher.class} ${crowpi.launcher.args}"/>
                                     </target>
                                 </configuration>
                             </execution>
