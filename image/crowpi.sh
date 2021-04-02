@@ -5,7 +5,7 @@ raspi-config nonint do_hostname crowpi
 
 # Change localization options
 raspi-config nonint do_change_locale en_US.UTF-8
-raspi-config nonint do_configure_keyboard ch
+raspi-config nonint do_configure_keyboard us
 raspi-config nonint do_change_timezone Europe/Zurich
 
 # Enable remote management
