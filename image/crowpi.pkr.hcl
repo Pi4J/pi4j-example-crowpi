@@ -52,19 +52,21 @@ build {
     script = "crowpi.sh"
   }
 
-  post-processors {
-    post-processor "compress" {
-      output = "crowpi.img.zip"
-      compression_level = 6
-      keep_input_artifact = false
-    }
+  post-processor "compress" {
+    output = "crowpi.img.zip"
+    compression_level = 6
+  }
 
-    post-processor "checksum" {
-      checksum_types = [
-        "sha256"
-      ]
-      output = "crowpi.img.zip.sha256"
-      keep_input_artifact = true
-    }
+  post-processor "artifice" {
+    files = [
+      "crowpi.img.zip"
+    ]
+  }
+
+  post-processor "checksum" {
+    checksum_types = [
+      "sha256"
+    ]
+    output = "crowpi.img.zip.sha256"
   }
 }
