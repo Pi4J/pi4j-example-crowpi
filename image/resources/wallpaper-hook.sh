@@ -58,8 +58,8 @@ convert "${WP_INPUT_FILE}" \
 	-gravity center \
 	-pointsize 80 \
 	-fill white \
-	-draw "text 0,250 'LAN IPv4: ${lan_address}'" \
-	-draw "text 0,350 'WLAN IPv4: ${wlan_address}'" \
+	-draw "text 0,250 'Ethernet: ${lan_address}'" \
+	-draw "text 0,350 'WLAN: ${wlan_address}'" \
 	-draw "text 0,450 'Hostname: $(uname -n)'" \
 	"${WP_OUTPUT_FILE}.new"
 
