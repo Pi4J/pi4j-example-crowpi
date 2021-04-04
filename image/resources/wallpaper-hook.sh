@@ -2,7 +2,8 @@
 
 # Configuration variables
 BASE_PATH="/opt/fhnw"
-INTERFACE_NAME="wlan0"
+LAN_INTERFACE="eth0"
+WLAN_INTERFACE="wlan0"
 WP_INPUT_FILE="${BASE_PATH}/wallpaper-static.jpg"
 WP_OUTPUT_FILE="${BASE_PATH}/wallpaper-dynamic.jpg"
 
@@ -11,8 +12,8 @@ if [ "${reason:-}" = "ROUTERADVERT" ]; then
 	exit 0
 fi
 
-# Skip if this does not affect our monitored interface
-if [ "${interface:-}" != "${INTERFACE_NAME}" ]; then
+# Skip if this does not affect our monitored interfaces
+if [ "${interface:-}" != "${LAN_INTERFACE}" ] && [ "${interface:-}" != "${WLAN_INTERFACE}" ]; then
   exit 0
 fi
 
@@ -20,19 +21,35 @@ fi
 case "${reason:-}" in
   # If our interface has just been bound, use the passed IP address
   BOUND)
-    address="${new_ip_address:-}"
+    if [ "${interface}" = "${LAN_INTERFACE}" ]; then
+      lan_address="${new_ip_address:-}"
+    elif [ "${interface}" = "${WLAN_INTERFACE}" ]; then
+      wlan_address="${new_ip_address:-}"
+    fi
     ;;
   # If our lease expired or interface went down, treat as not connected
   EXPIRE | NOCARRIER)
-    address="<not connected>"
+    if [ "${interface}" = "${LAN_INTERFACE}" ]; then
+      lan_address="<not connected>"
+    elif [ "${interface}" = "${WLAN_INTERFACE}" ]; then
+      wlan_address="${new_ip_address:-}"
+    fi
     ;;
 esac
 
-# If IP address is still empty and therefore unknown, attempt to determine from system
-if [ -z "${address:-}" ]; then
-  address="$(ip -4 a s "${INTERFACE_NAME}" | grep -Eo 'inet [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | awk '{print $2}')"
-  if [ -z "${address}" ]; then
-	  address="<not connected>"
+# Detect LAN IP address from system if still unknown
+if [ -z "${lan_address:-}" ]; then
+  lan_address="$(ip -4 a s "${LAN_INTERFACE}" | grep -Eo 'inet [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | awk '{print $2}')"
+  if [ -z "${lan_address}" ]; then
+	  lan_address="<not connected>"
+  fi
+fi
+
+# Detect WLAN IP address from system if still unknown
+if [ -z "${wlan_address:-}" ]; then
+  wlan_address="$(ip -4 a s "${WLAN_INTERFACE}" | grep -Eo 'inet [0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | awk '{print $2}')"
+  if [ -z "${wlan_address}" ]; then
+	  wlan_address="<not connected>"
   fi
 fi
 
@@ -41,8 +58,9 @@ convert "${WP_INPUT_FILE}" \
 	-gravity center \
 	-pointsize 80 \
 	-fill white \
-	-draw "text 0,300 'WLAN IPv4: ${address}'" \
-	-draw "text 0,400 'Hostname: $(uname -n)'" \
+	-draw "text 0,250 'LAN IPv4: ${lan_address}'" \
+	-draw "text 0,350 'WLAN IPv4: ${wlan_address}'" \
+	-draw "text 0,450 'Hostname: $(uname -n)'" \
 	"${WP_OUTPUT_FILE}.new"
 
 # Atomically replace wallpaper if different from current one
