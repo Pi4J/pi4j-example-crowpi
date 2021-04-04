@@ -56,10 +56,16 @@ sudo -u pi install -Dm 0644 /tmp/resources/ui/gtk3-style.css /home/pi/.config/gt
 # > save_lxpanel_settings()
 sudo -u pi install -Dm 0644 /etc/xdg/lxpanel/LXDE-pi/panels/panel /home/pi/.config/lxpanel/LXDE-pi/panels/panel
 sudo -u pi sed -i 's/iconsize=.*/iconsize=52/g' /home/pi/.config/lxpanel/LXDE-pi/panels/panel
-sudo -u pi sed -i 's/height=.*/height=36/g' /home/pi/.config/lxpanel/LXDE-pi/panels/panel
+sudo -u pi sed -i 's/height=.*/height=52/g' /home/pi/.config/lxpanel/LXDE-pi/panels/panel
 sudo -u pi sed -i 's/MaxTaskWidth=.*/MaxTaskWidth=300/g' /home/pi/.config/lxpanel/LXDE-pi/panels/panel
 # > save_qt_settings()
 sudo -u pi install -Dm 0644 /tmp/resources/ui/qt5-global.conf /home/pi/.config/qt5ct/qt5ct.conf
+# > save_lxterm_settings()
+sudo -u pi install -Dm 0644 /tmp/resources/ui/lxterminal.conf /home/pi/.config/lxterminal/lxterminal.conf
+
+# Override system-wide default wallpaper
+sed -i 's/wallpaper=.*/wallpaper=\/opt\/fhnw\/wallpaper-static.jpg/g' /etc/xdg/pcmanfm/LXDE-pi/desktop-items-*.conf
+sed -i 's/wallpaper_mode=.*/wallpaper_mode=stretch/g' /etc/xdg/pcmanfm/LXDE-pi/desktop-items-*.conf
 
 # Deploy dynamic wallpaper script and resources
 sudo -u pi install -Dm 0644 /tmp/resources/wallpaper-autostart.desktop /home/pi/.config/autostart/fhnw-wallpaper.desktop
