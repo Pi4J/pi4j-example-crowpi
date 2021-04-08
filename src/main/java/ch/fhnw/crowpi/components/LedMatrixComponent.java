@@ -8,6 +8,8 @@ import com.pi4j.io.spi.SpiConfig;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -219,6 +221,10 @@ public class LedMatrixComponent extends MAX7219 {
     /**
      * Prints the given string to the LED matrix by scrolling each character in from left to right with the default scroll delay.
      * This method is blocking until the string has been fully printed and will both start and end with an empty display.
+     * <p>
+     * A pattern in the format "{SYMBOL-NAME}" can be used to include a symbol with the given name in the string.
+     * E.g. if "{HEART}" occurs within the string, it will be automatically replaced with the {@link Symbol#HEART} symbol.
+     * If a pattern includes a symbol which could not be found, it is silently ignored and added as-is.
      *
      * @param string String to be displayed
      */
@@ -229,6 +235,10 @@ public class LedMatrixComponent extends MAX7219 {
     /**
      * Prints the given string to the LED matrix by scrolling each character in towards the given direction with the default scroll delay.
      * This method is blocking until the string has been fully printed and will both start and end with an empty display.
+     * <p>
+     * A pattern in the format "{SYMBOL-NAME}" can be used to include a symbol with the given name in the string.
+     * E.g. if "{HEART}" occurs within the string, it will be automatically replaced with the {@link Symbol#HEART} symbol.
+     * If a pattern includes a symbol which could not be found, it is silently ignored and added as-is.
      *
      * @param string          String to be displayed
      * @param scrollDirection Direction towards character should be scrolled in
@@ -240,17 +250,97 @@ public class LedMatrixComponent extends MAX7219 {
     /**
      * Prints the given string to the LED matrix by scrolling each character in towards the given direction with a custom scroll delay.
      * This method is blocking until the string has been fully printed and will both start and end with an empty display.
+     * <p>
+     * A pattern in the format "{SYMBOL-NAME}" can be used to include a symbol with the given name in the string.
+     * E.g. if "{HEART}" occurs within the string, it will be automatically replaced with the {@link Symbol#HEART} symbol.
+     * If a pattern includes a symbol which could not be found, it is silently ignored and added as-is.
      *
      * @param string          String to be displayed
      * @param scrollDirection Direction towards character should be scrolled in
      * @param scrollDelay     Delay in milliseconds between scroll operations
      */
     public void print(String string, Direction scrollDirection, long scrollDelay) {
+        // Convert string to list of symbols
+        final var symbols = convertToSymbols(string);
+
+        // Immediately print a space to clear the current display
         print(Symbol.SPACE);
-        for (int i = 1; i < string.length(); i++) {
-            transition(lookupSymbol(string.charAt(i)), scrollDirection, scrollDelay);
+
+        // Display each symbol one after another by transitioning them into the display
+        for (Symbol symbol : symbols) {
+            transition(symbol, scrollDirection, scrollDelay);
         }
+
+        // Transition to a space symbol to clear the current display at the end
+        // Without this we would still see the last letter of the provided string
         transition(Symbol.SPACE, scrollDirection, scrollDelay);
+    }
+
+    /**
+     * Converts a string into a list of symbols to print on the 8x8 LED matrix.
+     * Any characters not supported by the symbol table will throw an {@link IllegalArgumentException}.
+     * <p>
+     * This method will also search for Symbol reference patterns in the provided string, which are represented as "{SYMBOL-NAME}".
+     * If this pattern is found within the string, this method will try to lookup the symbol and if found add it instead of the pattern.
+     * If no symbol with a given name is found, it gets silently ignored and added as-is to the list of output symbols.
+     *
+     * @param string String to parse and convert to symbols
+     * @return List of symbols to print for representing the given string
+     */
+    private List<Symbol> convertToSymbols(String string) {
+        final List<Symbol> symbols = new ArrayList<>();
+
+        // Initialize state for our loop
+        final StringBuilder buffer = new StringBuilder();
+        boolean referenceMode = false;
+
+        // Loop over each character of the string and look for Symbol references
+        for (int i = 0; i < string.length(); i++) {
+            // Get the character at the current position within the string
+            char c = string.charAt(i);
+
+            if (c == '{') {
+                // We encountered an opening curly brace, this might be the start of a Symbol reference
+                // Enable reference mode and silently skip this character for now
+                referenceMode = true;
+            } else if (referenceMode && c == '}') {
+                try {
+                    // Attempt to find a symbol with the given name written between the curly braces
+                    final var symbolName = buffer.toString().toUpperCase();
+                    final var symbol = Symbol.valueOf(symbolName);
+                    symbols.add(symbol);
+                } catch (IllegalArgumentException e) {
+                    // We have not found a symbol with this name, so add the buffer as-is to our list of symbols to output
+                    // We also have to add the curly braces here, as they are NOT contained within the buffer
+                    symbols.add(Symbol.BRACE_LEFT);
+                    for (int j = 0; j < buffer.length(); j++) {
+                        symbols.add(lookupSymbol(buffer.charAt(j)));
+                    }
+                    symbols.add(Symbol.BRACE_RIGHT);
+                } finally {
+                    // Clear the buffer and disable reference mode
+                    buffer.delete(0, buffer.length());
+                    referenceMode = false;
+                }
+            } else if (referenceMode) {
+                // We are in reference mode but this is not a closing curly brace, so lets add the character to the buffer
+                buffer.append(c);
+            } else {
+                // We are not in reference mode and therefore not currently processing any Symbol reference
+                // Directly lookup the given character in the symbol table and add to list of symbols
+                symbols.add(lookupSymbol(c));
+            }
+        }
+
+        // If we are still in reference mode, add the opening curly brace and contents of the buffer as-is
+        if (referenceMode) {
+            symbols.add(Symbol.BRACE_LEFT);
+            for (int i = 0; i < buffer.length(); i++) {
+                symbols.add(lookupSymbol(buffer.charAt(i)));
+            }
+        }
+
+        return symbols;
     }
 
     /**

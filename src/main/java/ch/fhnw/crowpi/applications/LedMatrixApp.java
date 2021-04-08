@@ -2,57 +2,61 @@ package ch.fhnw.crowpi.applications;
 
 import ch.fhnw.crowpi.Application;
 import ch.fhnw.crowpi.components.LedMatrixComponent;
+import ch.fhnw.crowpi.components.LedMatrixComponent.Symbol;
 import ch.fhnw.crowpi.components.definitions.Direction;
 import com.pi4j.context.Context;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
-
+/**
+ * Demonstrates the countless abilities of the 8x8 LED matrix by showing multiple demo examples one after another.
+ */
 public class LedMatrixApp implements Application {
     @Override
     public void execute(Context pi4j) {
+        // Initialize and enable LED matrix with medium brightness
         final var matrix = new LedMatrixComponent(pi4j);
         matrix.setEnabled(true);
-        matrix.setBrightness(1);
+        matrix.setBrightness(7);
 
-//        // Test Graphics2D lambda call
-//        matrix.draw(graphics -> {
-//            graphics.drawLine(0, 0, 7, 7);
-//            graphics.drawLine(7, 0, 0, 7);
-//            graphics.drawOval(1, 1, 5, 5);
-//        });
-//        sleep(500);
-//
-//        // Test manual scrolling of custom BufferedImage
-//        final var image = new BufferedImage(80, 8, BufferedImage.TYPE_BYTE_BINARY);
-//        final var graphics = image.createGraphics();
-//
-//        graphics.setColor(Color.WHITE);
-//        graphics.fillRect(0, 0, 80, 8);
-//        graphics.setColor(Color.BLACK);
-//        graphics.setFont(new Font("pixelmix", Font.PLAIN, 9));
-//        graphics.drawString("The cake is a lie", 0, 7);
-//
-//        for (int x = 0; x < image.getWidth() - 8; x++) {
-//            matrix.draw(image, x, 0);
-//            sleep(100);
-//        }
-//
-//        // Test integrated print function with scrolling
-//        matrix.print("Still Alive");
+        // Draw a cross with a circle over it using a Graphics2D lambda function
+        // Further commands for Graphics2D can be found in the official Java documentation
+        // This can be adjusted to draw your own symbols and images on the LED matrix
+        matrix.draw(graphics -> {
+            graphics.drawLine(0, 0, 7, 7);
+            graphics.drawLine(7, 0, 0, 7);
+            graphics.drawOval(1, 1, 5, 5);
+        });
 
-        for(int i = 0; i < 10; i++) {
-            matrix.transition(LedMatrixComponent.Symbol.ARROW_UP, Direction.UP);
-            matrix.transition(LedMatrixComponent.Symbol.ARROW_DOWN, Direction.DOWN);
-            matrix.transition(LedMatrixComponent.Symbol.ARROW_LEFT, Direction.LEFT);
-            matrix.transition(LedMatrixComponent.Symbol.ARROW_RIGHT, Direction.RIGHT);
-        }
-    }
-
-    public void sleep(long delay) {
+        // Sleep for a second before moving to the next example...
         try {
-            Thread.sleep(delay);
+            Thread.sleep(1000);
         } catch (InterruptedException ignored) {
         }
+
+        // Display list of smiley symbols with a short delay between each one
+        final var symbols = new Symbol[]{
+            Symbol.SMILEY_HAPPY,
+            Symbol.SMILEY_SAD,
+            Symbol.SMILEY_NEUTRAL,
+            Symbol.SMILEY_SHOCKED
+        };
+        for (Symbol symbol : symbols) {
+            matrix.print(symbol);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) {
+            }
+        }
+
+        // Transition to all four arrows with each sliding in from the direction its pointing towards
+        matrix.transition(Symbol.ARROW_UP, Direction.UP);
+        matrix.transition(Symbol.ARROW_DOWN, Direction.DOWN);
+        matrix.transition(Symbol.ARROW_LEFT, Direction.LEFT);
+        matrix.transition(Symbol.ARROW_RIGHT, Direction.RIGHT);
+
+        // Print a long text which gets automatically scrolled across the LED matrix
+        // Any text written between curly braces gets automatically looked up in the Symbol table
+        // In this example, "{HEART}" will be replaced with the actual "Symbol.HEART" value
+        // If such a pattern exists but no symbol is found with that name, it gets ignored and printed as-is.
+        matrix.print("CrowPi + Pi4J = {HEART}");
     }
 }
