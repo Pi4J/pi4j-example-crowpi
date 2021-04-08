@@ -10,35 +10,76 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
+/**
+ * Implementation of the CrowPi LED matrix using SPI with Pi4J
+ */
 public class LedMatrixComponent extends MAX7219 {
+    /**
+     * Default SPI channel for the LED matrix on the CrowPi
+     */
     protected static final int DEFAULT_CHANNEL = 1;
+    /**
+     * Default SPI baud rate for the LED matrix on the CrowPi
+     */
     protected static final int DEFAULT_BAUD_RATE = 8000000;
+    /**
+     * Default delay between scroll operations in milliseconds
+     */
+    protected static final long DEFAULT_SCROLL_DELAY = 50;
+    /**
+     * Default direction for scroll operations
+     */
+    protected static final Direction DEFAULT_SCROLL_DIRECTION = Direction.LEFT;
 
+    /**
+     * Creates a new LED matrix component with the default channel and baud rate.
+     *
+     * @param pi4j Pi4J context
+     */
     public LedMatrixComponent(Context pi4j) {
         this(pi4j, DEFAULT_CHANNEL, DEFAULT_BAUD_RATE);
     }
 
+    /**
+     * Creates a new LED matrix component with a custom channel and baud rate.
+     *
+     * @param pi4j    Pi4J context
+     * @param channel SPI channel
+     * @param baud    SPI baud rate
+     */
     public LedMatrixComponent(Context pi4j, int channel, int baud) {
         super(pi4j.create(buildSpiConfig(pi4j, channel, baud)));
     }
 
-    private static SpiConfig buildSpiConfig(Context pi4j, int channel, int baud) {
-        return Spi.newConfigBuilder(pi4j)
-            .id("SPI-")
-            .name("LED Matrix")
-            .address(channel)
-            .baud(baud)
-            .build();
-    }
-
+    /**
+     * Scrolls the display towards the given direction and leaves the now empty row/column empty.
+     *
+     * @param direction Desired scroll direction
+     */
     public void scroll(Direction direction) {
         scroll(direction, ScrollMode.NORMAL, null, 0);
     }
 
+    /**
+     * Rotates the display towards the given direction and wraps around the affected row/column.
+     * E.g. if {@link Direction#LEFT} is used, the column which falls out on the left will be the new rightmost column.
+     *
+     * @param direction Desired scroll direction
+     */
     public void rotate(Direction direction) {
         scroll(direction, ScrollMode.ROTATE, null, 0);
     }
 
+    /**
+     * Scrolls the display towards the given direction and fills the empty row/column based on scroll mode.
+     * This helper method calls the appropriate internal functions and MUST not be exposed as it contains internal logic.
+     * The scrolling operating will be immediately visible on the display.
+     *
+     * @param direction  Desired scroll direction
+     * @param scrollMode Desired scroll mode
+     * @param newBuffer  Only if {@link ScrollMode#REPLACE}: New buffer for replacement values
+     * @param newOffset  Only if {@link ScrollMode#REPLACE}: Desired row/column offset for new buffer
+     */
     protected void scroll(Direction direction, ScrollMode scrollMode, byte[] newBuffer, int newOffset) {
         // Call internal scroll function based on direction
         // This has been split up into separate methods to keep this method tidy
@@ -61,6 +102,14 @@ public class LedMatrixComponent extends MAX7219 {
         refresh();
     }
 
+    /**
+     * Scrolls the display upwards and fills the now empty row based on scroll mode.
+     * This works by copying the buffer array with an offset using {@link System#arraycopy(Object, int, Object, int, int)}.
+     *
+     * @param scrollMode Desired scroll mode
+     * @param newBuffer  Only if {@link ScrollMode#REPLACE}: New buffer for replacement values
+     * @param newOffset  Only if {@link ScrollMode#REPLACE}: Desired row offset for new buffer
+     */
     @SuppressWarnings("SuspiciousSystemArraycopy")
     private void scrollUp(ScrollMode scrollMode, byte[] newBuffer, int newOffset) {
         // Preserve first row and scroll buffer upwards
@@ -81,6 +130,14 @@ public class LedMatrixComponent extends MAX7219 {
         buffer[HEIGHT - 1] = lastRow;
     }
 
+    /**
+     * Scrolls the display downwards and fills the now empty row based on scroll mode.
+     * This works by copying the buffer array with an offset using {@link System#arraycopy(Object, int, Object, int, int)}.
+     *
+     * @param scrollMode Desired scroll mode
+     * @param newBuffer  Only if {@link ScrollMode#REPLACE}: New buffer for replacement values
+     * @param newOffset  Only if {@link ScrollMode#REPLACE}: Desired row offset for new buffer
+     */
     @SuppressWarnings("SuspiciousSystemArraycopy")
     private void scrollDown(ScrollMode scrollMode, byte[] newBuffer, int newOffset) {
         // Preserve last row and scroll buffer downwards
@@ -101,6 +158,14 @@ public class LedMatrixComponent extends MAX7219 {
         buffer[0] = firstRow;
     }
 
+    /**
+     * Scrolls the display to the left and fills the now empty column based on scroll mode.
+     * This works by shifting each row to the left and combining the new column value with a binary OR.
+     *
+     * @param scrollMode Desired scroll mode
+     * @param newBuffer  Only if {@link ScrollMode#REPLACE}: New buffer for replacement values
+     * @param newOffset  Only if {@link ScrollMode#REPLACE}: Desired column offset for new buffer
+     */
     private void scrollLeft(ScrollMode scrollMode, byte[] newBuffer, int newOffset) {
         // Scroll each row individually to the left
         for (int row = 0; row < HEIGHT; row++) {
@@ -122,6 +187,14 @@ public class LedMatrixComponent extends MAX7219 {
         }
     }
 
+    /**
+     * Scrolls the display to the right and fills the now empty column based on scroll mode.
+     * This works by shifting each row to the right and combining the new column value with a binary OR.
+     *
+     * @param scrollMode Desired scroll mode
+     * @param newBuffer  Only if {@link ScrollMode#REPLACE}: New buffer for replacement values
+     * @param newOffset  Only if {@link ScrollMode#REPLACE}: Desired column offset for new buffer
+     */
     private void scrollRight(ScrollMode scrollMode, byte[] newBuffer, int newOffset) {
         // Scroll each row individually to the right
         for (int row = 0; row < HEIGHT; row++) {
@@ -143,37 +216,116 @@ public class LedMatrixComponent extends MAX7219 {
         }
     }
 
-    protected void transition(Direction direction, byte[] newBuffer) {
-        for (int i = 0; i < 8; i++) {
-            scroll(direction, ScrollMode.REPLACE, newBuffer, i);
+    /**
+     * Prints the given string to the LED matrix by scrolling each character in from left to right with the default scroll delay.
+     * This method is blocking until the string has been fully printed and will both start and end with an empty display.
+     *
+     * @param string String to be displayed
+     */
+    public void print(String string) {
+        print(string, DEFAULT_SCROLL_DIRECTION);
+    }
+
+    /**
+     * Prints the given string to the LED matrix by scrolling each character in towards the given direction with the default scroll delay.
+     * This method is blocking until the string has been fully printed and will both start and end with an empty display.
+     *
+     * @param string          String to be displayed
+     * @param scrollDirection Direction towards character should be scrolled in
+     */
+    public void print(String string, Direction scrollDirection) {
+        print(string, scrollDirection, DEFAULT_SCROLL_DELAY);
+    }
+
+    /**
+     * Prints the given string to the LED matrix by scrolling each character in towards the given direction with a custom scroll delay.
+     * This method is blocking until the string has been fully printed and will both start and end with an empty display.
+     *
+     * @param string          String to be displayed
+     * @param scrollDirection Direction towards character should be scrolled in
+     * @param scrollDelay     Delay in milliseconds between scroll operations
+     */
+    public void print(String string, Direction scrollDirection, long scrollDelay) {
+        print(Symbol.SPACE);
+        for (int i = 1; i < string.length(); i++) {
+            transition(lookupSymbol(string.charAt(i)), scrollDirection, scrollDelay);
+        }
+        transition(Symbol.SPACE, scrollDirection, scrollDelay);
+    }
+
+    /**
+     * Prints the given symbol on the LED matrix, which will be immediately displayed.
+     *
+     * @param symbol Symbol to display
+     */
+    public void print(Symbol symbol) {
+        System.arraycopy(symbol.getRows(), 0, buffer, 0, HEIGHT);
+        refresh();
+    }
+
+    /**
+     * Transitions the current LED matrix display to the given symbol by gradually scrolling the symbol in.
+     * This works by scrolling each column in one-by-one towards the default scroll direction with the default scroll delay.
+     *
+     * @param symbol New symbol to display
+     */
+    public void transition(Symbol symbol) {
+        transition(symbol, DEFAULT_SCROLL_DIRECTION, DEFAULT_SCROLL_DELAY);
+    }
+
+    /**
+     * Transitions the current LED matrix display to the given symbol by gradually scrolling the symbol in with the default scroll delay.
+     * This works by scrolling each column in one-by-one towards the given scroll direction with the default scroll delay.
+     *
+     * @param symbol          New symbol to display
+     * @param scrollDirection Desired scrolling direction, e.g. {@link Direction#LEFT} means the new symbol scrolls in from right towards left
+     */
+    public void transition(Symbol symbol, Direction scrollDirection) {
+        transition(symbol, scrollDirection, DEFAULT_SCROLL_DELAY);
+    }
+
+    /**
+     * Transitions the current LED matrix display to the given symbol by gradually scrolling the symbol in.
+     * This works by scrolling each column in one-by-one towards the given scroll direction with the specified scroll delay.
+     *
+     * @param symbol          New symbol to display
+     * @param scrollDirection Desired scrolling direction, e.g. {@link Direction#LEFT} means the new symbol scrolls in from right towards left
+     * @param scrollDelay     Delay in milliseconds between each scrolled column
+     */
+    public void transition(Symbol symbol, Direction scrollDirection, long scrollDelay) {
+        for (int i = 0; i < WIDTH; i++) {
+            scroll(scrollDirection, ScrollMode.REPLACE, symbol.getRows(), i);
             try {
-                Thread.sleep(50);
+                Thread.sleep(scrollDelay);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
     }
 
-    public void print(String s) {
-        // Add spaces around string to fully transition from empty to string to empty
-        s = " " + s + " ";
-
-        print(s.charAt(0));
-        for (int i = 1; i < s.length(); i++) {
-            final var symbol = Symbol.getByChar(s.charAt(i));
-            if (symbol != null) {
-                transition(Direction.LEFT, symbol.getRows());
-            }
-        }
-    }
-
-    public void print(char c) {
+    /**
+     * Returns a {@link Symbol} which is associated with the given ASCII character.
+     * Throws an {@link IllegalArgumentException} if no symbol associated with this character was found.
+     *
+     * @param c Character to lookup
+     * @return Symbol associated to character
+     */
+    protected Symbol lookupSymbol(char c) {
         final var symbol = Symbol.getByChar(c);
-        if (symbol != null) {
-            System.arraycopy(symbol.getRows(), 0, buffer, 0, HEIGHT);
-            refresh();
+        if (symbol == null) {
+            throw new IllegalArgumentException("Character is not supported by LED matrix");
         }
+
+        return symbol;
     }
 
+    /**
+     * Initializes a blank image with the same size as the LED matrix and calls the given consumer with a {@link Graphics2D} instance.
+     * This allows to easily draw on the screen using regular drawing commands like {@link Graphics2D#drawLine(int, int, int, int)}.
+     * The drawn image will be immediately displayed on the LED matrix.
+     *
+     * @param drawer Lambda function which draws on new image
+     */
     public void draw(Consumer<Graphics2D> drawer) {
         // Create new 1-bit buffered image with same size as LED matrix
         final var image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_BYTE_BINARY);
@@ -186,10 +338,28 @@ public class LedMatrixComponent extends MAX7219 {
         draw(image);
     }
 
+    /**
+     * Displays a specific area of the given {@link BufferedImage} on the LED matrix by enabling LEDs for non-black colors.
+     * The area will start at the given X/Y position and has the same width and height as the LED matrix.
+     * You MUST ensure that the full width/height is still within bounds or a {@link java.awt.image.RasterFormatException} will be thrown.
+     * The drawn image will be immediately displayed on the LED matrix.
+     *
+     * @param image Image to partially display on the LED matrix
+     * @param x     X coordinate where visible area should start
+     * @param y     Y coordinate where visible area should start
+     */
     public void draw(BufferedImage image, int x, int y) {
         draw(image.getSubimage(x, y, WIDTH, HEIGHT));
     }
 
+    /**
+     * Displays the given {@link BufferedImage} on the LED matrix by enabling LEDs for non-black colors.
+     * The passed image MUST have the same size as the LED matrix and of type {@link BufferedImage#TYPE_BYTE_BINARY}.
+     * Use the overloaded method {@link #draw(BufferedImage, int, int)} to only display a specific area of a bigger image.
+     * The drawn image will be immediately displayed on the LED matrix.
+     *
+     * @param image Image to display on the LED matrix
+     */
     public void draw(BufferedImage image) {
         // Ensure image has correct type
         if (image.getType() != BufferedImage.TYPE_BYTE_BINARY) {
@@ -217,17 +387,74 @@ public class LedMatrixComponent extends MAX7219 {
         refresh();
     }
 
+    /**
+     * Helper method for extracting a single bit from a byte value.
+     * The result will be returned as an integer to guarantee that further bit operations are handled correctly.
+     *
+     * @param value Byte value to read
+     * @param bit   Bit which should be extracted in range 0-7
+     * @return Extracted bit (0 or 1) as integer
+     */
     private static int getBitFromByte(byte value, int bit) {
         return (((value & 0xFF) >> bit) & 0x1);
     }
 
+    /**
+     * Builds a new SPI instance for the LED matrix
+     *
+     * @param pi4j    Pi4J context
+     * @param channel SPI channel
+     * @param baud    SPI baud rate
+     * @return SPI instance
+     */
+    private static SpiConfig buildSpiConfig(Context pi4j, int channel, int baud) {
+        return Spi.newConfigBuilder(pi4j)
+            .id("SPI-")
+            .name("LED Matrix")
+            .address(channel)
+            .baud(baud)
+            .build();
+    }
+
+    /**
+     * Specifies which mode should be used while scrolling the LED matrix.
+     */
     protected enum ScrollMode {
+        /**
+         * Normally scroll the LED matrix in one direction, causing one row or column to be empty.
+         */
         NORMAL,
+        /**
+         * Scroll the LED matrix in one direction and wrap the row or column around to the other side.
+         */
         ROTATE,
+        /**
+         * Scroll the LED matrix in one direction and replace the now empty row or column with values from a new buffer.
+         * This can be used to gradually transition from one buffer to another via scrolling.
+         */
         REPLACE
     }
 
+    /**
+     * Mapping of various symbols to their respective 8x8 encoding.
+     * Each symbol can be linked to an optional ASCII code which can be looked up using {@link #getByChar(char)}.
+     * <p>
+     * All ASCII printable characters are based on the "IBM BIOS 8x8" font.
+     * All icons have been manually created for this component library and can not be referenced using ASCII characters.
+     */
     public enum Symbol {
+        // Icons
+        HEART((byte) 0x66, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0x7E, (byte) 0x3C, (byte) 0x18),
+        CROSS((byte) 0x81, (byte) 0x42, (byte) 0x24, (byte) 0x18, (byte) 0x18, (byte) 0x24, (byte) 0x42, (byte) 0x81),
+        SMILEY_HAPPY((byte) 0x3C, (byte) 0x42, (byte) 0xA5, (byte) 0x81, (byte) 0xA5, (byte) 0x99, (byte) 0x42, (byte) 0x3C),
+        SMILEY_SAD((byte) 0x3C, (byte) 0x42, (byte) 0xA5, (byte) 0x81, (byte) 0x99, (byte) 0xA5, (byte) 0x42, (byte) 0x3C),
+        SMILEY_SHOCKED((byte) 0x3C, (byte) 0x42, (byte) 0xA5, (byte) 0x99, (byte) 0xA5, (byte) 0xA5, (byte) 0x5A, (byte) 0x3C),
+        SMILEY_NEUTRAL((byte) 0x3C, (byte) 0x42, (byte) 0xA5, (byte) 0x81, (byte) 0xBD, (byte) 0xBD, (byte) 0x42, (byte) 0x3C),
+        ARROW_UP((byte) 0x18, (byte) 0x3C, (byte) 0x7E, (byte) 0xFF, (byte) 0x18, (byte) 0x18, (byte) 0x18, (byte) 0x18),
+        ARROW_DOWN((byte) 0x18, (byte) 0x18, (byte) 0x18, (byte) 0x18, (byte) 0xFF, (byte) 0x7E, (byte) 0x3C, (byte) 0x18),
+        ARROW_LEFT((byte) 0x10, (byte) 0x30, (byte) 0x70, (byte) 0xFF, (byte) 0xFF, (byte) 0x70, (byte) 0x30, (byte) 0x10),
+        ARROW_RIGHT((byte) 0x08, (byte) 0x0C, (byte) 0x0E, (byte) 0xFF, (byte) 0xFF, (byte) 0x0E, (byte) 0x0C, (byte) 0x08),
+
         // ASCII: Uppercase Letters
         A('A', (byte) 0x30, (byte) 0x78, (byte) 0xCC, (byte) 0xCC, (byte) 0xFC, (byte) 0xCC, (byte) 0xCC, (byte) 0x00),
         B('B', (byte) 0xFC, (byte) 0x66, (byte) 0x66, (byte) 0x7C, (byte) 0x66, (byte) 0x66, (byte) 0xFC, (byte) 0x00),
@@ -331,22 +558,65 @@ public class LedMatrixComponent extends MAX7219 {
         BRACE_RIGHT('}', (byte) 0xE0, (byte) 0x30, (byte) 0x30, (byte) 0x1C, (byte) 0x30, (byte) 0x30, (byte) 0xE0, (byte) 0x00),
         TILDE('~', (byte) 0x76, (byte) 0xDC, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00);
 
+        /**
+         * ASCII character to which this symbol belongs to or -1 if no ASCII mapping is available
+         */
         private final int ascii;
+
+        /**
+         * Byte array with 8 items to represent 8x8 LED matrix
+         */
         private final byte[] rows;
 
+        /**
+         * Creates a new symbol without any ASCII character association
+         *
+         * @param rows Byte array with 8 items for 8x8 LED matrix
+         */
+        Symbol(byte... rows) {
+            this(null, rows);
+        }
+
+        /**
+         * Creates a new symbol associated to a specific ASCII character
+         *
+         * @param ascii ASCII character to be associated with
+         * @param rows  Byte array with 8 items for 8x8 LED matrix
+         */
         Symbol(Character ascii, byte... rows) {
+            if (rows.length != 8) {
+                throw new IllegalArgumentException("Rows must contain exactly 8 items for 8x8 LED matrix");
+            }
+
             this.ascii = ascii != null ? ascii : -1;
             this.rows = rows;
         }
 
+        /**
+         * Returns the associated ASCII code for this symbol or -1 if not applicable.
+         *
+         * @return ASCII code of symbol or -1
+         */
         public int getAscii() {
             return this.ascii;
         }
 
+        /**
+         * Returns the associated byte array to be used for displaying on the 8x8 LED matrix.
+         *
+         * @return Byte array with 8 items
+         */
         public byte[] getRows() {
             return this.rows;
         }
 
+        /**
+         * Attempts to find a symbol associated to the given character and returns it.
+         * Returns null if no symbol exists for the given character.
+         *
+         * @param c ASCII character to lookup
+         * @return Symbol if found or null
+         */
         public static Symbol getByChar(char c) {
             for (Symbol symbol : Symbol.values()) {
                 if (symbol.getAscii() == c) {
