@@ -20,12 +20,12 @@ public class MAX7219 {
     /**
      * Width of MAX7219 LED matrix
      */
-    protected static final int WIDTH = 8;
+    public static final int WIDTH = 8;
 
     /**
      * Height of MAX7219 LED matrix
      */
-    protected static final int HEIGHT = 8;
+    public static final int HEIGHT = 8;
 
     /**
      * Internal buffer to store the 8x8 matrix
@@ -72,7 +72,7 @@ public class MAX7219 {
      * @param row Row to be flushed
      */
     protected void refreshRow(int row) {
-        if (row < 0 || row > HEIGHT) {
+        if (row < 0 || row >= HEIGHT) {
             throw new IllegalArgumentException("Row must be an integer in the range 0-" + HEIGHT);
         }
 
@@ -129,6 +129,10 @@ public class MAX7219 {
      * @param enabled Desired pixel state (true = ON, false = OFF)
      */
     public void setPixel(int x, int y, boolean enabled) {
+        // Ensure coordinates are within boundaries
+        checkPixelBounds(x, y);
+
+        // Generate bitmask and set/unset specific bit
         final byte mask = (byte) (1 << (WIDTH - 1 - x));
         if (enabled) {
             buffer[y] |= mask;
@@ -145,8 +149,28 @@ public class MAX7219 {
      * @return Current state of specified pixel (true = ON, false = OFF)
      */
     public boolean getPixel(int x, int y) {
+        // Ensure coordinates are within boundaries
+        checkPixelBounds(x, y);
+
+        // Generate bitmask and retrieve specific bit
         final byte mask = (byte) (1 << (WIDTH - 1 - x));
         return (buffer[y] & mask) != 0;
+    }
+
+    /**
+     * Ensures the given X and Y coordinates are within the boundaries of this LED matrix.
+     * An {@link IllegalArgumentException} will be thrown if outside.
+     *
+     * @param x X coordinate to check
+     * @param y Y coordinate to check
+     */
+    private void checkPixelBounds(int x, int y) {
+        if (x < 0 || x >= WIDTH) {
+            throw new IllegalArgumentException("X must be an integer in the range 0-" + WIDTH);
+        }
+        if (y < 0 || y >= WIDTH) {
+            throw new IllegalArgumentException("Y must be an integer in the range 0-" + HEIGHT);
+        }
     }
 
     /**

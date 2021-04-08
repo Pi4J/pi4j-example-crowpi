@@ -287,7 +287,7 @@ public class LedMatrixComponent extends MAX7219 {
      * @param string String to parse and convert to symbols
      * @return List of symbols to print for representing the given string
      */
-    private List<Symbol> convertToSymbols(String string) {
+    protected List<Symbol> convertToSymbols(String string) {
         final List<Symbol> symbols = new ArrayList<>();
 
         // Initialize state for our loop
@@ -341,6 +341,16 @@ public class LedMatrixComponent extends MAX7219 {
         }
 
         return symbols;
+    }
+
+    /**
+     * Prints the given character on the LED matrix, which will be immediately displayed.
+     * If no symbol associated with the given character can be found, an {@link IllegalArgumentException} will be thrown.
+     *
+     * @param c Character to display
+     */
+    public void print(char c) {
+        print(lookupSymbol(c));
     }
 
     /**
@@ -487,6 +497,15 @@ public class LedMatrixComponent extends MAX7219 {
      */
     private static int getBitFromByte(byte value, int bit) {
         return (((value & 0xFF) >> bit) & 0x1);
+    }
+
+    /**
+     * Returns the current SPI instance for the LED matrix.
+     *
+     * @return SPI instance
+     */
+    protected Spi getSpi() {
+        return this.spi;
     }
 
     /**
