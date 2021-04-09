@@ -1,19 +1,19 @@
 package ch.fhnw.crowpi.components;
 
 import ch.fhnw.crowpi.ComponentTest;
+import ch.fhnw.crowpi.components.TouchSensorComponent.TouchState;
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalState;
-import com.pi4j.io.gpio.digital.DigitalStateChangeEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import java.util.function.Consumer;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TouchSensorComponentTest extends ComponentTest {
     protected TouchSensorComponent touchSensor;
     protected DigitalInput din;
-    protected Consumer<DigitalState> consumer;
 
     @BeforeEach
     public void setUp() {
@@ -24,13 +24,13 @@ public class TouchSensorComponentTest extends ComponentTest {
     @Test
     public void testGetSensorState() {
         // given
-        DigitalState resultState;
+        TouchState resultState;
 
         // when
         resultState = touchSensor.getState();
 
         // then
-        assertEquals(DigitalState.LOW, resultState);
+        assertEquals(TouchState.UNTOUCHED, resultState);
     }
 
     @Test
@@ -45,40 +45,17 @@ public class TouchSensorComponentTest extends ComponentTest {
         assertEquals(din.isHigh(), result);
     }
 
-    @Test
-    public void testAddingTwoListenersAreNotSame() {
-        // given
-        consumer = new Consumer<DigitalState>() {
-            @Override
-            public void accept(DigitalState digitalState) {
-                var dummy = 0;
-            }
-        };
-
+    @ParameterizedTest
+    @CsvSource({
+        "UNKNOWN,UNKNOWN",
+        "LOW,UNTOUCHED",
+        "HIGH,TOUCHED"
+    })
+    void testMapDigitalState(DigitalState digitalState, TouchState expected) {
         // when
-        Object listener1 = touchSensor.addListener(consumer);
-        Object listener2 = touchSensor.addListener(consumer);
+        final var actual = touchSensor.mapDigitalState(digitalState);
 
         // then
-        assertNotEquals(listener1, listener2);
-    }
-
-    @Test
-    public void testAddAndRemoveListener() {
-        // given
-        consumer = new Consumer<DigitalState>() {
-            @Override
-            public void accept(DigitalState digitalState) {
-                var dummy = 0;
-            }
-        };
-
-        // when
-        Object listener1 = touchSensor.addListener(consumer);
-
-        // then
-        assertDoesNotThrow(() -> {
-            touchSensor.removeListener(listener1);
-        });
+        assertEquals(expected, actual);
     }
 }

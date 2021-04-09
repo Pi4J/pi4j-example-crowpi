@@ -58,8 +58,9 @@ public class TiltSensorComponent implements DigitalEventProvider<TiltSensorCompo
      * Maps a {@link DigitalState} to a well-known {@link TiltState}
      *
      * @param digitalState Pi4J digital state to map
-     * @return Mapped touch state
+     * @return Mapped tilt state
      */
+    @Override
     public TiltState mapDigitalState(DigitalState digitalState) {
         switch (digitalState) {
             case HIGH:
@@ -93,6 +94,7 @@ public class TiltSensorComponent implements DigitalEventProvider<TiltSensorCompo
     /**
      * {@inheritDoc}
      */
+    @Override
     public DigitalInput getDigitalInput() {
         return this.digitalInput;
     }

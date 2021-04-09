@@ -17,7 +17,7 @@ public class TouchSensorApp implements Application {
         final var touchSensor = new TouchSensorComponent(pi4j);
 
         // create a listener to handle touch events
-        Object listenerObject = touchSensor.addListener(state -> {
+        final var eventListener = touchSensor.addListener((listener, state) -> {
             System.out.println("State Changed! New State: " + state);
         });
 
@@ -34,7 +34,7 @@ public class TouchSensorApp implements Application {
         }
 
         // remove the created listener because we do not need it anymore
-        touchSensor.removeListener(listenerObject);
+        eventListener.remove();
 
         // end the program as soon as isTouched returns true
         System.out.println("Press again to end this application");

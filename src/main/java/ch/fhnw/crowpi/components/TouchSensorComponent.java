@@ -1,15 +1,20 @@
 package ch.fhnw.crowpi.components;
 
+import ch.fhnw.crowpi.components.events.DigitalEventProvider;
 import com.pi4j.context.Context;
-import com.pi4j.io.gpio.digital.*;
-
-import java.util.function.Consumer;
+import com.pi4j.io.gpio.digital.DigitalInput;
+import com.pi4j.io.gpio.digital.DigitalInputConfig;
+import com.pi4j.io.gpio.digital.DigitalState;
+import com.pi4j.io.gpio.digital.PullResistance;
 
 /**
  * Implementation of the CrowPi touch sensor using GPIO with Pi4J
  */
-public class TouchSensorComponent {
-    protected final DigitalInput din;
+public class TouchSensorComponent implements DigitalEventProvider<TouchSensorComponent.TouchState> {
+    /**
+     * Pi4J digital input instance used by this component
+     */
+    protected final DigitalInput digitalInput;
     /**
      * Default Pin of touch sensor
      */
@@ -36,7 +41,35 @@ public class TouchSensorComponent {
      * @param debounce Time in Microseconds to debounce input
      */
     public TouchSensorComponent(Context pi4j, int address, long debounce) {
-        this.din = pi4j.create(buildDigitalInputConfig(pi4j, address, debounce));
+        this.digitalInput = pi4j.create(buildDigitalInputConfig(pi4j, address, debounce));
+    }
+
+    /**
+     * Returns the current state of the touch sensor
+     *
+     * @return Current touch sensor state
+     */
+    public TouchState getState() {
+        return mapDigitalState(digitalInput.state());
+    }
+
+    /**
+     * Maps a {@link DigitalState} to a well-known {@link TouchState}
+     *
+     * @param digitalState Pi4J digital state to map
+     * @return Mapped touch state
+     */
+    @Override
+    public TouchState mapDigitalState(DigitalState digitalState) {
+        switch (digitalState) {
+            case HIGH:
+                return TouchState.TOUCHED;
+            case LOW:
+                return TouchState.UNTOUCHED;
+            case UNKNOWN:
+            default:
+                return TouchState.UNKNOWN;
+        }
     }
 
     /**
@@ -45,57 +78,15 @@ public class TouchSensorComponent {
      * @return True if touch sensor is currently touched
      */
     public boolean isTouched() {
-        return din.state().isHigh();
+        return getState() == TouchState.TOUCHED;
     }
 
     /**
-     * Read current state of touch sensor
-     *
-     * @return Returns DigitalState of touch sensor (invalid, high, low)
+     * {@inheritDoc}
      */
-    public DigitalState getState() {
-        return din.state();
-    }
-
-    /**
-     * Create event listener on touch sensor
-     *
-     * @param onTouched provide an consumer with runs when an event is fired
-     * @return Returns created listener object. This object is needed to remove the listener afterwards
-     */
-    public Object addListener(Consumer<DigitalState> onTouched) {
-        DigitalStateChangeListener digitalStateChangeListener = createStateChangeListener(onTouched);
-        din.addListener(digitalStateChangeListener);
-
-        return digitalStateChangeListener;
-    }
-
-    /**
-     * Remove a before created event listener.
-     *
-     * @param stateChangeListenerObject Needs the listener object which is returned when creating a listener
-     */
-    public void removeListener(Object stateChangeListenerObject) {
-        din.removeListener((DigitalStateChangeListener) stateChangeListenerObject);
-    }
-
-    /**
-     * Encapsulate pi4j event listener objects
-     *
-     * @param consumer action with is executed when event is fired
-     * @return Listener which can be attached to digital input
-     */
-    protected DigitalStateChangeListener createStateChangeListener(Consumer<DigitalState> consumer) {
-        return event -> consumer.accept(event.state());
-    }
-
-    /**
-     * Get current Digital Input instance
-     *
-     * @return Return digital input instance
-     */
-    protected DigitalInput getDigitalInput() {
-        return din;
+    @Override
+    public DigitalInput getDigitalInput() {
+        return digitalInput;
     }
 
     /**
@@ -108,11 +99,20 @@ public class TouchSensorComponent {
      */
     protected DigitalInputConfig buildDigitalInputConfig(Context pi4j, int address, long debounce) {
         return DigitalInput.newConfigBuilder(pi4j)
-                .id("BCM" + address)
-                .name("TouchSensor")
-                .address(address)
-                .debounce(debounce)
-                .pull(PullResistance.PULL_UP)
-                .build();
+            .id("BCM" + address)
+            .name("TouchSensor")
+            .address(address)
+            .debounce(debounce)
+            .pull(PullResistance.PULL_UP)
+            .build();
+    }
+
+    /**
+     * All available states reported by the touch sensor component.
+     */
+    public enum TouchState {
+        TOUCHED,
+        UNTOUCHED,
+        UNKNOWN
     }
 }
