@@ -28,7 +28,6 @@ public final class Launcher implements Runnable {
         new ExampleApp(),
         new LedMatrixApp(),
         new LightSensorApp(),
-        new PirMotionSensorApp(),
         new SevenSegmentApp(),
         new TiltSensorApp(),
         new TouchSensorApp()
@@ -60,17 +59,17 @@ public final class Launcher implements Runnable {
         // Initialize Pi4J context by manually specifying the desired platform and providers
         // FIXME: This can probably be replaced by `.newAutoContext()` once https://github.com/Pi4J/pi4j-v2/issues/17 has been resolved
         this.pi4j = Pi4J.newContextBuilder()
-            .noAutoDetect()
-            .add(new CrowPiPlatform())
-            .add(
-                PiGpioDigitalInputProvider.newInstance(piGpio),
-                PiGpioDigitalOutputProvider.newInstance(piGpio),
-                PiGpioPwmProvider.newInstance(piGpio),
-                PiGpioI2CProvider.newInstance(piGpio),
-                PiGpioSerialProvider.newInstance(piGpio),
-                PiGpioSpiProvider.newInstance(piGpio)
-            )
-            .build();
+                .noAutoDetect()
+                .add(new CrowPiPlatform())
+                .add(
+                        PiGpioDigitalInputProvider.newInstance(piGpio),
+                        PiGpioDigitalOutputProvider.newInstance(piGpio),
+                        PiGpioPwmProvider.newInstance(piGpio),
+                        PiGpioI2CProvider.newInstance(piGpio),
+                        PiGpioSerialProvider.newInstance(piGpio),
+                        PiGpioSpiProvider.newInstance(piGpio)
+                )
+                .build();
 
         // Register application runners as subcommands
         this.applications = applications;
