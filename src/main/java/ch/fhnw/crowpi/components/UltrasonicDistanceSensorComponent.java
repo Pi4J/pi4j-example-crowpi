@@ -1,6 +1,5 @@
 package ch.fhnw.crowpi.components;
 
-import ch.fhnw.crowpi.components.events.DigitalEventProvider;
 import com.pi4j.context.Context;
 import com.pi4j.io.gpio.digital.*;
 
@@ -23,12 +22,13 @@ public class UltrasonicDistanceSensorComponent {
     /**
      * Default BCM pins of ultrasonic distance sensor for CrowPi
      */
-    protected static final int DEFAULT_PIN_TRIGGER = 12;
-    protected static final int DEFAULT_PIN_ECHO = 16;
+    protected static final int DEFAULT_PIN_TRIGGER = 16;
+    protected static final int DEFAULT_PIN_ECHO = 12;
     /**
      * Default temperature setting to calculate distances
      */
     protected static final double DEFAULT_TEMPERATURE = 20.0;
+
     /**
      * Creates a new ultrasonic distance sensor component using the default setup.
      *
@@ -59,27 +59,39 @@ public class UltrasonicDistanceSensorComponent {
         return calculateDistance(pulseLength, temperature);
     }
 
+    volatile double delay;
+
     protected double measurePulse() {
-        var t = new Thread(() -> {
-            digitalOutputTrigger.pulse(10, TimeUnit.MILLISECONDS);
+
+        var meas = new Thread(() -> {
+            var t = new Thread(() -> digitalOutputTrigger.pulse(10, TimeUnit.MILLISECONDS));
+
+            long startTime = 0;
+            long endTime = 0;
+
+            t.start();
+            while (digitalInputEcho.isLow()) {
+                startTime = System.nanoTime();
+            }
+
+            while (digitalInputEcho.isHigh()) {
+                endTime = System.nanoTime();
+            }
+
+            delay = (double) (endTime - startTime) / 1_000_000;
         });
 
-        long startTime = 0;
-        long endTime = 0;
-
-        t.run();
-        while (digitalInputEcho.isLow()) {
-            startTime = System.nanoTime();
+        meas.start();
+        try {
+            meas.join(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
-        while (digitalInputEcho.isHigh()) {
-            endTime = System.nanoTime();
-        }
-
-        return (double) endTime - startTime;
+        return delay;
     }
+
     /**
-     *
      * @param pulseLength pulse duration in milliseconds
      * @param temperature temperature during the measurement
      * @return distance in centimeters
@@ -89,14 +101,14 @@ public class UltrasonicDistanceSensorComponent {
             throw new IllegalArgumentException("Temperature out of range. Allowed only -20°C to 40°C");
         }
 
-        if (pulseLength >= 200.0) {
+        if (pulseLength >= 25 || pulseLength < 0.1) {
             throw new IllegalArgumentException("Invalid Measurement. Too long pulse.");
         }
 
         double sonicSpeed = (331.5 + (0.6 * temperature)) / 10; // [cm/ms]
         double distance = pulseLength * sonicSpeed / 2;
 
-        return (double)Math.round(distance * 100) / 100;
+        return (double) Math.round(distance * 100) / 100;
     }
 
     /**
@@ -140,6 +152,7 @@ public class UltrasonicDistanceSensorComponent {
         return DigitalOutput.newConfigBuilder(pi4j)
                 .id("BCM-" + address)
                 .name("Ultrasonic Distance Sensor TRIGGER")
+                .initial(DigitalState.LOW)
                 .address(address)
                 .build();
     }

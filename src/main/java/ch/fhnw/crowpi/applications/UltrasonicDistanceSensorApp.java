@@ -13,6 +13,12 @@ public class UltrasonicDistanceSensorApp implements Application {
 
         while (true) {
             System.out.println(distanceSensor.measure());
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
