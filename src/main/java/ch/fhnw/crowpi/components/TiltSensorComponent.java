@@ -91,7 +91,7 @@ public class TiltSensorComponent implements DigitalEventProvider<TiltSensorCompo
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public DigitalInput getDigitalInput() {
         return this.digitalInput;
@@ -108,7 +108,7 @@ public class TiltSensorComponent implements DigitalEventProvider<TiltSensorCompo
     protected DigitalInputConfig buildDigitalInputConfig(Context pi4j, int address, long debounce) {
         return DigitalInput.newConfigBuilder(pi4j)
             .id("BCM-" + address)
-            .name("Tilt Switch")
+            .name("Tilt Sensor")
             .address(address)
             .debounce(debounce)
             .pull(PullResistance.PULL_DOWN)
