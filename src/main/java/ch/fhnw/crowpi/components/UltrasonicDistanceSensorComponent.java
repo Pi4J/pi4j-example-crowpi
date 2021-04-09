@@ -30,6 +30,11 @@ public class UltrasonicDistanceSensorComponent {
     protected static final double DEFAULT_TEMPERATURE = 20.0;
 
     /**
+     * Pulse length measured
+     */
+    private volatile double pulseLength;
+
+    /**
      * Creates a new ultrasonic distance sensor component using the default setup.
      *
      * @param pi4j Pi4J context
@@ -50,26 +55,40 @@ public class UltrasonicDistanceSensorComponent {
         this.digitalOutputTrigger = pi4j.create(buildDigitalOutputConfig(pi4j, triggerAddress));
     }
 
+    /**
+     * Start a measurement with default temperature setting
+     *
+     * @return Measured distance [cm]
+     */
     public double measure() {
         return measure(DEFAULT_TEMPERATURE);
     }
 
+    /**
+     * Start a measurement with custom temperature setting. Use this to have a temperature compensation.
+     *
+     * @param temperature Current environment temperature the ultra sonic sensor is working in
+     * @return Measured distance [cm]
+     */
     public double measure(double temperature) {
         double pulseLength = measurePulse();
         return calculateDistance(pulseLength, temperature);
     }
 
-    volatile double delay;
-
+    /**
+     * Triggers the ultrasonic sensor to start a measurement. Measures the time until the ECHO is recognized.
+     *
+     * @return Time which the ultrasonic signal needs to travel to the next object and return to the sensor
+     */
     protected double measurePulse() {
-
-        var meas = new Thread(() -> {
-            var t = new Thread(() -> digitalOutputTrigger.pulse(10, TimeUnit.MILLISECONDS));
+        // Threading is used to compensate Java delays. The sensor is just a little to fast.
+        var measurementTask = new Thread(() -> {
+            var triggerTask = new Thread(() -> digitalOutputTrigger.pulse(10, TimeUnit.MILLISECONDS));
 
             long startTime = 0;
             long endTime = 0;
 
-            t.start();
+            triggerTask.start();
             while (digitalInputEcho.isLow()) {
                 startTime = System.nanoTime();
             }
@@ -78,20 +97,23 @@ public class UltrasonicDistanceSensorComponent {
                 endTime = System.nanoTime();
             }
 
-            delay = (double) (endTime - startTime) / 1_000_000;
+            pulseLength = (double) (endTime - startTime) / 1_000_000;
         });
 
-        meas.start();
+        measurementTask.start();
         try {
-            meas.join(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            // Sometimes a measurement can fail. Timeout and return invalid measurement value.
+            measurementTask.join(1000);
+        } catch (InterruptedException timeout) {
+            return -1;
         }
 
-        return delay;
+        return pulseLength;
     }
 
     /**
+     * Calculates measured distance from pulse length with temperature compensation.
+     *
      * @param pulseLength pulse duration in milliseconds
      * @param temperature temperature during the measurement
      * @return distance in centimeters
@@ -102,7 +124,7 @@ public class UltrasonicDistanceSensorComponent {
         }
 
         if (pulseLength >= 25 || pulseLength < 0.1) {
-            throw new IllegalArgumentException("Invalid Measurement. Too long pulse.");
+            throw new IllegalArgumentException("Invalid Measurement found.");
         }
 
         double sonicSpeed = (331.5 + (0.6 * temperature)) / 10; // [cm/ms]
