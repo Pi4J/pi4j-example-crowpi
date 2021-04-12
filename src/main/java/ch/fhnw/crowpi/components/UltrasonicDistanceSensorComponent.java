@@ -156,11 +156,11 @@ public class UltrasonicDistanceSensorComponent {
      */
     protected DigitalInputConfig buildDigitalInputConfig(Context pi4j, int address) {
         return DigitalInput.newConfigBuilder(pi4j)
-                .id("BCM-" + address)
-                .name("Ultrasonic Distance Sensor ECHO")
-                .address(address)
-                .pull(PullResistance.PULL_DOWN)
-                .build();
+            .id("BCM-" + address)
+            .name("Ultrasonic Distance Sensor ECHO")
+            .address(address)
+            .pull(PullResistance.PULL_DOWN)
+            .build();
     }
 
     /**
@@ -172,10 +172,10 @@ public class UltrasonicDistanceSensorComponent {
      */
     protected DigitalOutputConfig buildDigitalOutputConfig(Context pi4j, int address) {
         return DigitalOutput.newConfigBuilder(pi4j)
-                .id("BCM-" + address)
-                .name("Ultrasonic Distance Sensor TRIGGER")
-                .initial(DigitalState.LOW)
-                .address(address)
-                .build();
+            .id("BCM-" + address)
+            .name("Ultrasonic Distance Sensor TRIGGER")
+            .initial(DigitalState.LOW)
+            .address(address)
+            .build();
     }
 }

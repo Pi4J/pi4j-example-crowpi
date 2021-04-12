@@ -24,15 +24,15 @@ public final class Launcher implements Runnable {
      * Each class instance must implement the Application interface and gets automatically added as a subcommand.
      */
     private static final List<Application> APPLICATIONS = new ArrayList<>(Arrays.asList(
-            new BuzzerApp(),
-            new ExampleApp(),
-            new LedMatrixApp(),
-            new LightSensorApp(),
-            new SevenSegmentApp(),
-            new TiltSensorApp(),
-            new TouchSensorApp(),
-            new PirMotionSensorApp(),
-            new UltrasonicDistanceSensorApp()
+        new BuzzerApp(),
+        new ExampleApp(),
+        new LedMatrixApp(),
+        new LightSensorApp(),
+        new SevenSegmentApp(),
+        new TiltSensorApp(),
+        new TouchSensorApp(),
+        new PirMotionSensorApp(),
+        new UltrasonicDistanceSensorApp()
     ));
 
     private final CommandLine cmdLine;
@@ -61,17 +61,17 @@ public final class Launcher implements Runnable {
         // Initialize Pi4J context by manually specifying the desired platform and providers
         // FIXME: This can probably be replaced by `.newAutoContext()` once https://github.com/Pi4J/pi4j-v2/issues/17 has been resolved
         this.pi4j = Pi4J.newContextBuilder()
-                .noAutoDetect()
-                .add(new CrowPiPlatform())
-                .add(
-                        PiGpioDigitalInputProvider.newInstance(piGpio),
-                        PiGpioDigitalOutputProvider.newInstance(piGpio),
-                        PiGpioPwmProvider.newInstance(piGpio),
-                        PiGpioI2CProvider.newInstance(piGpio),
-                        PiGpioSerialProvider.newInstance(piGpio),
-                        PiGpioSpiProvider.newInstance(piGpio)
-                )
-                .build();
+            .noAutoDetect()
+            .add(new CrowPiPlatform())
+            .add(
+                PiGpioDigitalInputProvider.newInstance(piGpio),
+                PiGpioDigitalOutputProvider.newInstance(piGpio),
+                PiGpioPwmProvider.newInstance(piGpio),
+                PiGpioI2CProvider.newInstance(piGpio),
+                PiGpioSerialProvider.newInstance(piGpio),
+                PiGpioSpiProvider.newInstance(piGpio)
+            )
+            .build();
 
         // Register application runners as subcommands
         this.applications = applications;

@@ -7,7 +7,7 @@ import com.pi4j.context.Context;
 
 /**
  * Example Application of using the Crow Pi Ultrasonic Distance Sensor.
-  */
+ */
 public class UltrasonicDistanceSensorApp implements Application {
     @Override
     public void execute(Context pi4j) {
@@ -26,7 +26,7 @@ public class UltrasonicDistanceSensorApp implements Application {
         double measurementHot = distanceSensor.measure(30);
         System.out.println("If you room has 30°C now we measure: " + measurementHot + " cm");
         System.out.format("That's a difference of %.2f %%. Only caused by the difference of sonics. Physic is " +
-                        "crazy", (measurementHot - measurementCold) / measurementCold * 100);
+            "crazy", (measurementHot - measurementCold) / measurementCold * 100);
 
         System.out.println("Lets now just measure for 10 Seconds. That gives some time to try the sensor a little.");
 
@@ -38,7 +38,8 @@ public class UltrasonicDistanceSensorApp implements Application {
             // Delay the measurements a little. This gives you some time to move in front of the sensor.
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException ignored) { }
+            } catch (InterruptedException ignored) {
+            }
         }
     }
 }
