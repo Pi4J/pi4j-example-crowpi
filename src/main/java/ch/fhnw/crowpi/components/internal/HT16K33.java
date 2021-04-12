@@ -1,5 +1,6 @@
 package ch.fhnw.crowpi.components.internal;
 
+import ch.fhnw.crowpi.components.Component;
 import com.pi4j.io.i2c.I2C;
 
 import java.util.Arrays;
@@ -8,7 +9,7 @@ import java.util.Arrays;
  * Implementation of HT16K33 LED driver chip used for segment displays.
  * Uses I2C via Pi4J for controlling the chip programmatically.
  */
-public class HT16K33 {
+public class HT16K33 extends Component {
     /**
      * Internal size of the buffer which gets flushed to the display.
      */

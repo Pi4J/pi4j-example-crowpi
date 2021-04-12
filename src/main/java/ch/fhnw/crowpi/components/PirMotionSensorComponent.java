@@ -10,7 +10,7 @@ import com.pi4j.io.gpio.digital.PullResistance;
 /**
  * Implementation of the CrowPi PIR motion sensor using GPIO with Pi4J
  */
-public class PirMotionSensorComponent implements DigitalEventProvider<PirMotionSensorComponent.MotionState> {
+public class PirMotionSensorComponent extends Component implements DigitalEventProvider<PirMotionSensorComponent.MotionState> {
     /**
      * Pi4J digital input instance used by this component
      */

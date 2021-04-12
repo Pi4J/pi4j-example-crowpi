@@ -7,7 +7,7 @@ import com.pi4j.io.i2c.I2CConfig;
 /**
  * Implementation of the CrowPi light sensor using I2C with Pi4J
  */
-public class LightSensorComponent {
+public class LightSensorComponent extends Component {
     private final I2C i2c;
 
     /**

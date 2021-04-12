@@ -395,11 +395,7 @@ public class LedMatrixComponent extends MAX7219 {
     public void transition(Symbol symbol, Direction scrollDirection, long scrollDelay) {
         for (int i = 0; i < WIDTH; i++) {
             scroll(scrollDirection, ScrollMode.REPLACE, symbol.getRows(), i);
-            try {
-                Thread.sleep(scrollDelay);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            sleep(scrollDelay);
         }
     }
 

@@ -4,8 +4,6 @@ import ch.fhnw.crowpi.Application;
 import ch.fhnw.crowpi.components.TouchSensorComponent;
 import com.pi4j.context.Context;
 
-import static java.lang.Thread.sleep;
-
 /**
  * Writes some Text output on Button Events. After 20 seconds event handling is disable and the App waits for
  * termination by a final touch sensor press.
@@ -26,11 +24,7 @@ public class TouchSensorApp implements Application {
         // just any delay
         for (int i = 20; i > 0; i--) {
             System.out.println("Time until Eventlistener is killed: " + i + " seconds...");
-
-            try {
-                sleep(1000);
-            } catch (InterruptedException ignored) {
-            }
+            sleep(1000);
         }
 
         // remove the created listener because we do not need it anymore
@@ -39,11 +33,7 @@ public class TouchSensorApp implements Application {
         // end the program as soon as isTouched returns true
         System.out.println("Press again to end this application");
         while (!touchSensor.isTouched()) {
-            try {
-                //noinspection BusyWait
-                sleep(10);
-            } catch (InterruptedException ignored) {
-            }
+            sleep(10);
         }
     }
 }

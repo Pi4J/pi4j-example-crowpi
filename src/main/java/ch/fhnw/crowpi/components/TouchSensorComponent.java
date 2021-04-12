@@ -10,7 +10,7 @@ import com.pi4j.io.gpio.digital.PullResistance;
 /**
  * Implementation of the CrowPi touch sensor using GPIO with Pi4J
  */
-public class TouchSensorComponent implements DigitalEventProvider<TouchSensorComponent.TouchState> {
+public class TouchSensorComponent extends Component implements DigitalEventProvider<TouchSensorComponent.TouchState> {
     /**
      * Pi4J digital input instance used by this component
      */
