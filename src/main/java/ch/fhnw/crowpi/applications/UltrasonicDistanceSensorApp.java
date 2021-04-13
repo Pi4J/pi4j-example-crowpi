@@ -1,7 +1,6 @@
 package ch.fhnw.crowpi.applications;
 
 import ch.fhnw.crowpi.Application;
-import ch.fhnw.crowpi.components.TiltSensorComponent;
 import ch.fhnw.crowpi.components.UltrasonicDistanceSensorComponent;
 import com.pi4j.context.Context;
 
