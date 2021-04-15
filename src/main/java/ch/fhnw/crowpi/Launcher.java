@@ -26,6 +26,7 @@ public final class Launcher implements Runnable {
     private static final List<Application> APPLICATIONS = new ArrayList<>(Arrays.asList(
         new BuzzerApp(),
         new ExampleApp(),
+        new LcdDisplayApp(),
         new LedMatrixApp(),
         new LightSensorApp(),
         new PirMotionSensorApp(),
