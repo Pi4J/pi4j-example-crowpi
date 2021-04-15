@@ -31,7 +31,8 @@ public final class Launcher implements Runnable {
         new PirMotionSensorApp(),
         new SevenSegmentApp(),
         new TiltSensorApp(),
-        new TouchSensorApp()
+        new TouchSensorApp(),
+        new LcdDisplayApp()
     ));
 
     private final CommandLine cmdLine;
