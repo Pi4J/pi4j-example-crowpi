@@ -122,7 +122,7 @@ public class LcdDisplayComponent {
     public void createOwnCharacter(int number, byte[] character) {
         if (character.length > 7) {
             throw new IllegalArgumentException("Array to long. Character is only 5x8 Digits. Only a array with length" +
-                " 8 is allowed");
+                    " 8 is allowed");
         }
 
         number &= 0x7;
