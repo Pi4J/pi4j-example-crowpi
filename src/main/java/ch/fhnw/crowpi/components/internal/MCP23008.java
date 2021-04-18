@@ -83,10 +83,67 @@ public class MCP23008 {
         } else {
             gpioState &= ~(1 << bit);
         }
+    }
 
-        System.out.println("PIN Write: " + Integer.toBinaryString(gpioState));
+    /**
+     * Set a Pin an directly write it out to the hardware
+     *
+     * @param bit   Number of the Pin
+     * @param state State which the Pin is set and written to
+     */
+    public void setAndWritePin(int bit, boolean state) {
+        checkPinNumber(bit);
+        setPin(bit, state);
+        writePins();
+    }
 
+    /**
+     * Write the Buffer out to the Pins
+     */
+    public void writePins() {
         i2c.writeRegister(GPIO_REGISTER_ADDRESS, gpioState);
-        sleep(1);
+    }
+
+    /**
+     * Sleep delays the current thread
+     *
+     * @param millis Time to interrupt the thread in millis
+     */
+    private void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Checks a bit is in Range of 0-7. So it is an IO Pin
+     *
+     * @param bit Number to check
+     * @return True if the Value is in Range of the Pins
+     */
+    protected boolean checkPinNumber(int bit) {
+        if (bit > 7 || bit < 0) {
+            throw new IllegalArgumentException("Invalid Pin Number");
+        }
+        return true;
+    }
+
+    /**
+     * Builds a new I2C instance for the MCP23008
+     *
+     * @param pi4j   Pi4J context
+     * @param bus    Bus address
+     * @param device Device address
+     * @return I2C instance
+     */
+    private static I2CConfig buildI2CConfig(Context pi4j, int bus, int device) {
+        return I2C.newConfigBuilder(pi4j)
+            .id("I2C-" + device + "@" + bus)
+            .name("MCP23008")
+            .bus(bus)
+            .device(device)
+            .build();
     }
 }
