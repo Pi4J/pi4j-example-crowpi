@@ -2,6 +2,7 @@ package ch.fhnw.crowpi.applications;
 
 import ch.fhnw.crowpi.Application;
 import ch.fhnw.crowpi.components.UltrasonicDistanceSensorComponent;
+import ch.fhnw.crowpi.components.exceptions.MeasurementException;
 import com.pi4j.context.Context;
 
 /**
@@ -32,7 +33,13 @@ public class UltrasonicDistanceSensorApp implements Application {
         // Loop 10 times through the measurement. Print the result to the user
         for (int i = 0; i < 10; i++) {
             // Measures the current distance without temperature compensation and prints it to the user.
-            System.out.println("Measured distance is: " + distanceSensor.measure() + " cm");
+            try {
+                System.out.println("Measured distance is: " + distanceSensor.measure() + " cm");
+            } catch (MeasurementException e){
+                // If the measurement fails with a MeasurementException, we inform the user and try again next time
+                System.out.println("Oh no. Measurement failed... lets try again");
+            }
+
 
             // Delay the measurements a little. This gives you some time to move in front of the sensor.
             try {

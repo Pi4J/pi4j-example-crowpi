@@ -1,5 +1,6 @@
 package ch.fhnw.crowpi.components;
 
+import ch.fhnw.crowpi.components.exceptions.MeasurementException;
 import com.pi4j.context.Context;
 import com.pi4j.io.gpio.digital.*;
 
@@ -124,7 +125,8 @@ public class UltrasonicDistanceSensorComponent {
         }
 
         if (pulseLength >= 25 || pulseLength < 0.1) {
-            throw new IllegalArgumentException("Invalid Measurement found.");
+            throw new MeasurementException("Invalid pulse length " + pulseLength + " found, expected value in range 0" +
+                ".1 - 25");
         }
 
         double sonicSpeed = (331.5 + (0.6 * temperature)) / 10; // [cm/ms]
@@ -134,14 +136,18 @@ public class UltrasonicDistanceSensorComponent {
     }
 
     /**
-     * {@inheritDoc}
+     * Get the instance of the echo input
+     *
+     * @return A digital input configuration
      */
     public DigitalInput getDigitalInputEcho() {
         return this.digitalInputEcho;
     }
 
     /**
-     * {@inheritDoc}
+     * Get the instance of the trigger output
+     *
+     * @return A digital output configuration
      */
     public DigitalOutput getDigitalOutputTrigger() {
         return this.digitalOutputTrigger;
