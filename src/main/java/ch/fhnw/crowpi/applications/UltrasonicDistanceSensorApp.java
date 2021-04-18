@@ -35,11 +35,10 @@ public class UltrasonicDistanceSensorApp implements Application {
             // Measures the current distance without temperature compensation and prints it to the user.
             try {
                 System.out.println("Measured distance is: " + distanceSensor.measure() + " cm");
-            } catch (MeasurementException e){
+            } catch (MeasurementException e) {
                 // If the measurement fails with a MeasurementException, we inform the user and try again next time
                 System.out.println("Oh no. Measurement failed... lets try again");
             }
-
 
             // Delay the measurements a little. This gives you some time to move in front of the sensor.
             try {
