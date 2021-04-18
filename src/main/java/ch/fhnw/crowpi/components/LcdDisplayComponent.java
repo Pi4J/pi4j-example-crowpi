@@ -95,8 +95,16 @@ public class LcdDisplayComponent {
         setCursorToLine(1);
 
         for (int i = 0; i < text.length(); i++) {
+            // line break in text found
+            if (text.charAt(i) == '\n') {
+                setCursorToLine(2);
+                continue;
+            }
+
+            // write character to display
             write(text.charAt(i), true);
 
+            // was last character on first line? switch to second
             if (i == 15) {
                 setCursorToLine(2);
             }
@@ -109,6 +117,21 @@ public class LcdDisplayComponent {
         }
 
         executeCommand(LCD_SETDDRAMADDR, LCD_ROW_OFFSETS[number - 1]);
+    }
+
+    public void createOwnCharacter(int number, byte[] character) {
+        if (character.length > 7) {
+            throw new IllegalArgumentException("Array to long. Character is only 5x8 Digits. Only a array with length" +
+                " 8 is allowed");
+        }
+
+        number &= 0x7;
+        write(LCD_SETCGRAMADDR | (number << 3));
+
+        for (int i = 0; i < 8; i++) {
+            write(character[i], true);
+        }
+
     }
 
     /**
