@@ -23,10 +23,11 @@ public class LcdDisplayApp implements Application {
 
         lcd.sleep(2000);
         lcd.clearLine(1);
-        lcd.writeLine("EY GEHT DOCH!", 2);
+        lcd.writeLine("a", 2);
 
         lcd.sleep(5000);
         lcd.clearDisplay();
         lcd.setDisplayBacklight(false);
+
     }
 }
