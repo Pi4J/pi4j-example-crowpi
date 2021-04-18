@@ -16,7 +16,6 @@ import com.pi4j.io.i2c.I2CConfig;
 // braucht komponente die richtig auf MCP schreibt
 // helligkeit nur mit poti
 public class LcdDisplayComponent {
-    private final I2C i2c;
     private final MCP23008 mcp;
 
     /**
@@ -35,33 +34,92 @@ public class LcdDisplayComponent {
     }
 
     public LcdDisplayComponent(Context pi4j, int bus, int device) {
-        this.i2c = pi4j.create(buildI2CConfig(pi4j, bus, device));
-        this.mcp = new MCP23008(i2c);
-        play();
+        this.mcp = new MCP23008(pi4j, bus, device);
+        this.mcp.initializeIo(MCP_IO_CONFIG);
+        this.initializeLcd();
     }
 
     public void play() {
-        mcp.write((byte) 0, false);
-
-        mcp.initializeIo();
+        write8('A', true);
     }
 
-    /**
-     * Builds a new I2C instance for the seven-segment display
-     *
-     * @param pi4j   Pi4J context
-     * @param bus    Bus address
-     * @param device Device address
-     * @return I2C instance
-     */
-    private static I2CConfig buildI2CConfig(Context pi4j, int bus, int device) {
-        return I2C.newConfigBuilder(pi4j)
-            .id("I2C-" + device + "@" + bus)
-            .name("LCD Display")
-            .bus(bus)
-            .device(device)
-            .build();
+    protected void initializeLcd() {
+        // Enable backlight
+        mcp.setAndWritePin(LCD_LIGHT, true);
+
+        // Initialize display
+        write8((byte) 0b001_10011);
+        write8((byte) 0b001_10010);
+
+        // Initialize display settings
+        byte displayControl = (byte) (LCD_DISPLAYON | LCD_CURSORON | LCD_BLINKOFF);
+        byte displayFunction = (byte) (LCD_4BITMODE | LCD_1LINE | LCD_2LINE | LCD_5x8DOTS);
+        byte displayMode = (byte) (LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT);
+
+
+        execute(LCD_DISPLAYCONTROL, displayControl);
+        // write8((byte) (LCD_DISPLAYCONTROL | displayControl));
+        write8((byte) (LCD_FUNCTIONSET | displayFunction));
+        write8((byte) (LCD_ENTRYMODESET | displayMode));
+
+        // Clear display
+        write8(LCD_CLEARDISPLAY);
+        sleep(3);
+
+        // Move the cursor to its home position
+        write8(LCD_RETURNHOME);
+        sleep(3);
     }
+
+    public void execute(byte command, byte data) {
+        write8((byte) (command | data));
+    }
+
+    public void write8(int c) {
+        write8(c, false);
+    }
+
+    public void write8(int b, boolean charMode) {
+        b &= 0xFF;
+        mcp.setAndWritePin(LCD_RS, charMode);
+
+        // high nibble
+        mcp.setPin(LCD_D4, (b & 0b0001_0000) > 0);
+        mcp.setPin(LCD_D5, (b & 0b0010_0000) > 0);
+        mcp.setPin(LCD_D6, (b & 0b0100_0000) > 0);
+        mcp.setPin(LCD_D7, (b & 0b1000_0000) > 0);
+        mcp.writePins();
+        mcp.pulsePin(LCD_EN, DEFAULT_PULSE_WIDTH);
+
+        // low nibble
+        mcp.setPin(LCD_D4, (b & 0b0000_0001) > 0);
+        mcp.setPin(LCD_D5, (b & 0b0000_0010) > 0);
+        mcp.setPin(LCD_D6, (b & 0b0000_0100) > 0);
+        mcp.setPin(LCD_D7, (b & 0b0000_1000) > 0);
+        mcp.writePins();
+        mcp.pulsePin(LCD_EN, DEFAULT_PULSE_WIDTH);
+    }
+
+    public void message(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            write8(s.charAt(i), true);
+        }
+    }
+
+    private void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+
+    // Default MCP Configuration
+    byte MCP_IO_CONFIG = 0x00;
+
+    // Default Pulsewidth
+    private final int DEFAULT_PULSE_WIDTH = 1;
 
     // Commands
     byte LCD_CLEARDISPLAY = 0x01;
@@ -106,18 +164,6 @@ public class LcdDisplayComponent {
     // Offset forup to 4 rows.
     byte[] LCD_ROW_OFFSETS         ={0x00,0x40,0x14,0x54};
 
-    // Char LCD plate GPIO numbers.
-    int LCD_PLATE_RS            =15;
-    int LCD_PLATE_RW            =14;
-    int LCD_PLATE_EN            =13;
-    int LCD_PLATE_D4            =12;
-    int LCD_PLATE_D5            =11;
-    int LCD_PLATE_D6            =10;
-    int LCD_PLATE_D7            =9;
-    int LCD_PLATE_RED           =6;
-    int LCD_PLATE_GREEN         =7;
-    int LCD_PLATE_BLUE          =8;
-
     // Char LCDplate buttonnames.
    int SELECT                  =0;
    int RIGHT                   =1;
@@ -125,12 +171,14 @@ public class LcdDisplayComponent {
    int UP                      =3;
    int LEFT                    =4;
 
-    // Char LCD backpack GPIO numbers.
-   int LCD_BACKPACK_RS         =1;
-   int LCD_BACKPACK_EN         =2;
-   int LCD_BACKPACK_D4         =3;
-   int LCD_BACKPACK_D5         =4;
-   int LCD_BACKPACK_D6         =5;
-   int LCD_BACKPACK_D7         =6;
-   int LCD_BACKPACK_LITE       =7;
+    /**
+     * Pin out LCD auf MCP
+     */
+    private final int LCD_RS = 1;
+    private final int LCD_EN = 2;
+    private final int LCD_D4 = 3;
+    private final int LCD_D5 = 4;
+    private final int LCD_D6 = 5;
+    private final int LCD_D7 = 6;
+    private final int LCD_LIGHT = 7;
 }
