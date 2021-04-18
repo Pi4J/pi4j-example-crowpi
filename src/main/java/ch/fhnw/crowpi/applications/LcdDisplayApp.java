@@ -16,7 +16,7 @@ public class LcdDisplayApp implements Application {
 
         lcd.sleep(2000);
 
-        lcd.writeLine("Second Line", 2);
+        lcd.writeLine("<!?dfjäeüöü>", 2);
 
         lcd.sleep(2000);
         lcd.writeLine("First Line", 1);

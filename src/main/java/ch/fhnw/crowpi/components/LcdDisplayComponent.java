@@ -82,7 +82,7 @@ public class LcdDisplayComponent {
         setCursorToLine(line);
 
         for (int i = 0; i < text.length(); i++) {
-            write(text.charAt(i), true);
+            write(Symbol.getByChar(text.charAt(i)), true);
         }
     }
 
@@ -102,7 +102,7 @@ public class LcdDisplayComponent {
             }
 
             // write character to display
-            write(text.charAt(i), true);
+            write(Symbol.getByChar(text.charAt(i)), true);
 
             // was last character on first line? switch to second
             if (i == 15) {
@@ -300,4 +300,124 @@ public class LcdDisplayComponent {
     private final int LCD_D6 = 5;
     private final int LCD_D7 = 6;
     private final int LCD_LIGHT = 7;
+
+    public enum Characters {
+        ZERO('0', 0x30),
+        ONE('1', 0x31),
+        TWO('2', 0x32),
+        THREE('3', 0x33),
+        FOUR('4', 0x34),
+        FIVE('5', 0x35),
+        SIX('6', 0x36),
+        SEVEN('7', 0x37),
+        EIGHT('8', 0x38),
+        NINE('9', 0x39),
+
+        A('A', 0x41),
+        B('B', 0x42),
+        C('C', 0x43),
+        D('D', 0x44),
+        E('E', 0x45),
+        F('F', 0x46),
+        G('G', 0x47),
+        H('H', 0x48),
+        I('I', 0x49),
+        J('J', 0x4A),
+        K('K', 0x4B),
+        L('L', 0x4C),
+        M('M', 0x4D),
+        N('N', 0x4E),
+        O('O', 0x4F),
+        P('P', 0x50),
+        Q('Q', 0x51),
+        R('R', 0x52),
+        S('S', 0x53),
+        T('T', 0x54),
+        U('U', 0x55),
+        V('V', 0x56),
+        W('W', 0x57),
+        X('X', 0x58),
+        Y('Y', 0x59),
+        Z('Z', 0x5A),
+
+        a('a', 0x61),
+        b('b', 0x62),
+        c('c', 0x63),
+        d('d', 0x64),
+        e('e', 0x65),
+        f('f', 0x66),
+        g('g', 0x67),
+        h('h', 0x68),
+        i('i', 0x69),
+        j('j', 0x6A),
+        k('k', 0x6B),
+        l('l', 0x6C),
+        m('m', 0x6D),
+        n('n', 0x6E),
+        o('o', 0x6F),
+        p('p', 0x70),
+        q('q', 0x71),
+        r('r', 0x72),
+        s('s', 0x73),
+        t('t', 0x74),
+        u('u', 0x75),
+        v('v', 0x76),
+        w('w', 0x77),
+        x('x', 0x78),
+        y('y', 0x79),
+        z('z', 0x7A),
+
+        EXCLAMATION_MARK('!', 0x21),
+        DOUBLE_QUOTE('\"', 0x22),
+        NUMBER_SIGN('#', 0x23),
+        DOLLAR('$', 0x24),
+        PERCENT('%', 0x25),
+        AMPERSAND('&', 0x26),
+        QUOTE_SINGLE('\'', 0x27),
+        PARENTHESIS_LEFT('(', 0x28),
+        PARENTHESIS_RIGHT(')', 0x29),
+        ASTERISK('*', 0x2A),
+        PLUS('+', 0x2B),
+        COMMA(',', 0x2C),
+        HYPHEN('-', 0x2D),
+        PERIOD('.', 0x2E),
+        SLASH('/', 0x2F),
+        COLON(':', 0x3A),
+        SEMICOLON(';', 0x3B),
+        LESS('<', 0x3C),
+        EQUAL('=', 0x3D),
+        GREATER('>', 0x3E),
+        QUESTION('?', 0x3F),
+        AT('@', 0x40),
+        BRACKET_LEFT('[', 0x5B),
+        YEN('¥', 0x5C),
+        BRACKET_RIGHT(']', 0x5D),
+        CARET('^', 0x5E),
+        UNDERSCORE('_', 0x5F),
+        GRAV('`', 0x60),
+        BRACE_LEFT('{', 0x7B),
+        BAR('|', 0x7C),
+        BRACE_RIGHT('}', 0x7D),
+        ARROW_RIGHT('→', 0x7E),
+        ARROW_LEFT('←', 0x7F),
+        SQUARE('□', 0xA1);
+
+
+
+        private final int ascii;
+        private final int code;
+
+        public int getCode() {
+            return this.code;
+        }
+
+        public int getAsci() {
+            return this.ascii;
+        }
+
+        Characters(int ascii, int code) {
+            this.ascii = ascii;
+            this.code = code;
+        }
+        }
 }
