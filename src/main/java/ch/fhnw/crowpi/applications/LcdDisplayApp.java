@@ -10,5 +10,6 @@ public class LcdDisplayApp implements Application {
         LcdDisplayComponent lcd = new LcdDisplayComponent(pi4j);
         System.out.println("CrowPi with Pi4J rocks!");
 
+        lcd.play();
     }
 }
