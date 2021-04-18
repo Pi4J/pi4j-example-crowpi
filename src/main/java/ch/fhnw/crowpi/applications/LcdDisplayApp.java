@@ -10,6 +10,23 @@ public class LcdDisplayApp implements Application {
         LcdDisplayComponent lcd = new LcdDisplayComponent(pi4j);
         System.out.println("CrowPi with Pi4J rocks!");
 
-        lcd.play();
+        lcd.initialize();
+
+        lcd.writeText("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456");
+
+        lcd.sleep(2000);
+
+        lcd.writeLine("Second Line", 2);
+
+        lcd.sleep(2000);
+        lcd.writeLine("First Line", 1);
+
+        lcd.sleep(2000);
+        lcd.clearLine(1);
+        lcd.writeLine("EY GEHT DOCH!", 2);
+
+        lcd.sleep(5000);
+        lcd.clearDisplay();
+        lcd.setDisplayBacklight(false);
     }
 }
