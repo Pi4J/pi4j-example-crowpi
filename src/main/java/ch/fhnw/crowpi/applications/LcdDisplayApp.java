@@ -12,7 +12,7 @@ public class LcdDisplayApp implements Application {
 
         lcd.initialize();
 
-        lcd.writeText("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456");
+        lcd.writeText("ABC\nQRSTUVWXYZ123456");
 
         lcd.sleep(2000);
 
