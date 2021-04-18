@@ -134,6 +134,7 @@ public class LcdDisplayComponent {
 
     }
 
+
     /**
      * Enable and Disable the Backlight of the LCD Display
      *
