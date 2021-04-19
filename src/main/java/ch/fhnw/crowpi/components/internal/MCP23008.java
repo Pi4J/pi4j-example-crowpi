@@ -5,7 +5,13 @@ import com.pi4j.context.Context;
 import com.pi4j.io.i2c.I2C;
 import com.pi4j.io.i2c.I2CConfig;
 
+/**
+ * Class to provide IO interfacing with MCP23008
+ */
 public class MCP23008 extends Component {
+    /**
+     * Instance of I2C Bus
+     */
     private final I2C i2c;
     /**
      * Those default address are to use this class with default CrowPi setup

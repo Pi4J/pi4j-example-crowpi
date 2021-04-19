@@ -131,7 +131,7 @@ public class LcdDisplayComponent extends Component {
     }
 
     public void createOwnCharacter(int location, byte[] character) {
-        if (character.length > 7) {
+        if (character.length > 8) {
             throw new IllegalArgumentException("Array to long. Character is only 5x8 Digits. Only a array with length" +
                 " 8 is allowed");
         }
@@ -142,7 +142,6 @@ public class LcdDisplayComponent extends Component {
         for (int i = 0; i < 8; i++) {
             write(character[i], true);
         }
-
     }
 
     /**
@@ -209,7 +208,7 @@ public class LcdDisplayComponent extends Component {
      * @param b        Data to write to the display
      * @param charMode Select data is a number or character
      */
-    protected void write(int b, boolean charMode) {
+    public void write(int b, boolean charMode) {
         b &= 0xFF;
         mcp.setAndWritePin(LCD_RS, charMode);
 

@@ -28,7 +28,7 @@ public class LcdDisplayApp implements Application {
         sleep(5000);
         lcd.clearDisplay();
 
-        lcd.createOwnCharacter(1, new byte[] {
+        lcd.createOwnCharacter(0x01, new byte[] {
             0b01111,
             0b10111,
             0b11011,
@@ -36,9 +36,22 @@ public class LcdDisplayApp implements Application {
             0b11110,
             0b11101,
             0b11011,
-            0b11011,
+            0b10111,
         });
 
-        lcd.writeText("\1");
+        lcd.createOwnCharacter(0x02, new byte[] {
+                0b11111,
+                0b11111,
+                0b00000,
+                0b11101,
+                0b11110,
+                0b11101,
+                0b11011,
+                0b10111,
+        });
+
+        lcd.returnHome();
+        lcd.write(0x01, true);
+        lcd.write(0x02, true);
     }
 }
