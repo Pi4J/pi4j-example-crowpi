@@ -1,6 +1,7 @@
 package ch.fhnw.crowpi.components;
 
 import ch.fhnw.crowpi.ComponentTest;
+import ch.fhnw.crowpi.components.exceptions.MeasurementException;
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,7 +87,7 @@ class UltrasonicDistanceSensorComponentTest extends ComponentTest {
         double pulseLength = 200.0;
 
         // when + then
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(MeasurementException.class, () -> {
             distanceSensor.calculateDistance(pulseLength, temperature);
         });
     }
