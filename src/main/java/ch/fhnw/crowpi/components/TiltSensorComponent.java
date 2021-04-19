@@ -10,7 +10,7 @@ import com.pi4j.io.gpio.digital.PullResistance;
 /**
  * Implementation of the CrowPi tilt sensor using GPIO with Pi4J
  */
-public class TiltSensorComponent implements DigitalEventProvider<TiltSensorComponent.TiltState> {
+public class TiltSensorComponent extends Component implements DigitalEventProvider<TiltSensorComponent.TiltState> {
     /**
      * Pi4J digital input instance used by this component
      */

@@ -19,10 +19,7 @@ public class PirMotionSensorApp implements Application {
         // Wait for stillstand before activating alarm system
         while (!motionSensor.hasStillstand()) {
             System.out.println("Waiting for motion sensor to detect stillstand...");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ignored) {
-            }
+            sleep(1000);
         }
         System.out.println("Alarm system activated, watching for movement...");
 
@@ -36,10 +33,7 @@ public class PirMotionSensorApp implements Application {
         // Wait 30 seconds before exiting this application
         for (int i = 30; i > 0; i--) {
             System.out.println("Waiting for " + i + " second(s) before exiting...");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ignored) {
-            }
+            sleep(1000);
         }
 
         // Cleanup the event listener before exiting

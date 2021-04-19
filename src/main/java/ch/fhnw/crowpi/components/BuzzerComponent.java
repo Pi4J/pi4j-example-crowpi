@@ -8,7 +8,7 @@ import com.pi4j.io.pwm.PwmType;
 /**
  * Implementation of the CrowPi buzzer using PWM with Pi4J
  */
-public class BuzzerComponent {
+public class BuzzerComponent extends Component {
     /**
      * If no pin is specified by the user, the default BCM pin 18 is used.
      */
@@ -62,12 +62,8 @@ public class BuzzerComponent {
 
             // If the duration is larger than zero, the tone should be automatically stopped after the given duration.
             if (duration > 0) {
-                try {
-                    Thread.sleep(duration);
-                } catch (InterruptedException ignored) {
-                } finally {
-                    this.playSilence();
-                }
+                sleep(duration);
+                this.playSilence();
             }
         } else {
             this.playSilence(duration);
@@ -89,10 +85,7 @@ public class BuzzerComponent {
      */
     public void playSilence(int duration) {
         this.playSilence();
-        try {
-            Thread.sleep(duration);
-        } catch (InterruptedException ignored) {
-        }
+        sleep(duration);
     }
 
     /**

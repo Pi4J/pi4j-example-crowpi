@@ -1,5 +1,6 @@
 package ch.fhnw.crowpi.components.internal;
 
+import ch.fhnw.crowpi.components.Component;
 import com.pi4j.io.spi.Spi;
 
 import java.util.Arrays;
@@ -8,7 +9,7 @@ import java.util.Arrays;
  * Implementation of MAX7219 driver chip used for 8x8 LED matrix displays.
  * Uses SPI via Pi4J for controlling the chip programmatically.
  */
-public class MAX7219 {
+public class MAX7219 extends Component {
     // MAX7219: Internal Commands
     private static final byte CMD_SET_FIRST_ROW = 0x01;
     private static final byte CMD_DECODE_MODE = 0x09;

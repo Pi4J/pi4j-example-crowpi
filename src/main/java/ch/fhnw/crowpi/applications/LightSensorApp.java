@@ -49,10 +49,7 @@ public class LightSensorApp implements Application {
             }
 
             // Sleep before continuing with next measurement
-            try {
-                Thread.sleep(DELAY);
-            } catch (InterruptedException ignored) {
-            }
+            sleep(DELAY);
         }
     }
 }

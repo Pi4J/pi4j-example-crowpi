@@ -29,10 +29,7 @@ public class TiltSensorApp implements Application {
         // Wait for 20 seconds before this application exits
         for (int i = 20; i > 0; i--) {
             System.out.println("Waiting for " + i + " second(s) before exiting... Tilt your CrowPi before it is too late :-)");
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ignored) {
-            }
+            sleep(1000);
         }
 
         // Cleanup by removing the event listener - while not needed, this is definitely the recommended way of doing things

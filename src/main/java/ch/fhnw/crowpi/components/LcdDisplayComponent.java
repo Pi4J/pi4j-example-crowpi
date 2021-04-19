@@ -8,7 +8,7 @@ import com.pi4j.context.Context;
 // Brauch MCP23008 die richtig auf IO schreibt
 // braucht komponente die richtig auf MCP schreibt
 // helligkeit nur mit poti
-public class LcdDisplayComponent {
+public class LcdDisplayComponent extends Component {
     /**
      * IO Component used to Display
      */
@@ -18,6 +18,11 @@ public class LcdDisplayComponent {
      */
     private static final int DEFAULT_BUS = 0x1;
     private static final int DEFAULT_DEVICE = 0x21;
+
+    /**
+     * Default Pulsewidth in Millis
+     */
+    private final int DEFAULT_PULSE_WIDTH = 1;
 
     /**
      * Creates a new LCD Display component using the default setup.
@@ -77,7 +82,7 @@ public class LcdDisplayComponent {
         setCursorToLine(line);
 
         for (int i = 0; i < text.length(); i++) {
-            write(text.charAt(i), true);
+            write(Symbol.getByChar(text.charAt(i)), true);
         }
     }
 
@@ -87,8 +92,14 @@ public class LcdDisplayComponent {
      * @param text Text to write to the display
      */
     public void writeText(String text) {
+        if ((text.length() > 32 && !text.contains("\n")) || (text.length() > 33 && text.contains("\n"))) {
+            throw new IllegalArgumentException("Too long text. Only 32 characters plus one linebreak allowed");
+        }
+
+        // Before writing set Cursor to line 1
         setCursorToLine(1);
 
+        // Iterate through characters and write them to the display
         for (int i = 0; i < text.length(); i++) {
             // line break in text found
             if (text.charAt(i) == '\n') {
@@ -96,16 +107,21 @@ public class LcdDisplayComponent {
                 continue;
             }
 
-            // write character to display
-            write(text.charAt(i), true);
+            // Write character to display
+            write(Symbol.getByChar(text.charAt(i)), true);
 
-            // was last character on first line? switch to second
+            // Was last character on first line? switch to second
             if (i == 15) {
                 setCursorToLine(2);
             }
         }
     }
 
+    /**
+     * Set the cursor to line 1 or 2
+     *
+     * @param number Sets the cursor to this line. Only Range 1-2 allowed.
+     */
     public void setCursorToLine(int number) {
         if (number > 2 || number < 1) {
             throw new IllegalArgumentException("CrowPi Display has only 2 Rows!");
@@ -114,21 +130,20 @@ public class LcdDisplayComponent {
         executeCommand(LCD_SETDDRAMADDR, LCD_ROW_OFFSETS[number - 1]);
     }
 
-    public void createOwnCharacter(int number, byte[] character) {
+    public void createOwnCharacter(int location, byte[] character) {
         if (character.length > 7) {
             throw new IllegalArgumentException("Array to long. Character is only 5x8 Digits. Only a array with length" +
-                    " 8 is allowed");
+                " 8 is allowed");
         }
 
-        number &= 0x7;
-        write(LCD_SETCGRAMADDR | (number << 3));
+        location &= 0x7;
+        write(LCD_SETCGRAMADDR | (location << 3));
 
         for (int i = 0; i < 8; i++) {
             write(character[i], true);
         }
 
     }
-
 
     /**
      * Enable and Disable the Backlight of the LCD Display
@@ -184,7 +199,7 @@ public class LcdDisplayComponent {
      *
      * @param c Number to write to the Display
      */
-    protected void write(int c) {
+    public void write(int c) {
         write(c, false);
     }
 
@@ -215,25 +230,8 @@ public class LcdDisplayComponent {
         mcp.pulsePin(LCD_EN, DEFAULT_PULSE_WIDTH);
     }
 
-
-    /**
-     * FIXME with component sleep!
-     *
-     * @param millis
-     */
-    public void sleep(int millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
     // Default MCP Configuration
     byte MCP_IO_CONFIG = 0x00;
-
-    // Default Pulsewidth
-    private final int DEFAULT_PULSE_WIDTH = 1;
 
     // Commands
     byte LCD_CLEARDISPLAY = 0x01;
@@ -245,13 +243,11 @@ public class LcdDisplayComponent {
     byte LCD_SETCGRAMADDR = 0x40;
     byte LCD_SETDDRAMADDR = (byte) 0x80;
 
-
     // Entry flags
     byte LCD_ENTRYRIGHT = 0x00;
     byte LCD_ENTRYLEFT = 0x02;
     byte LCD_ENTRYSHIFTINCREMENT = 0x01;
     byte LCD_ENTRYSHIFTDECREMENT = 0x00;
-
 
     // Control flags
     byte LCD_DISPLAYON = 0x04;
@@ -278,13 +274,6 @@ public class LcdDisplayComponent {
     // Offset forup to 4 rows.
     byte[] LCD_ROW_OFFSETS = {0x00, 0x40, 0x14, 0x54};
 
-    // Char LCDplate buttonnames.
-    int SELECT = 0;
-    int RIGHT = 1;
-    int DOWN = 2;
-    int UP = 3;
-    int LEFT = 4;
-
     /**
      * Pin out LCD auf MCP
      */
@@ -296,7 +285,10 @@ public class LcdDisplayComponent {
     private final int LCD_D7 = 6;
     private final int LCD_LIGHT = 7;
 
-    public enum Characters {
+    /**
+     * Enumeration with most important and used symbols. Resolves ASCII character to the LCD Display characters table
+     */
+    public enum Symbol {
         ZERO('0', 0x30),
         ONE('1', 0x31),
         TWO('2', 0x32),
@@ -395,25 +387,66 @@ public class LcdDisplayComponent {
         BRACE_RIGHT('}', 0x7D),
         ARROW_RIGHT('→', 0x7E),
         ARROW_LEFT('←', 0x7F),
-        SQUARE('□', 0xA1);
+        SQUARE('□', 0xA1),
+        TOP_LEFT_CORNER('⌜', 0xA2),
+        BOTTOM_RIGHT_CORNER('⌟', 0xA3),
+        SMALL_BACKSLASH('﹨', 0xA4),
+        KATAKANA_MIDPOINT('･', 0xA5),
+        SMALL_ALPHA('α', 0xE0),
+        LATIN_SMALL_A_WITH_DIAERESIS('ä', 0xE1),
+        BIG_BETA('β', 0xE2),
+        SMALL_EPSILON('ε', 0xE3),
+        SMALL_MY('μ', 0xE4),
+        SMALL_SIGMA('σ', 0xE5),
+        SMALL_RHO('ρ', 0xE6),
+        SQUARE_ROOT('√', 0xE8),
+        LATIN_SMALL_O_WITH_DIAERESIS('ö', 0xEF),
+        BIG_THETA('ϴ', 0xF2),
+        INFINITY_SIGN('∞', 0xF3),
+        BIG_OMEGA('Ω', 0xF4),
+        LATIN_SMALL_U_WITH_DIAERESIS('ü', 0xF5),
+        BIG_SIGMA('∑', 0xF6),
+        SMALL_PI('π', 0xF7),
+        SHIN('Ⴘ', 0xF9),
+        TSHE('Ћ', 0xFB),
+        DIVISION('÷', 0xFD),
+        SPACE(' ', 0xFE),
+        BLACKBOX('⏹', 0xFF);
 
-
-
+        /**
+         * ASCII character to which this symbol belongs to or ? if no ASCII mapping is available
+         */
         private final int ascii;
+
+        /**
+         * Byte representing the ASCII character on the LCD Display
+         */
         private final int code;
 
-        public int getCode() {
-            return this.code;
-        }
-
-        public int getAsci() {
-            return this.ascii;
-        }
-
-        Characters(int ascii, int code) {
+        /**
+         * Creates a new symbol associated to a specific ASCII character
+         *
+         * @param ascii ASCII character to be associated with
+         * @param code  byte representing the chosen ASCII character on the LCD Display
+         */
+        Symbol(int ascii, int code) {
             this.ascii = ascii;
             this.code = code;
         }
-        }
-}
 
+        /**
+         * Method to search a the corresponding byte to an ASCII sign. Returns a ? if a symbol is not found
+         *
+         * @param c ASCII Symbol
+         * @return Byte needed to display the Symbol on the LCD Display
+         */
+        public static int getByChar(char c) {
+            for (Symbol symbol : Symbol.values()) {
+                if (symbol.ascii == c) {
+                    return symbol.code;
+                }
+            }
+            return QUESTION.code;
+        }
+    }
+}

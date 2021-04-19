@@ -27,10 +27,7 @@ public class LedMatrixApp implements Application {
         });
 
         // Sleep for a second before moving to the next example...
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ignored) {
-        }
+        sleep(1000);
 
         // Display list of smiley symbols with a short delay between each one
         final var symbols = new Symbol[]{
@@ -41,10 +38,7 @@ public class LedMatrixApp implements Application {
         };
         for (Symbol symbol : symbols) {
             matrix.print(symbol);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ignored) {
-            }
+            sleep(1000);
         }
 
         // Transition to all four arrows with each sliding in from the direction its pointing towards

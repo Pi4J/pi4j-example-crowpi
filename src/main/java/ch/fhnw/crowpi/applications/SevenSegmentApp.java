@@ -32,10 +32,7 @@ public class SevenSegmentApp implements Application {
         segment.refresh(); // Send updated buffer to display
 
         // Sleep for three seconds before moving on...
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException ignored) {
-        }
+        sleep(3000);
 
         // Show fake loading indicator by moving a single dash from left to right several times
         // We do so by initializing an array with all possible states (forward & reverse) and printing it in order
@@ -44,10 +41,7 @@ public class SevenSegmentApp implements Application {
             for (String state : states) {
                 // Print current state and sleep for 50 milliseconds
                 segment.print(state);
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException ignored) {
-                }
+                sleep(50);
             }
         }
 
@@ -57,10 +51,7 @@ public class SevenSegmentApp implements Application {
             segment.print(LocalTime.now());
 
             // Sleep for one second before continuing
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ignored) {
-            }
+            sleep(1000);
         }
     }
 }
