@@ -1,10 +1,11 @@
 package ch.fhnw.crowpi.components.internal;
 
+import ch.fhnw.crowpi.components.Component;
 import com.pi4j.context.Context;
 import com.pi4j.io.i2c.I2C;
 import com.pi4j.io.i2c.I2CConfig;
 
-public class MCP23008 {
+public class MCP23008 extends Component {
     private final I2C i2c;
     /**
      * Those default address are to use this class with default CrowPi setup
@@ -102,19 +103,6 @@ public class MCP23008 {
      */
     public void writePins() {
         i2c.writeRegister(GPIO_REGISTER_ADDRESS, gpioState);
-    }
-
-    /**
-     * Sleep delays the current thread
-     *
-     * @param millis Time to interrupt the thread in millis
-     */
-    private void sleep(int millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
     }
 
     /**

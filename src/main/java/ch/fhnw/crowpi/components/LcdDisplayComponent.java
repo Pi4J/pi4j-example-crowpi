@@ -8,7 +8,7 @@ import com.pi4j.context.Context;
 // Brauch MCP23008 die richtig auf IO schreibt
 // braucht komponente die richtig auf MCP schreibt
 // helligkeit nur mit poti
-public class LcdDisplayComponent {
+public class LcdDisplayComponent extends Component {
     /**
      * IO Component used to Display
      */
@@ -218,20 +218,6 @@ public class LcdDisplayComponent {
         mcp.setPin(LCD_D7, (b & 0b0000_1000) > 0);
         mcp.writePins();
         mcp.pulsePin(LCD_EN, DEFAULT_PULSE_WIDTH);
-    }
-
-
-    /**
-     * FIXME with component sleep!
-     *
-     * @param millis
-     */
-    public void sleep(int millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
     }
 
     // Default MCP Configuration

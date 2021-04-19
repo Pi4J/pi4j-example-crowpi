@@ -14,18 +14,18 @@ public class LcdDisplayApp implements Application {
 
         lcd.writeText("ABC\nQRSTUVWXYZ123456");
 
-        lcd.sleep(2000);
+        sleep(2000);
 
         lcd.writeLine("<!?dfjäeüöü>", 2);
 
-        lcd.sleep(2000);
+        sleep(2000);
         lcd.writeLine("First Line", 1);
 
-        lcd.sleep(2000);
+        sleep(2000);
         lcd.clearLine(1);
         lcd.writeLine("EY GEHT DOCH!", 2);
 
-        lcd.sleep(5000);
+        sleep(5000);
         lcd.clearDisplay();
         lcd.setDisplayBacklight(false);
     }
