@@ -122,7 +122,7 @@ public class LcdDisplayComponent {
     public void createOwnCharacter(int number, byte[] character) {
         if (character.length > 7) {
             throw new IllegalArgumentException("Array to long. Character is only 5x8 Digits. Only a array with length" +
-                    " 8 is allowed");
+                " 8 is allowed");
         }
 
         number &= 0x7;
@@ -301,7 +301,7 @@ public class LcdDisplayComponent {
     private final int LCD_D7 = 6;
     private final int LCD_LIGHT = 7;
 
-    public enum Characters {
+    public enum Symbol {
         ZERO('0', 0x30),
         ONE('1', 0x31),
         TWO('2', 0x32),
@@ -400,24 +400,47 @@ public class LcdDisplayComponent {
         BRACE_RIGHT('}', 0x7D),
         ARROW_RIGHT('→', 0x7E),
         ARROW_LEFT('←', 0x7F),
-        SQUARE('□', 0xA1);
-
-
+        SQUARE('□', 0xA1),
+        TOP_LEFT_CORNER('⌜', 0xA2),
+        BOTTOM_RIGHT_CORNER('⌟', 0xA3),
+        SMALL_BACKSLASH('﹨', 0xA4),
+        KATAKANA_MIDPOINT('･', 0xA5),
+        SMALL_ALPHA('α', 0xE0),
+        LATIN_SMALL_A_WITH_DIAERESIS('ä', 0xE1),
+        BIG_BETA('β', 0xE2),
+        SMALL_EPSILON('ε', 0xE3),
+        SMALL_MY('μ', 0xE4),
+        SMALL_SIGMA('σ', 0xE5),
+        SMALL_RHO('ρ', 0xE6),
+        SQUARE_ROOT('√', 0xE8),
+        LATIN_SMALL_O_WITH_DIAERESIS('ö', 0xEF),
+        BIG_THETA('ϴ', 0xF2),
+        INFINITY_SIGN('∞', 0xF3),
+        BIG_OMEGA('Ω', 0xF4),
+        LATIN_SMALL_U_WITH_DIAERESIS('ü', 0xF5),
+        BIG_SIGMA('∑', 0xF6),
+        SMALL_PI('π', 0xF7),
+        SHIN('Ⴘ', 0xF9),
+        TSHE('Ћ', 0xFB),
+        DIVISION('÷', 0xFD),
+        SPACE(' ', 0xFE),
+        BLACKBOX('⏹', 0xFF);
 
         private final int ascii;
         private final int code;
 
-        public int getCode() {
-            return this.code;
+        public static int getByChar(char c) {
+            for (Symbol symbol : Symbol.values()) {
+                if (symbol.ascii == c) {
+                    return symbol.code;
+                }
+            }
+            return QUESTION.code;
         }
 
-        public int getAsci() {
-            return this.ascii;
-        }
-
-        Characters(int ascii, int code) {
+        Symbol(int ascii, int code) {
             this.ascii = ascii;
             this.code = code;
         }
-        }
+    }
 }
