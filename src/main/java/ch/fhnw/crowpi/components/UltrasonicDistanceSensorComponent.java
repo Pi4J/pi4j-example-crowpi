@@ -90,11 +90,11 @@ public class UltrasonicDistanceSensorComponent extends Component {
             long endTime = 0;
 
             triggerTask.start();
-            while (digitalInputEcho.isLow()) {
+            while (digitalInputEcho.isLow() && !Thread.currentThread().isInterrupted()) {
                 startTime = System.nanoTime();
             }
 
-            while (digitalInputEcho.isHigh()) {
+            while (digitalInputEcho.isHigh() && !Thread.currentThread().isInterrupted()) {
                 endTime = System.nanoTime();
             }
 
@@ -106,7 +106,8 @@ public class UltrasonicDistanceSensorComponent extends Component {
             // Sometimes a measurement can fail. Timeout and return invalid measurement value.
             measurementTask.join(1000);
         } catch (InterruptedException timeout) {
-            return -1;
+            measurementTask.interrupt();
+            throw new MeasurementException("Timed out while retrieving measurement");
         }
 
         return pulseLength;
