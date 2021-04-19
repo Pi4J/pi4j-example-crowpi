@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Implementation of the CrowPi ultrasonic distance sensor (HC-SR04) using GPIO with Pi4J
  */
-public class UltrasonicDistanceSensorComponent {
+public class UltrasonicDistanceSensorComponent extends Component {
     /**
      * Pi4J digital output instance used by this component
      */

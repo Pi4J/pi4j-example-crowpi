@@ -41,10 +41,7 @@ public class UltrasonicDistanceSensorApp implements Application {
             }
 
             // Delay the measurements a little. This gives you some time to move in front of the sensor.
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ignored) {
-            }
+            sleep(1000);
         }
     }
 }
