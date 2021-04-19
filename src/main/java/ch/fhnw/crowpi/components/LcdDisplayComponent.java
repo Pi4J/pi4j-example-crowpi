@@ -20,6 +20,11 @@ public class LcdDisplayComponent extends Component {
     private static final int DEFAULT_DEVICE = 0x21;
 
     /**
+     * Default Pulsewidth in Millis
+     */
+    private final int DEFAULT_PULSE_WIDTH = 1;
+
+    /**
      * Creates a new LCD Display component using the default setup.
      *
      * @param pi4j Pi4J context
@@ -38,11 +43,6 @@ public class LcdDisplayComponent extends Component {
     public LcdDisplayComponent(Context pi4j, int bus, int device) {
         this.mcp = new MCP23008(pi4j, bus, device);
         this.mcp.initializeIo(MCP_IO_CONFIG);
-    }
-
-    // FIXME IM JUST A TEST METHOD!
-    public void play() {
-        write('A', true);
     }
 
     /**
@@ -92,8 +92,14 @@ public class LcdDisplayComponent extends Component {
      * @param text Text to write to the display
      */
     public void writeText(String text) {
+        if ((text.length() > 32 && !text.contains("\n")) || (text.length() > 33 && text.contains("\n"))) {
+            throw new IllegalArgumentException("Too long text. Only 32 characters plus one linebreak allowed");
+        }
+
+        // Before writing set Cursor to line 1
         setCursorToLine(1);
 
+        // Iterate through characters and write them to the display
         for (int i = 0; i < text.length(); i++) {
             // line break in text found
             if (text.charAt(i) == '\n') {
@@ -101,16 +107,21 @@ public class LcdDisplayComponent extends Component {
                 continue;
             }
 
-            // write character to display
+            // Write character to display
             write(Symbol.getByChar(text.charAt(i)), true);
 
-            // was last character on first line? switch to second
+            // Was last character on first line? switch to second
             if (i == 15) {
                 setCursorToLine(2);
             }
         }
     }
 
+    /**
+     * Set the cursor to line 1 or 2
+     *
+     * @param number Sets the cursor to this line. Only Range 1-2 allowed.
+     */
     public void setCursorToLine(int number) {
         if (number > 2 || number < 1) {
             throw new IllegalArgumentException("CrowPi Display has only 2 Rows!");
@@ -119,21 +130,20 @@ public class LcdDisplayComponent extends Component {
         executeCommand(LCD_SETDDRAMADDR, LCD_ROW_OFFSETS[number - 1]);
     }
 
-    public void createOwnCharacter(int number, byte[] character) {
+    public void createOwnCharacter(int location, byte[] character) {
         if (character.length > 7) {
             throw new IllegalArgumentException("Array to long. Character is only 5x8 Digits. Only a array with length" +
                 " 8 is allowed");
         }
 
-        number &= 0x7;
-        write(LCD_SETCGRAMADDR | (number << 3));
+        location &= 0x7;
+        write(LCD_SETCGRAMADDR | (location << 3));
 
         for (int i = 0; i < 8; i++) {
             write(character[i], true);
         }
 
     }
-
 
     /**
      * Enable and Disable the Backlight of the LCD Display
@@ -189,7 +199,7 @@ public class LcdDisplayComponent extends Component {
      *
      * @param c Number to write to the Display
      */
-    protected void write(int c) {
+    public void write(int c) {
         write(c, false);
     }
 
@@ -223,9 +233,6 @@ public class LcdDisplayComponent extends Component {
     // Default MCP Configuration
     byte MCP_IO_CONFIG = 0x00;
 
-    // Default Pulsewidth
-    private final int DEFAULT_PULSE_WIDTH = 1;
-
     // Commands
     byte LCD_CLEARDISPLAY = 0x01;
     byte LCD_RETURNHOME = 0x02;
@@ -236,13 +243,11 @@ public class LcdDisplayComponent extends Component {
     byte LCD_SETCGRAMADDR = 0x40;
     byte LCD_SETDDRAMADDR = (byte) 0x80;
 
-
     // Entry flags
     byte LCD_ENTRYRIGHT = 0x00;
     byte LCD_ENTRYLEFT = 0x02;
     byte LCD_ENTRYSHIFTINCREMENT = 0x01;
     byte LCD_ENTRYSHIFTDECREMENT = 0x00;
-
 
     // Control flags
     byte LCD_DISPLAYON = 0x04;
@@ -269,13 +274,6 @@ public class LcdDisplayComponent extends Component {
     // Offset forup to 4 rows.
     byte[] LCD_ROW_OFFSETS = {0x00, 0x40, 0x14, 0x54};
 
-    // Char LCDplate buttonnames.
-    int SELECT = 0;
-    int RIGHT = 1;
-    int DOWN = 2;
-    int UP = 3;
-    int LEFT = 4;
-
     /**
      * Pin out LCD auf MCP
      */
@@ -287,6 +285,9 @@ public class LcdDisplayComponent extends Component {
     private final int LCD_D7 = 6;
     private final int LCD_LIGHT = 7;
 
+    /**
+     * Enumeration with most important and used symbols. Resolves ASCII character to the LCD Display characters table
+     */
     public enum Symbol {
         ZERO('0', 0x30),
         ONE('1', 0x31),
@@ -412,9 +413,33 @@ public class LcdDisplayComponent extends Component {
         SPACE(' ', 0xFE),
         BLACKBOX('⏹', 0xFF);
 
+        /**
+         * ASCII character to which this symbol belongs to or ? if no ASCII mapping is available
+         */
         private final int ascii;
+
+        /**
+         * Byte representing the ASCII character on the LCD Display
+         */
         private final int code;
 
+        /**
+         * Creates a new symbol associated to a specific ASCII character
+         *
+         * @param ascii ASCII character to be associated with
+         * @param code  byte representing the chosen ASCII character on the LCD Display
+         */
+        Symbol(int ascii, int code) {
+            this.ascii = ascii;
+            this.code = code;
+        }
+
+        /**
+         * Method to search a the corresponding byte to an ASCII sign. Returns a ? if a symbol is not found
+         *
+         * @param c ASCII Symbol
+         * @return Byte needed to display the Symbol on the LCD Display
+         */
         public static int getByChar(char c) {
             for (Symbol symbol : Symbol.values()) {
                 if (symbol.ascii == c) {
@@ -422,11 +447,6 @@ public class LcdDisplayComponent extends Component {
                 }
             }
             return QUESTION.code;
-        }
-
-        Symbol(int ascii, int code) {
-            this.ascii = ascii;
-            this.code = code;
         }
     }
 }

@@ -27,6 +27,18 @@ public class LcdDisplayApp implements Application {
 
         sleep(5000);
         lcd.clearDisplay();
-        lcd.setDisplayBacklight(false);
+
+        lcd.createOwnCharacter(1, new byte[] {
+            0b01111,
+            0b10111,
+            0b11011,
+            0b11101,
+            0b11110,
+            0b11101,
+            0b11011,
+            0b11011,
+        });
+
+        lcd.writeText("\1");
     }
 }
