@@ -68,7 +68,7 @@ public class UltrasonicDistanceSensorComponent extends Component {
     /**
      * Start a measurement with custom temperature setting. Use this to have a temperature compensation.
      *
-     * @param temperature Current environment temperature the ultra sonic sensor is working in
+     * @param temperature Current environment temperature the ultra sonic sensor is working in. Range -20°C to 40°C
      * @return Measured distance [cm]
      */
     public double measure(double temperature) {
@@ -117,7 +117,7 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * Calculates measured distance from pulse length with temperature compensation.
      *
      * @param pulseLength pulse duration in milliseconds
-     * @param temperature temperature during the measurement
+     * @param temperature temperature during the measurement. Range -20°C to 40°C
      * @return distance in centimeters
      */
     protected double calculateDistance(double pulseLength, double temperature) {
