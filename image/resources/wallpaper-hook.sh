@@ -25,6 +25,7 @@ case "${reason:-}" in
       lan_address="${new_ip_address:-}"
     elif [ "${interface}" = "${WLAN_INTERFACE}" ]; then
       wlan_address="${new_ip_address:-}"
+      wlan_ssid="${ifssid:-}"
     fi
     ;;
   # If our lease expired or interface went down, treat as not connected
@@ -53,13 +54,25 @@ if [ -z "${wlan_address:-}" ]; then
   fi
 fi
 
+# Detect WLAN SSID from system if still unknown
+if [ -z "${wlan_ssid}" ]; then
+  wlan_ssid="$(iwgetid -r)"
+fi
+
+# Build target string for WLAN state
+if [ "${wlan_address}" != "<not connected>" ] && [ -n "${wlan_ssid}" ]; then
+  wlan_state="${wlan_address} @ ${wlan_ssid}"
+else
+  wlan_state="${wlan_address}"
+fi
+
 # Generate wallpaper with network info
 convert "${WP_INPUT_FILE}" \
 	-gravity center \
 	-pointsize 80 \
 	-fill white \
 	-draw "text 0,250 'Ethernet: ${lan_address}'" \
-	-draw "text 0,350 'WLAN: ${wlan_address}'" \
+	-draw "text 0,350 'WLAN: ${wlan_state}'" \
 	-draw "text 0,450 'Hostname: $(uname -n)'" \
 	"${WP_OUTPUT_FILE}.new"
 
