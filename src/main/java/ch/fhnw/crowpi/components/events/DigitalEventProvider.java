@@ -12,7 +12,7 @@ import com.pi4j.io.gpio.digital.DigitalState;
  *
  * @param <V> Type of value which gets passed to event handlers.
  */
-public interface DigitalEventProvider<V> extends EventProvider<DigitalEventListener<V>, V> {
+public interface DigitalEventProvider<V> extends EventProvider<DigitalEventListener<V>, V>, SimpleEventProvider<V> {
     /**
      * Returns the Pi4J {@link DigitalInput} associated with this component.
      *

@@ -20,11 +20,13 @@ public class TiltSensorApp implements Application {
         System.out.println("Is the CrowPi tilted left: " + tiltSensor.hasLeftTilt());
         System.out.println("Is the CrowPi tilted right: " + tiltSensor.hasRightTilt());
 
-        // Register an event listener to be notified when the sensor changes
-        // This will be asynchronously called and does not block the application itself
-        final var eventListener = tiltSensor.addListener((listener, state) -> {
-            System.out.println("Tilt State: " + state);
-        });
+        // Register two event listeners to be notified when the tilt changes
+        // These handlers will be asynchronously called and do not block the application itself
+        tiltSensor.onTiltLeft(() -> System.out.println("<<< Left Tilt <<<"));
+        tiltSensor.onTiltRight(() -> System.out.println(">>> Right Tilt >>>"));
+
+        // Register an additional event listener to detect shaking
+        tiltSensor.onShake(() -> System.out.println("!!! Shaking !!!"));
 
         // Wait for 20 seconds before this application exits
         for (int i = 20; i > 0; i--) {
@@ -32,7 +34,9 @@ public class TiltSensorApp implements Application {
             sleep(1000);
         }
 
-        // Cleanup by removing the event listener - while not needed, this is definitely the recommended way of doing things
-        eventListener.remove();
+        // Cleanup by disabling the event listeners
+        tiltSensor.onTiltLeft(null);
+        tiltSensor.onTiltRight(null);
+        tiltSensor.onShake(null);
     }
 }
