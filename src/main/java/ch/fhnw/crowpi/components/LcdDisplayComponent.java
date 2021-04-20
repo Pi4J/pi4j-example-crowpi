@@ -48,9 +48,6 @@ public class LcdDisplayComponent extends Component {
      * Initializes the LCD Display
      */
     public void initialize() {
-        // Enable backlight
-        setDisplayBacklight(true);
-
         // Initialize display
         write((byte) 0b001_10011);
         write((byte) 0b001_10010);
@@ -68,6 +65,9 @@ public class LcdDisplayComponent extends Component {
 
         // Clear display
         clearDisplay();
+
+        // Enable backlight
+        setDisplayBacklight(true);
     }
 
     /**
@@ -98,8 +98,8 @@ public class LcdDisplayComponent extends Component {
      * @param line Select Line of Display
      */
     public void writeLine(String text, int line) {
-        moveCursorHome();
         clearLine(line);
+        moveCursorHome();
         setCursorToLine(line);
 
         for (int i = 0; i < text.length(); i++) {
@@ -117,13 +117,16 @@ public class LcdDisplayComponent extends Component {
             throw new IllegalArgumentException("Too long text. Only 32 characters plus one linebreak allowed");
         }
 
-        // Before writing set Cursor to line 1
+        // Clean and prepare to write some text
+        var currentLine = 1;
+        clearDisplay();
         setCursorToLine(1);
 
         // Iterate through characters and write them to the display
         for (int i = 0; i < text.length(); i++) {
             // line break in text found
             if (text.charAt(i) == '\n') {
+                currentLine = 2;
                 setCursorToLine(2);
                 continue;
             }
@@ -132,8 +135,12 @@ public class LcdDisplayComponent extends Component {
             write(Symbol.getByChar(text.charAt(i)), true);
 
             // Was last character on first line? switch to second
-            if (i == 15) {
+            if (i == 15 && currentLine == 1) {
                 setCursorToLine(2);
+                if (text.charAt(i + 1) == ' ') {
+                    i++;
+                }
+                currentLine = 2;
             }
         }
     }
@@ -151,6 +158,7 @@ public class LcdDisplayComponent extends Component {
      */
     public void moveCursorRight() {
         executeCommand(LCD_CURSOR_SHIFT, (byte) (LCD_CURSOR_MOVE | LCD_MOVE_RIGHT));
+        sleep(1);
     }
 
     /**
@@ -158,6 +166,7 @@ public class LcdDisplayComponent extends Component {
      */
     public void moveCursorLeft() {
         executeCommand(LCD_CURSOR_SHIFT, (byte) (LCD_CURSOR_MOVE | LCD_MOVE_LEFT));
+        sleep(1);
     }
 
     /**

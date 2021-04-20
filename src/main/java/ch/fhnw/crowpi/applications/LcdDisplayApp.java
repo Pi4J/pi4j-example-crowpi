@@ -8,69 +8,148 @@ public class LcdDisplayApp implements Application {
     @Override
     public void execute(Context pi4j) {
         LcdDisplayComponent lcd = new LcdDisplayComponent(pi4j);
-        System.out.println("CrowPi with Pi4J rocks!");
+        System.out.println("Here we go.. let's have some fun with that LCD Display!");
 
+        // First we need to setup the LCD Display. That for just call initialize
         lcd.initialize();
 
-        lcd.writeText("ABC\nQRSTUVWXYZ123456");
+        // Write text to the lines separate
+        lcd.writeLine("Hello",1);
+        lcd.writeLine("   World!", 2);
 
-        sleep(1000);
+        // Wait a little to have some time to read it
+        sleep(3000);
 
-        lcd.writeLine("<!?dfjäeüöü>", 2);
+        // Clean the display to start next parts
+        lcd.clearDisplay();
 
-        sleep(1000);
-        lcd.writeLine("First Line", 1);
+        // Let's try to draw a house. To keep this method short and clean we create the characters in a separate
+        // method below. */
+        createCharacters(lcd);
 
-        sleep(1000);
-        lcd.clearLine(1);
-        lcd.writeLine("EY GEHT DOCH!", 2);
+        // Now all characters are ready. Just draw them on the right place by moving the cursor and writing the
+        // created characters to specific positions */
+        lcd.writeCharacter('\1', 1, 1);
+        lcd.writeCharacter('\2', 2, 1);
+        lcd.writeCharacter('\3', 1, 2);
+        lcd.writeCharacter('\4', 2, 2);
+
+        // Delay a few seconds to let you enjoy our little house
+        sleep(3000);
+
+        // Uhm but the view from our house would be better from the other side. lets move it over there
+        for (int i = 0; i < 10; i++) {
+            lcd.moveDisplayRight();
+            sleep(100);
+        }
+
+        // Enjoy the new view from our house
+        sleep(5000);
+
+        // To clean up or start with something new just use the cleanDisplay method
+        lcd.clearDisplay();
+
+        // To write some text there are different methods. The simplest one is this one which automatically inserts
+        // linebreaks if needed.
+        lcd.writeText("Boohoo that's so simple to use!");
+
+        // Delay again
+        sleep(3000);
+
+        // Of course it is also possible to write a single line
+        lcd.writeLine("hard to usE!", 2);
+        sleep(3000);
+
+        // The display always works with a current position. That's called the cursor. You can simply modify the
+        // cursor with a few method calls
         lcd.setCursorVisibility(true);
         lcd.setCursorBlinking(true);
 
-        lcd.returnHome();
-        sleep(2000);
-        lcd.moveDisplayRight();
-        sleep(2000);
-        lcd.moveDisplayLeft();
-        sleep(2000);
-        lcd.moveCursorRight();
-        sleep(2000);
+        // Now you can see the cursor is right behind the last character we wrote before.
+        sleep(5000);
 
-        sleep(2000);
+        // The last text had a mistake so let's move there and fix it.
+        lcd.moveCursorLeft();
+        lcd.moveCursorLeft();
+        lcd.moveCursorLeft();
+        sleep(1000);
+        // Ups to many
+        lcd.moveCursorRight();
+        // And fix it
+        lcd.writeCharacter('e');
+
+        // Now it looks fine
+        sleep(3000);
+
+        // Cursor annoying? Simply turn it off and clean the display again
+        lcd.setCursorBlinking(false);
+        lcd.setCursorVisibility(false);
         lcd.clearDisplay();
 
+        // Some more text writings
+        lcd.writeText("Want more fun?");
+        sleep(3000);
+        // Its also possible to just clean a line
+        lcd.clearLine(2);
+        // write on the clean line again
+        lcd.writeLine("No, thanks.", 2);
+        sleep(3000);
+        // A \n makes a manual line break
+        lcd.writeText("Okay ...\nBye Bye! :-(");
+        sleep(5000);
+
+        // Turn off the backlight makes the display appear turned off
+        lcd.setDisplayBacklight(false);
+    }
+
+    public void createCharacters(LcdDisplayComponent lcd) {
+
+        // Create upper left part of the house
         lcd.createCharacter(1, new byte[]{
-            0b01111,
-            0b10111,
-            0b11011,
-            0b11101,
-            0b11110,
-            0b11101,
-            0b11011,
-            0b10111,
-        });
-
-        lcd.createCharacter(2, new byte[]{
-            0b11111,
-            0b11111,
             0b00000,
-            0b11101,
-            0b11110,
-            0b11101,
-            0b11011,
-            0b10111,
+            0b00000,
+            0b00000,
+            0b00001,
+            0b00011,
+            0b00111,
+            0b01111,
+            0b11111
         });
 
+        // Create upper right part of the house
+        lcd.createCharacter(2, new byte[]{
+            0b00000,
+            0b00000,
+            0b00010,
+            0b10010,
+            0b11010,
+            0b11110,
+            0b11110,
+            0b11111
+        });
 
-        lcd.writeCharacter('\1', 0, 2);
-        sleep(1000);
-        lcd.setCursorBlinking(false);
-        lcd.writeCharacter('\1', 15 , 2);
-        sleep(1000);
-        lcd.setCursorVisibility(false);
+        // Create lower left part of the house
+        lcd.createCharacter(3, new byte[]{
+            0b11111,
+            0b11111,
+            0b11111,
+            0b11111,
+            0b10001,
+            0b10001,
+            0b10001,
+            0b10001
+        });
 
-        sleep(1000);
-
-        lcd.writeText("c \1 b \2 a");
+        // Create lower right part of the house
+        lcd.createCharacter(4, new byte[]{
+            0b11111,
+            0b11111,
+            0b11111,
+            0b10001,
+            0b10001,
+            0b10001,
+            0b11111,
+            0b11111
+        });
     }
 }
