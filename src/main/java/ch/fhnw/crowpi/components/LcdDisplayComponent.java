@@ -193,14 +193,14 @@ public class LcdDisplayComponent extends Component {
     /**
      * Set the cursor to line 1 or 2
      *
-     * @param number Sets the cursor to this line. Only Range 1-2 allowed.
+     * @param line Sets the cursor to this line. Only Range 1-2 allowed.
      */
-    public void setCursorToLine(int number) {
-        if (number > 2 || number < 1) {
+    public void setCursorToLine(int line) {
+        if (line > 2 || line < 1) {
             throw new IllegalArgumentException("CrowPi Display has only 2 Rows!");
         }
 
-        executeCommand(LCD_SET_DDRAM_ADDR, LCD_ROW_OFFSETS[number - 1]);
+        executeCommand(LCD_SET_DDRAM_ADDR, LCD_ROW_OFFSETS[line - 1]);
     }
 
     /**
