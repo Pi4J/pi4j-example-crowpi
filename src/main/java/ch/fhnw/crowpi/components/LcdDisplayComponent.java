@@ -3,11 +3,10 @@ package ch.fhnw.crowpi.components;
 import ch.fhnw.crowpi.components.internal.MCP23008;
 import com.pi4j.context.Context;
 
-// Diese Ding benutzt IO via MCP23008.
-// Also I2C -> MCP23008 -> IO -> Display
-// Brauch MCP23008 die richtig auf IO schreibt
-// braucht komponente die richtig auf MCP schreibt
-// helligkeit nur mit poti
+/**
+ * This class provides a simple usage of a LCD Display with Pi4J and the CrowPi.
+ * There are different ways possible to use this functionalities from pretty simple to a bit more basic and advanced. *
+ */
 public class LcdDisplayComponent extends Component {
     /**
      * IO Component used to Display
@@ -20,9 +19,9 @@ public class LcdDisplayComponent extends Component {
     private static final int DEFAULT_DEVICE = 0x21;
 
     /**
-     * Default Pulsewidth in Millis
+     * With this Byte cursor visibility is controlled
      */
-    private final int DEFAULT_PULSE_WIDTH = 1;
+    private byte displayControl;
 
     /**
      * Creates a new LCD Display component using the default setup.
@@ -57,17 +56,39 @@ public class LcdDisplayComponent extends Component {
         write((byte) 0b001_10010);
 
         // Initialize display settings
-        byte displayControl = (byte) (LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF);
-        byte displayFunction = (byte) (LCD_4BITMODE | LCD_1LINE | LCD_2LINE | LCD_5x8DOTS);
-        byte displayMode = (byte) (LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT);
+
+        this.displayControl = (byte) (LCD_DISPLAY_ON | LCD_CURSOR_OFF | LCD_BLINK_OFF);
+        byte displayFunction = (byte) (LCD_4BIT_MODE | LCD_1LINE | LCD_2LINE | LCD_5x8DOTS);
+        byte displayMode = (byte) (LCD_ENTRY_LEFT | LCD_ENTRY_SHIFT_DECREMENT);
 
         // Write Display settings
-        executeCommand(LCD_DISPLAYCONTROL, displayControl);
-        write((byte) (LCD_FUNCTIONSET | displayFunction));
-        write((byte) (LCD_ENTRYMODESET | displayMode));
+        executeCommand(LCD_DISPLAY_CONTROL, displayControl);
+        write((byte) (LCD_FUNCTION_SET | displayFunction));
+        write((byte) (LCD_ENTRY_MODE_SET | displayMode));
 
         // Clear display
         clearDisplay();
+    }
+
+    /**
+     * Writes a character to the current cursor position
+     *
+     * @param c Character which is written to the LCD Display
+     */
+    public void writeCharacter(char c) {
+        write(Symbol.getByChar(c), true);
+    }
+
+    /**
+     * Write a character to a specified place on the display.
+     *
+     * @param c     Character to write
+     * @param digit Digit number on the line
+     * @param line  Line number on the display
+     */
+    public void writeCharacter(char c, int digit, int line) {
+        setCursorToPosition(digit, line);
+        write(Symbol.getByChar(c), true);
     }
 
     /**
@@ -77,7 +98,7 @@ public class LcdDisplayComponent extends Component {
      * @param line Select Line of Display
      */
     public void writeLine(String text, int line) {
-        returnHome();
+        moveCursorHome();
         clearLine(line);
         setCursorToLine(line);
 
@@ -118,6 +139,49 @@ public class LcdDisplayComponent extends Component {
     }
 
     /**
+     * Returns the Cursor to Home Position (First line, first character)
+     */
+    public void moveCursorHome() {
+        write(LCD_RETURN_HOME);
+        sleep(3);
+    }
+
+    /**
+     * Moves the cursor 1 character right
+     */
+    public void moveCursorRight() {
+        executeCommand(LCD_CURSOR_SHIFT, (byte) (LCD_CURSOR_MOVE | LCD_MOVE_RIGHT));
+    }
+
+    /**
+     * Moves the cursor 1 character left
+     */
+    public void moveCursorLeft() {
+        executeCommand(LCD_CURSOR_SHIFT, (byte) (LCD_CURSOR_MOVE | LCD_MOVE_LEFT));
+    }
+
+    /**
+     * Sets the cursor to a target destination
+     *
+     * @param digit Selects the character of the line
+     * @param line  Selects the line of the display
+     */
+    public void setCursorToPosition(int digit, int line) {
+        if (line > 2 || line < 1) {
+            throw new IllegalArgumentException("Line out of range. Display has only 2x16 Characters!");
+        }
+
+        if (digit < 0 || digit > 15) {
+            throw new IllegalArgumentException("Digit out of range. Display has only 2x16 Characters!");
+        }
+
+        digit &= 0xFF;
+        line &= 0xFF;
+
+        executeCommand(LCD_SET_DDRAM_ADDR, (byte) (digit + LCD_ROW_OFFSETS[line - 1]));
+    }
+
+    /**
      * Set the cursor to line 1 or 2
      *
      * @param number Sets the cursor to this line. Only Range 1-2 allowed.
@@ -127,17 +191,72 @@ public class LcdDisplayComponent extends Component {
             throw new IllegalArgumentException("CrowPi Display has only 2 Rows!");
         }
 
-        executeCommand(LCD_SETDDRAMADDR, LCD_ROW_OFFSETS[number - 1]);
+        executeCommand(LCD_SET_DDRAM_ADDR, LCD_ROW_OFFSETS[number - 1]);
     }
 
-    public void createOwnCharacter(int location, byte[] character) {
-        if (character.length > 8) {
+    /**
+     * Sets the display cursor to hidden or showing
+     *
+     * @param show Set the state of the cursor
+     */
+    public void setCursorVisibility(boolean show) {
+        if (show) {
+            this.displayControl |= LCD_CURSOR_ON;
+        } else {
+            this.displayControl &= ~LCD_CURSOR_ON;
+        }
+
+        executeCommand(LCD_DISPLAY_CONTROL, this.displayControl);
+    }
+
+    /**
+     * Set the cursor to blinking or static
+     *
+     * @param blink Blink = true means the cursor will change to blinking mode. False let's the cursor stay static
+     */
+    public void setCursorBlinking(boolean blink) {
+        if (blink) {
+            this.displayControl |= LCD_BLINK_ON;
+        } else {
+            this.displayControl &= ~LCD_BLINK_ON;
+        }
+
+        executeCommand(LCD_DISPLAY_CONTROL, this.displayControl);
+    }
+
+    /**
+     * Moves the whole displayed text one character right
+     */
+    public void moveDisplayRight() {
+        executeCommand(LCD_CURSOR_SHIFT, (byte) (LCD_DISPLAY_MOVE | LCD_MOVE_RIGHT));
+    }
+
+    /**
+     * Moves the whole displayed text one character right
+     */
+    public void moveDisplayLeft() {
+        executeCommand(LCD_CURSOR_SHIFT, (byte) (LCD_DISPLAY_MOVE | LCD_MOVE_LEFT));
+    }
+
+    /**
+     * Create a custom character by providing the single digit states of each pixel. Simply pass an Array of bytes
+     * which will be translated to a character.
+     *
+     * @param location  Set the memory location of the character. 1 - 7 is possible.
+     * @param character Byte array representing the pixels of a character
+     */
+    public void createCharacter(int location, byte[] character) {
+        if (character.length != 8) {
             throw new IllegalArgumentException("Array to long. Character is only 5x8 Digits. Only a array with length" +
                 " 8 is allowed");
         }
 
+        if (location > 7 || location < 1) {
+            throw new IllegalArgumentException("Invalid Memory location. Range 1-7 allowed. Value: " + location);
+        }
+
         location &= 0x7;
-        write(LCD_SETCGRAMADDR | (location << 3));
+        write(LCD_SET_CGRAM_ADDR | (location << 3));
 
         for (int i = 0; i < 8; i++) {
             write(character[i], true);
@@ -157,9 +276,9 @@ public class LcdDisplayComponent extends Component {
      * Clears the display and return the cursor to home
      */
     public void clearDisplay() {
-        write(LCD_CLEARDISPLAY);
+        write(LCD_CLEAR_DISPLAY);
         sleep(3);
-        returnHome();
+        moveCursorHome();
     }
 
     /**
@@ -173,14 +292,6 @@ public class LcdDisplayComponent extends Component {
         for (int i = 0; i < 16; i++) {
             write(' ', true);
         }
-    }
-
-    /**
-     * Returns the Cursor to Home Position (First line, first character)
-     */
-    public void returnHome() {
-        write(LCD_RETURNHOME);
-        sleep(3);
     }
 
     /**
@@ -198,7 +309,7 @@ public class LcdDisplayComponent extends Component {
      *
      * @param c Number to write to the Display
      */
-    public void write(int c) {
+    protected void write(int c) {
         write(c, false);
     }
 
@@ -208,7 +319,7 @@ public class LcdDisplayComponent extends Component {
      * @param b        Data to write to the display
      * @param charMode Select data is a number or character
      */
-    public void write(int b, boolean charMode) {
+    protected void write(int b, boolean charMode) {
         b &= 0xFF;
         mcp.setAndWritePin(LCD_RS, charMode);
 
@@ -218,7 +329,7 @@ public class LcdDisplayComponent extends Component {
         mcp.setPin(LCD_D6, (b & 0b0100_0000) > 0);
         mcp.setPin(LCD_D7, (b & 0b1000_0000) > 0);
         mcp.writePins();
-        mcp.pulsePin(LCD_EN, DEFAULT_PULSE_WIDTH);
+        mcp.pulsePin(LCD_EN, 1);
 
         // low nibble
         mcp.setPin(LCD_D4, (b & 0b0000_0001) > 0);
@@ -226,63 +337,70 @@ public class LcdDisplayComponent extends Component {
         mcp.setPin(LCD_D6, (b & 0b0000_0100) > 0);
         mcp.setPin(LCD_D7, (b & 0b0000_1000) > 0);
         mcp.writePins();
-        mcp.pulsePin(LCD_EN, DEFAULT_PULSE_WIDTH);
+        mcp.pulsePin(LCD_EN, 1);
     }
 
-    // Default MCP Configuration
-    byte MCP_IO_CONFIG = 0x00;
+    /**
+     * MCP IO Configuration makes pins to inputs or outputs
+     */
+    private static final byte MCP_IO_CONFIG = 0x00;
 
-    // Commands
-    byte LCD_CLEARDISPLAY = 0x01;
-    byte LCD_RETURNHOME = 0x02;
-    byte LCD_ENTRYMODESET = 0x04;
-    byte LCD_DISPLAYCONTROL = 0x08;
-    byte LCD_CURSORSHIFT = 0x10;
-    byte LCD_FUNCTIONSET = 0x20;
-    byte LCD_SETCGRAMADDR = 0x40;
-    byte LCD_SETDDRAMADDR = (byte) 0x80;
+    /**
+     * Commands which are available to execute on the display. Best to use execute method of this class
+     */
+    private static final byte LCD_CLEAR_DISPLAY = 0x01;
+    private static final byte LCD_RETURN_HOME = 0x02;
+    private static final byte LCD_ENTRY_MODE_SET = 0x04;
+    private static final byte LCD_DISPLAY_CONTROL = 0x08;
+    private static final byte LCD_CURSOR_SHIFT = 0x10;
+    private static final byte LCD_FUNCTION_SET = 0x20;
+    private static final byte LCD_SET_CGRAM_ADDR = 0x40;
+    private static final byte LCD_SET_DDRAM_ADDR = (byte) 0x80;
 
-    // Entry flags
-    byte LCD_ENTRYRIGHT = 0x00;
-    byte LCD_ENTRYLEFT = 0x02;
-    byte LCD_ENTRYSHIFTINCREMENT = 0x01;
-    byte LCD_ENTRYSHIFTDECREMENT = 0x00;
+    /**
+     * Defines home on left side
+     */
+    private static final byte LCD_ENTRY_LEFT = 0x02;
+    private static final byte LCD_ENTRY_SHIFT_DECREMENT = 0x00;
 
-    // Control flags
-    byte LCD_DISPLAYON = 0x04;
-    byte LCD_DISPLAYOFF = 0x00;
-    byte LCD_CURSORON = 0x02;
-    byte LCD_CURSOROFF = 0x00;
-    byte LCD_BLINKON = 0x01;
-    byte LCD_BLINKOFF = 0x00;
+    /**
+     * Flags to use with the display control byte
+     */
+    private static final byte LCD_DISPLAY_ON = 0x04;
+    private static final byte LCD_CURSOR_ON = 0x02;
+    private static final byte LCD_CURSOR_OFF = 0x00;
+    private static final byte LCD_BLINK_ON = 0x01;
+    private static final byte LCD_BLINK_OFF = 0x00;
 
-    // Move flags
-    byte LCD_DISPLAYMOVE = 0x08;
-    byte LCD_CURSORMOVE = 0x00;
-    byte LCD_MOVERIGHT = 0x04;
-    byte LCD_MOVELEFT = 0x00;
+    /**
+     * Move the cursor or display flags
+     */
+    private static final byte LCD_DISPLAY_MOVE = 0x08;
+    private static final byte LCD_CURSOR_MOVE = 0x00;
+    private static final byte LCD_MOVE_RIGHT = 0x04;
+    private static final byte LCD_MOVE_LEFT = 0x00;
 
     // Function set flags
-    byte LCD_8BITMODE = 0x10;
-    byte LCD_4BITMODE = 0x00;
-    byte LCD_2LINE = 0x08;
-    byte LCD_1LINE = 0x00;
-    byte LCD_5x10DOTS = 0x04;
-    byte LCD_5x8DOTS = 0x00;
+    private static final byte LCD_4BIT_MODE = 0x00;
+    private static final byte LCD_2LINE = 0x08;
+    private static final byte LCD_1LINE = 0x00;
+    private static final byte LCD_5x8DOTS = 0x00;
 
-    // Offset forup to 4 rows.
-    byte[] LCD_ROW_OFFSETS = {0x00, 0x40, 0x14, 0x54};
+    /**
+     * Display row offsets. Offset for up to 2 rows.
+     */
+    private static final byte[] LCD_ROW_OFFSETS = {0x00, 0x40};
 
     /**
      * Pin out LCD auf MCP
      */
-    private final int LCD_RS = 1;
-    private final int LCD_EN = 2;
-    private final int LCD_D4 = 3;
-    private final int LCD_D5 = 4;
-    private final int LCD_D6 = 5;
-    private final int LCD_D7 = 6;
-    private final int LCD_LIGHT = 7;
+    private static final int LCD_RS = 1;
+    private static final int LCD_EN = 2;
+    private static final int LCD_D4 = 3;
+    private static final int LCD_D5 = 4;
+    private static final int LCD_D6 = 5;
+    private static final int LCD_D7 = 6;
+    private static final int LCD_LIGHT = 7;
 
     /**
      * Enumeration with most important and used symbols. Resolves ASCII character to the LCD Display characters table
@@ -410,7 +528,15 @@ public class LcdDisplayComponent extends Component {
         TSHE('Ћ', 0xFB),
         DIVISION('÷', 0xFD),
         SPACE(' ', 0xFE),
-        BLACKBOX('⏹', 0xFF);
+        BLACKBOX('⏹', 0xFF),
+
+        OWN_CHARACTER_1('\1', 0x01),
+        OWN_CHARACTER_2('\2', 0x02),
+        OWN_CHARACTER_3('\3', 0x03),
+        OWN_CHARACTER_4('\4', 0x04),
+        OWN_CHARACTER_5('\5', 0x05),
+        OWN_CHARACTER_6('\6', 0x06),
+        OWN_CHARACTER_7('\7', 0x07);
 
         /**
          * ASCII character to which this symbol belongs to or ? if no ASCII mapping is available
