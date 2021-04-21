@@ -21,11 +21,11 @@ public class MCP23008 extends Component {
     /**
      * IODIR register controls the direction of the GPIO on the port expander
      */
-    private final byte IODIR_REGISTER_ADDRESS = 0x00;
+    private static final byte IODIR_REGISTER_ADDRESS = 0x00;
     /**
      * GPIO register is used to read the pins input
      */
-    private final byte GPIO_REGISTER_ADDRESS = 0x09; //
+    private static final byte GPIO_REGISTER_ADDRESS = 0x09; //
     /**
      * Current IO States of the MCP23008
      */
@@ -115,13 +115,29 @@ public class MCP23008 extends Component {
      * Checks a bit is in Range of 0-7. So it is an IO Pin
      *
      * @param bit Number to check
-     * @return True if the Value is in Range of the Pins
      */
-    protected boolean checkPinNumber(int bit) {
+    protected void checkPinNumber(int bit) {
         if (bit > 7 || bit < 0) {
             throw new IllegalArgumentException("Invalid Pin Number");
         }
-        return true;
+    }
+
+    /**
+     * Returns the created i2c instance for the mcp
+     *
+     * @return I2C instance
+     */
+    public I2C getI2C() {
+        return this.i2c;
+    }
+
+    /**
+     * Returns the created gpio state byte for the mcp
+     *
+     * @return I2C instance
+     */
+    public byte getGpioState() {
+        return this.gpioState;
     }
 
     /**

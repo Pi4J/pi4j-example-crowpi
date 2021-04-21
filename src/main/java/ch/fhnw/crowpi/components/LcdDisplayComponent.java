@@ -2,6 +2,7 @@ package ch.fhnw.crowpi.components;
 
 import ch.fhnw.crowpi.components.internal.MCP23008;
 import com.pi4j.context.Context;
+import com.pi4j.io.i2c.I2C;
 
 /**
  * This class provides a simple usage of a LCD Display with Pi4J and the CrowPi.
@@ -98,6 +99,10 @@ public class LcdDisplayComponent extends Component {
      * @param line Select Line of Display
      */
     public void writeLine(String text, int line) {
+        if (text.length() > 16) {
+            throw new IllegalArgumentException("Too long text. Only 16 characters possible");
+        }
+
         clearLine(line);
         moveCursorHome();
         setCursorToLine(line);
@@ -347,6 +352,15 @@ public class LcdDisplayComponent extends Component {
         mcp.setPin(LCD_D7, (b & 0b0000_1000) > 0);
         mcp.writePins();
         mcp.pulsePin(LCD_EN, 1);
+    }
+
+    /**
+     * Get the current MCP instance
+     *
+     * @return MCP Instance of this LCD Display
+     */
+    protected MCP23008 getMcp() {
+        return this.mcp;
     }
 
     /**
