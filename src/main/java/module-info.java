@@ -2,6 +2,7 @@ open module ch.fhnw.crowpi {
   // Module Exports
   exports ch.fhnw.crowpi.components;
   exports ch.fhnw.crowpi.components.definitions;
+  exports ch.fhnw.crowpi.components.events;
   exports ch.fhnw.crowpi.helpers;
 
   // Pi4J Modules

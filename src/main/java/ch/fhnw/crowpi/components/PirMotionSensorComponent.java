@@ -1,6 +1,8 @@
 package ch.fhnw.crowpi.components;
 
 import ch.fhnw.crowpi.components.events.DigitalEventProvider;
+import ch.fhnw.crowpi.components.events.EventListener;
+import ch.fhnw.crowpi.components.events.SimpleEventHandler;
 import com.pi4j.context.Context;
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalInputConfig;
@@ -22,6 +24,15 @@ public class PirMotionSensorComponent extends Component implements DigitalEventP
     protected static final int DEFAULT_PIN = 23;
 
     /**
+     * Handler for simple event when movement is detected
+     */
+    private SimpleEventHandler onMovement;
+    /**
+     * Handler for simple event when stillstand is detected
+     */
+    private SimpleEventHandler onStillstand;
+
+    /**
      * Creates a new PIR motion sensor component using the default setup.
      *
      * @param pi4j Pi4J context
@@ -38,6 +49,7 @@ public class PirMotionSensorComponent extends Component implements DigitalEventP
      */
     public PirMotionSensorComponent(Context pi4j, int address) {
         this.digitalInput = pi4j.create(buildDigitalInputConfig(pi4j, address));
+        this.addListener(this::dispatchSimpleEvents);
     }
 
     /**
@@ -65,6 +77,43 @@ public class PirMotionSensorComponent extends Component implements DigitalEventP
      */
     public boolean hasStillstand() {
         return getState() == MotionState.STILLSTAND;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void dispatchSimpleEvents(EventListener listener, MotionState state) {
+        switch (state) {
+            case MOVEMENT:
+                triggerSimpleEvent(onMovement);
+                break;
+            case STILLSTAND:
+                triggerSimpleEvent(onStillstand);
+                break;
+        }
+    }
+
+    /**
+     * Sets or disables the handler for the onMovement event.
+     * This event gets triggered whenever the sensor detects movement.
+     * Only a single event handler can be registered at once.
+     *
+     * @param handler Event handler to call or null to disable
+     */
+    public void onMovement(SimpleEventHandler handler) {
+        this.onMovement = handler;
+    }
+
+    /**
+     * Sets or disables the handler for the onStillstand event.
+     * This event gets triggered whenever the sensor detects stillstand.
+     * Only a single event handler can be registered at once.
+     *
+     * @param handler Event handler to call or null to disable
+     */
+    public void onStillstand(SimpleEventHandler handler) {
+        this.onStillstand = handler;
     }
 
     /**

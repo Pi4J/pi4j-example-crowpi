@@ -1,5 +1,7 @@
 package ch.fhnw.crowpi.components;
 
+import ch.fhnw.crowpi.components.events.SimpleEventHandler;
+
 public abstract class Component {
     /**
      * Utility function to sleep for the specified amount of milliseconds.
@@ -12,6 +14,18 @@ public abstract class Component {
             Thread.sleep(milliseconds);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Utility function to trigger a simple event handler.
+     * If the handler is currently null it gets silently ignored.
+     *
+     * @param handler Event handler to call or null
+     */
+    protected void triggerSimpleEvent(SimpleEventHandler handler) {
+        if (handler != null) {
+            handler.handle();
         }
     }
 }

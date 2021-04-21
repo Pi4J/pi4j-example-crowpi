@@ -1,6 +1,9 @@
 package ch.fhnw.crowpi.components;
 
 import ch.fhnw.crowpi.components.events.DigitalEventProvider;
+import ch.fhnw.crowpi.components.events.EventListener;
+import ch.fhnw.crowpi.components.events.FlappingEventProvider;
+import ch.fhnw.crowpi.components.events.SimpleEventHandler;
 import com.pi4j.context.Context;
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalInputConfig;
@@ -23,7 +26,24 @@ public class TiltSensorComponent extends Component implements DigitalEventProvid
     /**
      * Default debounce time in microseconds
      */
-    protected static final long DEFAULT_DEBOUNCE = 10000;
+    protected static final long DEFAULT_DEBOUNCE = 25000;
+    /**
+     * Default threshold for considering consecutive state changes as shaking.
+     */
+    protected static final int DEFAULT_SHAKE_THRESHOLD = 3;
+
+    /**
+     * Handler for simple event when sensor is tilted left
+     */
+    private SimpleEventHandler onTiltLeft;
+    /**
+     * Handler for simple event when sensor is tilted right
+     */
+    private SimpleEventHandler onTiltRight;
+    /**
+     * Provider for the shake event based on repeated state flapping
+     */
+    private final FlappingEventProvider<TiltState> shakeEventProvider;
 
     /**
      * Creates a new tilt sensor component using the default setup.
@@ -39,10 +59,13 @@ public class TiltSensorComponent extends Component implements DigitalEventProvid
      *
      * @param pi4j     Pi4J context
      * @param address  GPIO address of tilt sensor
-     * @param debounce Debounce time in milliseconds
+     * @param debounce Debounce time in microseconds
      */
     public TiltSensorComponent(Context pi4j, int address, long debounce) {
         this.digitalInput = pi4j.create(buildDigitalInputConfig(pi4j, address, debounce));
+        this.shakeEventProvider = new FlappingEventProvider<>(TiltState.LEFT, TiltState.RIGHT);
+        this.addListener(this.shakeEventProvider);
+        this.addListener(this::dispatchSimpleEvents);
     }
 
     /**
@@ -89,6 +112,69 @@ public class TiltSensorComponent extends Component implements DigitalEventProvid
      */
     public boolean hasRightTilt() {
         return getState() == TiltState.RIGHT;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void dispatchSimpleEvents(EventListener listener, TiltState value) {
+        switch (value) {
+            case LEFT:
+                triggerSimpleEvent(onTiltLeft);
+                break;
+            case RIGHT:
+                triggerSimpleEvent(onTiltRight);
+                break;
+        }
+    }
+
+    /**
+     * Sets or disables the handler for the onTiltLeft event.
+     * This event gets triggered whenever the sensor is tilted left.
+     * Only a single event handler can be registered at once.
+     *
+     * @param handler Event handler to call or null to disable
+     */
+    public void onTiltLeft(SimpleEventHandler handler) {
+        this.onTiltLeft = handler;
+    }
+
+    /**
+     * Sets or disables the handler for the onTiltRight event.
+     * This event gets triggered whenever the sensor is tilted right.
+     * Only a single event handler can be registered at once.
+     *
+     * @param handler Event handler to call or null to disable
+     */
+    public void onTiltRight(SimpleEventHandler handler) {
+        this.onTiltRight = handler;
+    }
+
+    /**
+     * Sets or disables the handler for the onShake event.
+     * This event gets triggered whenever the sensor alternates between left/right in a short time.
+     * Using this method will use the {@link #DEFAULT_SHAKE_THRESHOLD} as the desired shake threshold.
+     * Only a single event handler can be registered at once.
+     *
+     * @param handler Event handler to call or null to disable
+     */
+    public void onShake(SimpleEventHandler handler) {
+        onShake(DEFAULT_SHAKE_THRESHOLD, handler);
+    }
+
+    /**
+     * Sets or disables the handler for the onShake event.
+     * This event gets triggered whenever the sensor alternates between left/right in a short time.
+     * Only a single event handler can be registered at once.
+     *
+     * @param threshold Threshold when to consider consecutive state changes as shaking.
+     *                  As an example, passing 3 would mean that repeatedly alternating between left/right/left (or vice-versa)
+     *                  would be considered as shaking.
+     * @param handler   Event handler to call or null to disable
+     */
+    public void onShake(int threshold, SimpleEventHandler handler) {
+        this.shakeEventProvider.setOptions(threshold, handler);
     }
 
     /**
