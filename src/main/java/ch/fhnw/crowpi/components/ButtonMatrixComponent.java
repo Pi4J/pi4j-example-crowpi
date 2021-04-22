@@ -157,6 +157,15 @@ public class ButtonMatrixComponent extends Component {
     }
 
     /**
+     * Returns the internal scheduled future for the poller thread or null if currently stopped.
+     *
+     * @return Active poller instance or null
+     */
+    protected ScheduledFuture<?> getPoller() {
+        return this.poller;
+    }
+
+    /**
      * Idle-waits until a button is pressed and released and then returns the button number.
      * If more than one button is pressed, the first one based on its state index is taken.
      * This loop will wait 10 milliseconds between each check and waits indefinitely.
@@ -218,7 +227,6 @@ public class ButtonMatrixComponent extends Component {
                 return future.get();
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             return -1;
         }
     }
@@ -230,7 +238,7 @@ public class ButtonMatrixComponent extends Component {
      * @return Array of currently pressed buttons
      */
     public int[] getPressedButtons() {
-        return IntStream.range(0, stateMappings.length)
+        return IntStream.range(1, stateMappings.length)
             .filter(number -> states[resolveIndexFromNumber(number)].get())
             .toArray();
     }
