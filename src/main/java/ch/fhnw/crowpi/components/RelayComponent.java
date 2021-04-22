@@ -49,14 +49,14 @@ public class RelayComponent extends Component {
     /**
      * Sets the relay to on.
      */
-    public void on() {
+    public void setStateOn() {
         digitalOutput.off();
     }
 
     /**
      * Sets the relay to off
      */
-    public void off() {
+    public void setStateOff() {
         digitalOutput.on();
     }
 
@@ -65,7 +65,7 @@ public class RelayComponent extends Component {
      *
      * @return Return true or false according to the new state of the relay.
      */
-    public boolean toggle() {
+    public boolean toggleState() {
         digitalOutput.toggle();
         return digitalOutput.isOff();
     }
@@ -73,8 +73,8 @@ public class RelayComponent extends Component {
     /**
      * Configure Digital Input
      *
-     * @param pi4j     PI4J Context
-     * @param address  GPIO Address of touch sensor
+     * @param pi4j    PI4J Context
+     * @param address GPIO Address of touch sensor
      * @return Return Digital Input configuration
      */
     protected DigitalOutputConfig buildDigitalOutputConfig(Context pi4j, int address) {
