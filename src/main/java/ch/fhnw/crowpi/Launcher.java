@@ -30,6 +30,7 @@ public final class Launcher implements Runnable {
         new LedMatrixApp(),
         new LightSensorApp(),
         new PirMotionSensorApp(),
+        new RelayApp(),
         new SevenSegmentApp(),
         new TiltSensorApp(),
         new TouchSensorApp(),
