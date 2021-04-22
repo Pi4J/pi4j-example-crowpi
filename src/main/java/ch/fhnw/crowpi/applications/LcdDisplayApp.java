@@ -20,15 +20,15 @@ public class LcdDisplayApp implements Application {
         // Wait a little to have some time to read it
         sleep(3000);
 
-        // Clean the display to start next parts
+        // Clear the display to start next parts
         lcd.clearDisplay();
 
         // Let's try to draw a house. To keep this method short and clean we create the characters in a separate
-        // method below. */
+        // method below.
         createCharacters(lcd);
 
         // Now all characters are ready. Just draw them on the right place by moving the cursor and writing the
-        // created characters to specific positions */
+        // created characters to specific positions
         lcd.writeCharacter('\1', 1, 1);
         lcd.writeCharacter('\2', 2, 1);
         lcd.writeCharacter('\3', 1, 2);
@@ -46,7 +46,7 @@ public class LcdDisplayApp implements Application {
         // Enjoy the new view from our house
         sleep(5000);
 
-        // To clean up or start with something new just use the cleanDisplay method
+        // To clean up or start with something new just use the clearDisplay method
         lcd.clearDisplay();
 
         // To write some text there are different methods. The simplest one is this one which automatically inserts
@@ -73,7 +73,7 @@ public class LcdDisplayApp implements Application {
         lcd.moveCursorLeft();
         lcd.moveCursorLeft();
         sleep(1000);
-        // Ups to many
+        // Oops moved too far, lets move one to the right
         lcd.moveCursorRight();
         // And fix it
         lcd.writeCharacter('e');
@@ -81,7 +81,7 @@ public class LcdDisplayApp implements Application {
         // Now it looks fine
         sleep(3000);
 
-        // Cursor annoying? Simply turn it off and clean the display again
+        // Cursor annoying? Simply turn it off and clear the display again
         lcd.setCursorBlinking(false);
         lcd.setCursorVisibility(false);
         lcd.clearDisplay();
@@ -89,9 +89,9 @@ public class LcdDisplayApp implements Application {
         // Some more text writings
         lcd.writeText("Want more fun?");
         sleep(3000);
-        // Its also possible to just clean a line
+        // Its also possible to just clear a single line
         lcd.clearLine(2);
-        // write on the clean line again
+        // Write on the previously cleared line
         lcd.writeLine("No, thanks.", 2);
         sleep(3000);
         // A \n makes a manual line break
@@ -103,7 +103,6 @@ public class LcdDisplayApp implements Application {
     }
 
     public void createCharacters(LcdDisplayComponent lcd) {
-
         // Create upper left part of the house
         lcd.createCharacter(1, new byte[]{
             0b00000,
