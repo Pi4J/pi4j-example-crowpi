@@ -34,7 +34,7 @@ public class LcdDisplayComponent extends Component {
     }
 
     /**
-     * Creates a new  LCD Display component with custom bus, device address
+     * Creates a new LCD Display component with custom bus, device address
      *
      * @param pi4j   Pi4J context
      * @param bus    Custom I2C bus address
@@ -54,7 +54,6 @@ public class LcdDisplayComponent extends Component {
         write((byte) 0b001_10010);
 
         // Initialize display settings
-
         this.displayControl = (byte) (LCD_DISPLAY_ON | LCD_CURSOR_OFF | LCD_BLINK_OFF);
         byte displayFunction = (byte) (LCD_4BIT_MODE | LCD_1LINE | LCD_2LINE | LCD_5x8DOTS);
         byte displayMode = (byte) (LCD_ENTRY_LEFT | LCD_ENTRY_SHIFT_DECREMENT);
@@ -261,12 +260,12 @@ public class LcdDisplayComponent extends Component {
      */
     public void createCharacter(int location, byte[] character) {
         if (character.length != 8) {
-            throw new IllegalArgumentException("Array to long. Character is only 5x8 Digits. Only a array with length" +
+            throw new IllegalArgumentException("Array has invalid length. Character is only 5x8 Digits. Only a array with length" +
                 " 8 is allowed");
         }
 
         if (location > 7 || location < 1) {
-            throw new IllegalArgumentException("Invalid Memory location. Range 1-7 allowed. Value: " + location);
+            throw new IllegalArgumentException("Invalid memory location. Range 1-7 allowed. Value: " + location);
         }
 
         location &= 0x7;
