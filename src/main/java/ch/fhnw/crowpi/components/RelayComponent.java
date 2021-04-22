@@ -14,7 +14,7 @@ public class RelayComponent extends Component {
      */
     protected final DigitalOutput digitalOutput;
     /**
-     * If no pin is specified by the user, the default BCM pin 18 is used.
+     * If no pin is specified by the user, the default BCM pin is used.
      */
     protected static final int DEFAULT_PIN = 21;
 
