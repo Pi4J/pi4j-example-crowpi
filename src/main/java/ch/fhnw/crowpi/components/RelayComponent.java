@@ -19,7 +19,7 @@ public class RelayComponent extends Component {
     protected static final int DEFAULT_PIN = 21;
 
     /**
-     * Creates a new buzzer component using the default pin.
+     * Creates a new relay component using the default pin.
      *
      * @param pi4j Pi4J context
      */
