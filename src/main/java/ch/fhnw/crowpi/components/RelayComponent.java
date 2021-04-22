@@ -83,7 +83,7 @@ public class RelayComponent extends Component {
      * Configure Digital Input
      *
      * @param pi4j    PI4J Context
-     * @param address GPIO Address of touch sensor
+     * @param address GPIO Address of the relay
      * @return Return Digital Input configuration
      */
     protected DigitalOutputConfig buildDigitalOutputConfig(Context pi4j, int address) {
