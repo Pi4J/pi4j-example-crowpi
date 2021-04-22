@@ -61,4 +61,19 @@ public class RelayComponentTest extends ComponentTest {
         assertTrue(result);
         assertEquals(DigitalState.LOW, digitalOutput.state());
     }
+
+    @Test
+    public void testSetRelayState() {
+        // when
+        relay.setState(true);
+
+        // then
+        assertEquals(DigitalState.LOW, digitalOutput.state());
+
+        // when
+        relay.setState(false);
+
+        // then
+        assertEquals(DigitalState.HIGH, digitalOutput.state());
+    }
 }
