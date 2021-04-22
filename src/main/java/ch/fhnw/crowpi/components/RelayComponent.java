@@ -71,6 +71,15 @@ public class RelayComponent extends Component {
     }
 
     /**
+     * Returns the instance of the digital output
+     *
+     * @return DigitalOutput instance of the relay
+     */
+    protected DigitalOutput getDigitalOutput() {
+        return digitalOutput;
+    }
+
+    /**
      * Configure Digital Input
      *
      * @param pi4j    PI4J Context
