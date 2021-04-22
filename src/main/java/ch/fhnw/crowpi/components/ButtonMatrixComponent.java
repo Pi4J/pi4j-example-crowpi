@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReferenceArray;
+import java.util.stream.IntStream;
 
 /**
  * Implementation of the CrowPi button matrix using GPIO with Pi4J
@@ -19,6 +20,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  * - the buttons, one or more GPIO pins which can be used to check a button within the currently active column
  * This means that retrieving the state of all buttons requires looping over all buttons with each selector once pulled LOW.
  * To achieve this, the button matrix component uses an internal poller which gets started by default for polling the buttons.
+ * This component requires DIP switches 1-1, 1-2, 1-3, 1-4, 1-5, 1-6, 1-7, 1-8 to be on.
  */
 public class ButtonMatrixComponent extends Component {
     /**
@@ -152,6 +154,85 @@ public class ButtonMatrixComponent extends Component {
             this.poller.cancel(true);
             this.poller = null;
         }
+    }
+
+    /**
+     * Idle-waits until a button is pressed and released and then returns the button number.
+     * If more than one button is pressed, the first one based on its state index is taken.
+     * This loop will wait 10 milliseconds between each check and waits indefinitely.
+     *
+     * @return Number of pressed button or -1 if failed
+     */
+    public int readBlocking() {
+        return readBlocking(0);
+    }
+
+    /**
+     * Idle-waits until a button is pressed and released and then returns the button number.
+     * If more than one button is pressed, the first one based on its state index is taken.
+     * No result will be returned until the button gets released, so it may also timeout while waiting for the button to be released.
+     * This loop will wait 10 milliseconds between each check and times out after the given time.
+     *
+     * @param timeoutMs Timeout in milliseconds or 0 for infinite
+     * @return Number of pressed button or -1 if failed (e.g. timeout)
+     */
+    public int readBlocking(long timeoutMs) {
+        // Prepare new thread executor for polling with timeout
+        final var executor = Executors.newSingleThreadExecutor();
+
+        // Submit new task which idle-waits for a button press to be registered
+        final var future = executor.submit(() -> {
+            int resultNumber = -1;
+
+            // Wait for at least one button press and register the number of the first one
+            while (resultNumber == -1 && !Thread.interrupted()) {
+                // Loop through all buttons to check if one was pressed
+                // If so, exit and return its number
+                for (int number = 1; number <= stateMappings.length; number++) {
+                    final var index = resolveIndexFromNumber(number);
+                    if (states[index].get()) {
+                        resultNumber = number;
+                        break;
+                    }
+                }
+
+                // Wait for 10 milliseconds before checking again
+                if (resultNumber == -1) {
+                    sleep(10);
+                }
+            }
+
+            // Wait for the detected button to be released
+            while (resultNumber != -1 && getState(resultNumber) && !Thread.interrupted()) {
+                sleep(10);
+            }
+
+            return resultNumber;
+        });
+
+        // Wait for executor to finish, either by completion or due to timeout
+        try {
+            if (timeoutMs > 0) {
+                return future.get(timeoutMs, TimeUnit.MILLISECONDS);
+            } else {
+                return future.get();
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return -1;
+        }
+    }
+
+    /**
+     * Returns a list of all buttons which were pressed during the last poll cycle.
+     * This can be used for building an idle-wait loop until one or more keys are pressed.
+     *
+     * @return Array of currently pressed buttons
+     */
+    public int[] getPressedButtons() {
+        return IntStream.range(0, stateMappings.length)
+            .filter(number -> states[resolveIndexFromNumber(number)].get())
+            .toArray();
     }
 
     /**
