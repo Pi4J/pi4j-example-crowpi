@@ -4,6 +4,9 @@ import ch.fhnw.crowpi.Application;
 import ch.fhnw.crowpi.components.LcdDisplayComponent;
 import com.pi4j.context.Context;
 
+/**
+ * Example Application of using the Crow Pi LCD Display
+ */
 public class LcdDisplayApp implements Application {
     @Override
     public void execute(Context pi4j) {
