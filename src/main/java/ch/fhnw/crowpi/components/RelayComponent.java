@@ -43,21 +43,21 @@ public class RelayComponent extends Component {
      * @param on Sets the relay to on (true) or off (false)
      */
     public void setState(boolean on) {
-        digitalOutput.setState(on);
+        digitalOutput.setState(!on);
     }
 
     /**
      * Sets the relay to on.
      */
     public void on() {
-        digitalOutput.on();
+        digitalOutput.off();
     }
 
     /**
      * Sets the relay to off
      */
     public void off() {
-        digitalOutput.off();
+        digitalOutput.on();
     }
 
     /**
@@ -66,13 +66,8 @@ public class RelayComponent extends Component {
      * @return Return true or false according to the new state of the relay.
      */
     public boolean toggle() {
-        if (digitalOutput.isOn()) {
-            this.off();
-            return false;
-        } else {
-            this.on();
-            return true;
-        }
+        digitalOutput.toggle();
+        return digitalOutput.isOff();
     }
 
     /**

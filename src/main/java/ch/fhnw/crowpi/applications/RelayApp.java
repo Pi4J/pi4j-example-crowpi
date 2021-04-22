@@ -10,13 +10,24 @@ import com.pi4j.context.Context;
 public class RelayApp implements Application {
     @Override
     public void execute(Context pi4j) {
-        System.out.println("CrowPi with Pi4J rocks!");
-
+        // Create a new RelayComponent with default Pin
         RelayComponent relay = new RelayComponent(pi4j);
 
+        // Turn off the relay to have a defined state
+        relay.on();
+        System.out.println("on");
+        sleep(2000);
+
+        // Make a clock alike sound by toggle the relais every second once
         for (int i = 0; i < 10; i++) {
-            relay.toggle();
+            System.out.println(relay.toggle());
+
             sleep(1000);
         }
+
+        // That's all so turn off the relay and quit
+        relay.off();
+        System.out.println("off");
+        sleep(2000);
     }
 }
