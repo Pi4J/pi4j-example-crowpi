@@ -6,7 +6,7 @@ import com.pi4j.io.gpio.digital.*;
 import com.pi4j.io.pwm.Pwm;
 
 /**
- * Implementation of the CrowPi Relay
+ * Implementation of the CrowPi Relay using GPIO with Pi4J
  */
 public class RelayComponent extends Component {
     /**

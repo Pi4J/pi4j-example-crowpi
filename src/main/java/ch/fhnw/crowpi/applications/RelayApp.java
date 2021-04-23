@@ -5,7 +5,7 @@ import ch.fhnw.crowpi.components.RelayComponent;
 import com.pi4j.context.Context;
 
 /**
- * This Example shows how to use the RelayComponent.
+ * This example shows how to use the relay component by creating a clock-like sound by repeatedly toggling the relay on and off.
  */
 public class RelayApp implements Application {
     @Override
@@ -17,7 +17,7 @@ public class RelayApp implements Application {
         relay.setStateOn();
         sleep(1000);
 
-        // Make a clock alike sound by toggle the relais every second once
+        // Make a clock alike sound by toggle the relay every second once
         for (int i = 0; i < 10; i++) {
             System.out.println(relay.toggleState());
             sleep(1000);
