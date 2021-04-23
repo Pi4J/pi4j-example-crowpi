@@ -7,7 +7,8 @@ import com.pi4j.context.Context;
 
 /**
  * This example app initializes all four directional buttons and registers event handlers for every button. While this example itself does
- * not do much, it showcases how it could be used for controlling a player character in a game.
+ * not do much, it showcases how it could be used for controlling a player character in a game. Before the application exits it will cleanly
+ * unregister all previously configured event handlers.
  */
 public class ButtonApp implements Application {
     @Override
@@ -30,6 +31,14 @@ public class ButtonApp implements Application {
         rightButton.onUp(() -> System.out.println("Stopped moving to the right."));
 
         // Wait for 15 seconds while handling events before exiting
+        System.out.println("Press any of the 4 independent / directional buttons to see them in action!");
         sleep(15000);
+
+        // Unregister all event handlers to exit this application in a clean way
+        // To keep the code more compact, we create a list of all four buttons and loop over it, unregistering both handlers for each
+        for (final var button : new ButtonComponent[]{upButton, downButton, leftButton, rightButton}) {
+            button.onDown(null);
+            button.onUp(null);
+        }
     }
 }
