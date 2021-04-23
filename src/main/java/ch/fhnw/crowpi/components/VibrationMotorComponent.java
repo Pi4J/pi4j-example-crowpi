@@ -73,7 +73,7 @@ public class VibrationMotorComponent extends Component {
     /**
      * Enables the vibration motor a specified time in milliseconds
      *
-     * @param interval How long the Vibrationmotor is enabled in millis
+     * @param interval How long the vibration motor is enabled in millis
      */
     public void pulse(int interval) {
         digitalOutput.pulse(interval, TimeUnit.MILLISECONDS);
