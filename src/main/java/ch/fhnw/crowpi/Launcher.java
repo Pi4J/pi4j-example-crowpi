@@ -36,7 +36,8 @@ public final class Launcher implements Runnable {
         new SevenSegmentApp(),
         new TiltSensorApp(),
         new TouchSensorApp(),
-        new UltrasonicDistanceSensorApp()
+        new UltrasonicDistanceSensorApp(),
+        new VibrationMotorApp()
     ));
 
     private final CommandLine cmdLine;
