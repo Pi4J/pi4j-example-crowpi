@@ -1,5 +1,6 @@
 package ch.fhnw.crowpi.components;
 
+import ch.fhnw.crowpi.components.ButtonComponent.ButtonState;
 import ch.fhnw.crowpi.components.events.SimpleEventHandler;
 import com.pi4j.context.Context;
 import com.pi4j.io.gpio.digital.*;
@@ -26,13 +27,13 @@ public class ButtonMatrixComponent extends Component {
     /**
      * Default GPIO pins used as selectors for the button matrix.
      * A selector pin can either be a row or a column and gets pulled low to analyze all the button pins.
-     * CrowPi Board Pins: 33, 35, 37, 22
+     * CrowPi Board Pins: 22, 37, 35, 33 (pins down below are BCM)
      */
     protected static final int[] DEFAULT_SELECTOR_PINS = new int[]{25, 26, 19, 13};
     /**
      * Default GPIO pins used as buttons for the button matrix.
      * A button pin does not refer to a single physical button and instead depends on which selector is pulled low.
-     * CrowPi Board Pins: 13, 15, 29, 31
+     * CrowPi Board Pins: 13, 15, 29, 31 (pins down below are BCM)
      */
     protected static final int[] DEFAULT_BUTTON_PINS = new int[]{27, 22, 5, 6};
     /**
@@ -212,7 +213,7 @@ public class ButtonMatrixComponent extends Component {
             }
 
             // Wait for the detected button to be released
-            while (resultNumber != -1 && getState(resultNumber) && !Thread.interrupted()) {
+            while (resultNumber != -1 && isDown(resultNumber) && !Thread.interrupted()) {
                 sleep(10);
             }
 
@@ -248,10 +249,14 @@ public class ButtonMatrixComponent extends Component {
      * Please note that this value will only update while the poller is running.
      *
      * @param number Button number to check, starting at 1
-     * @return True if button is pressed, otherwise false
+     * @return Current button state
      */
-    public boolean getState(int number) {
-        return states[resolveIndexFromNumber(number)].get();
+    public ButtonState getState(int number) {
+        if (states[resolveIndexFromNumber(number)].get()) {
+            return ButtonState.DOWN;
+        } else {
+            return ButtonState.UP;
+        }
     }
 
     /**
@@ -262,7 +267,7 @@ public class ButtonMatrixComponent extends Component {
      * @return True if button is pressed
      */
     public boolean isDown(int number) {
-        return getState(number);
+        return getState(number) == ButtonState.DOWN;
     }
 
     /**
@@ -273,7 +278,7 @@ public class ButtonMatrixComponent extends Component {
      * @return True if button is not pressed
      */
     public boolean isUp(int number) {
-        return !getState(number);
+        return getState(number) == ButtonState.UP;
     }
 
     /**
