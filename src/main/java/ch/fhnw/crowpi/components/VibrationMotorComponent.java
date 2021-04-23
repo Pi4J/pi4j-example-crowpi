@@ -93,7 +93,7 @@ public class VibrationMotorComponent extends Component {
     protected DigitalOutputConfig buildDigitalOutputConfig(Context pi4j, int address) {
         return DigitalOutput.newConfigBuilder(pi4j)
             .id("BCM" + address)
-            .name("Relay")
+            .name("Vibration Motor")
             .address(address)
             .shutdown(DigitalState.LOW)
             .build();

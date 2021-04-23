@@ -8,8 +8,9 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 /**
- * This example shows how to use the vibration motor. As this component is a simple digital output it is really easy
- * to use. An absolute beginner friendly component of the CrowPi
+ * This example shows how to use the vibration motor. It basically represents a vibrating alarm clock which is going off and keeps making
+ * noises until the user confirms being awake by writing `yes` to the console / standard input. Please note that this example requires the
+ * DIP switch 2-1 to be activated for it to work.
  */
 public class VibrationMotorApp implements Application {
     @Override
@@ -21,7 +22,7 @@ public class VibrationMotorApp implements Application {
         sleep(500);
         vibrationMotor.off();
 
-        // Write to ask the use something
+        // Write to ask the user something
         System.out.println("Are you awake? Answer with YES if you are...");
         // Scanner is used to read the input from the commandline
         Scanner scanner = new Scanner(System.in);
@@ -41,7 +42,7 @@ public class VibrationMotorApp implements Application {
             System.out.println("Are you awake? Answer with YES if you are...");
         }
 
-        // Awake so we can turn of the vibration motor now.
+        // User is awake, so we can turn off the vibration motor now.
         vibrationMotor.off();
     }
 }
