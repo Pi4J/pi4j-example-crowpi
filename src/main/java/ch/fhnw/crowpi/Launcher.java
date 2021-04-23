@@ -24,6 +24,7 @@ public final class Launcher implements Runnable {
      * Each class instance must implement the Application interface and gets automatically added as a subcommand.
      */
     private static final List<Application> APPLICATIONS = new ArrayList<>(Arrays.asList(
+        new ButtonApp(),
         new ButtonMatrixApp(),
         new BuzzerApp(),
         new ExampleApp(),
