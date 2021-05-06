@@ -1,9 +1,9 @@
-open module ch.fhnw.crowpi {
+open module com.pi4j.crowpi {
   // Module Exports
-  exports ch.fhnw.crowpi.components;
-  exports ch.fhnw.crowpi.components.definitions;
-  exports ch.fhnw.crowpi.components.events;
-  exports ch.fhnw.crowpi.helpers;
+  exports com.pi4j.crowpi.components;
+  exports com.pi4j.crowpi.components.definitions;
+  exports com.pi4j.crowpi.components.events;
+  exports com.pi4j.crowpi.helpers;
 
   // Pi4J Modules
   requires com.pi4j;
