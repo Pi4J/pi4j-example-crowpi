@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"m":"ch.fhnw.crowpi","l":"ch.fhnw.crowpi.components"},{"m":"ch.fhnw.crowpi","l":"ch.fhnw.crowpi.components.definitions"},{"m":"ch.fhnw.crowpi","l":"ch.fhnw.crowpi.components.events"},{"m":"ch.fhnw.crowpi","l":"ch.fhnw.crowpi.helpers"}]

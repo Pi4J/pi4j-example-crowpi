@@ -1,0 +1,5 @@
+module:ch.fhnw.crowpi
+ch.fhnw.crowpi.components
+ch.fhnw.crowpi.components.definitions
+ch.fhnw.crowpi.components.events
+ch.fhnw.crowpi.helpers
