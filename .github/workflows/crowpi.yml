@@ -1,0 +1,73 @@
+name: CrowPi CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-20.04
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    steps:
+      ################################################################################
+      # Checkout repository with submodules
+      ################################################################################
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      ################################################################################
+      # Build Java project with Maven
+      ################################################################################
+      - name: Setup JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build with Maven
+        run: mvn --batch-mode --fail-at-end package javadoc:javadoc
+
+      - name: Publish Surefire Reports
+        if: ${{ always() }}
+        uses: scacap/action-surefire-report@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      ################################################################################
+      # Build CrowPi image with Packer
+      ################################################################################
+      - name: Build CrowPi image with Packer
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        run: >-
+          docker run
+          --rm --privileged
+          --workdir /github/workspace/image
+          -v /dev:/dev
+          -v /home/runner/work/_temp/_github_home:/github/home
+          -v /home/runner/work/_temp/_github_workflow:/github/workflow
+          -v "${{ github.workspace }}:/github/workspace"
+          mkaczanowski/packer-builder-arm
+          build crowpi.pkr.hcl
+
+      ################################################################################
+      # Create a GitHub release
+      #################################################################################
+      - name: Create release on GitHub
+        uses: ncipollo/release-action@v1
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        with:
+          allowUpdates: ${{ github.ref == 'refs/tags/snapshot' }}
+          prerelease: ${{ github.ref == 'refs/tags/snapshot' }}
+          artifacts: >-
+            image/crowpi.img.zip,
+            image/crowpi.img.zip.sha256
+          token: ${{ secrets.GITHUB_TOKEN }}
