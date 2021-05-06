@@ -1,1 +1,1 @@
-moduleSearchIndex = [{"l":"ch.fhnw.crowpi"}]
+moduleSearchIndex = [{"l":"com.pi4j.crowpi"}]
