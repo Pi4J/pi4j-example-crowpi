@@ -1,10 +1,10 @@
 package com.pi4j.crowpi.applications;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.LedMatrixComponent;
 import com.pi4j.crowpi.components.LedMatrixComponent.Symbol;
 import com.pi4j.crowpi.components.definitions.Direction;
-import com.pi4j.context.Context;
 
 /**
  * Demonstrates the countless abilities of the 8x8 LED matrix by showing multiple demo examples one after another.

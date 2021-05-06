@@ -1,7 +1,8 @@
 package com.pi4j.crowpi.components;
 
 import com.pi4j.context.Context;
-import com.pi4j.io.gpio.digital.*;
+import com.pi4j.io.gpio.digital.DigitalOutput;
+import com.pi4j.io.gpio.digital.DigitalOutputConfig;
 
 /**
  * Implementation of the CrowPi Relay using GPIO with Pi4J

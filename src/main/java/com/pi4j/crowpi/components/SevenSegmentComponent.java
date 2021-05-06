@@ -1,7 +1,7 @@
 package com.pi4j.crowpi.components;
 
-import com.pi4j.crowpi.components.internal.HT16K33;
 import com.pi4j.context.Context;
+import com.pi4j.crowpi.components.internal.HT16K33;
 import com.pi4j.io.i2c.I2C;
 import com.pi4j.io.i2c.I2CConfig;
 

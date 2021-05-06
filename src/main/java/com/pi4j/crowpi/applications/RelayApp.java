@@ -1,8 +1,8 @@
 package com.pi4j.crowpi.applications;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.RelayComponent;
-import com.pi4j.context.Context;
 
 /**
  * This example shows how to use the relay component by creating a clock-like sound by repeatedly toggling the relay on and off.

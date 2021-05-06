@@ -1,7 +1,9 @@
 package com.pi4j.crowpi.components;
 
 import com.pi4j.context.Context;
-import com.pi4j.io.gpio.digital.*;
+import com.pi4j.io.gpio.digital.DigitalOutput;
+import com.pi4j.io.gpio.digital.DigitalOutputConfig;
+import com.pi4j.io.gpio.digital.DigitalState;
 
 import java.util.concurrent.TimeUnit;
 
@@ -30,8 +32,8 @@ public class VibrationMotorComponent extends Component {
     /**
      * Creates a new vibration motor component with a custom BCM pin.
      *
-     * @param pi4j    Pi4J context
-     * @param pin Custom BCM pin address
+     * @param pi4j Pi4J context
+     * @param pin  Custom BCM pin address
      */
     public VibrationMotorComponent(Context pi4j, int pin) {
         this.digitalOutput = pi4j.create(buildDigitalOutputConfig(pi4j, pin));

@@ -112,10 +112,10 @@ public class LightSensorComponent extends Component {
      */
     private static I2CConfig buildI2CConfig(Context pi4j, int bus, int device) {
         return I2C.newConfigBuilder(pi4j)
-                .id("I2C-" + device + "@" + bus)
-                .name("Light Sensor")
-                .bus(bus)
-                .device(device)
-                .build();
+            .id("I2C-" + device + "@" + bus)
+            .name("Light Sensor")
+            .bus(bus)
+            .device(device)
+            .build();
     }
 }

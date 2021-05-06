@@ -1,8 +1,8 @@
 package com.pi4j.crowpi.applications;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.LightSensorComponent;
-import com.pi4j.context.Context;
 
 /**
  * Measures the current illuminance with the CrowPi Light sensor and prints some outputs to the user.

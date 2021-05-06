@@ -1,7 +1,7 @@
 package com.pi4j.crowpi.components;
 
-import com.pi4j.crowpi.components.events.SimpleEventHandler;
 import com.pi4j.context.Context;
+import com.pi4j.crowpi.components.events.SimpleEventHandler;
 import com.pi4j.io.gpio.digital.*;
 
 import java.util.concurrent.Executors;

@@ -1,8 +1,8 @@
 package com.pi4j.crowpi.applications;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.PirMotionSensorComponent;
-import com.pi4j.context.Context;
 
 import java.time.LocalDateTime;
 

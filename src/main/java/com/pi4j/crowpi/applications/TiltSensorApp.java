@@ -1,8 +1,8 @@
 package com.pi4j.crowpi.applications;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.TiltSensorComponent;
-import com.pi4j.context.Context;
 
 /**
  * Prints the initial state of the tilt sensor and then informs about further state changes. To do so, you can just tilt the CrowPi to the

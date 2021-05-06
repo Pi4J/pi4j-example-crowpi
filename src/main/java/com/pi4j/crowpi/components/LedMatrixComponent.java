@@ -1,8 +1,8 @@
 package com.pi4j.crowpi.components;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.components.definitions.Direction;
 import com.pi4j.crowpi.components.internal.MAX7219;
-import com.pi4j.context.Context;
 import com.pi4j.io.spi.Spi;
 import com.pi4j.io.spi.SpiConfig;
 

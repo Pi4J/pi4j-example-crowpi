@@ -1,9 +1,9 @@
 package com.pi4j.crowpi.applications;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.SevenSegmentComponent;
 import com.pi4j.crowpi.components.SevenSegmentComponent.Segment;
-import com.pi4j.context.Context;
 
 import java.time.LocalTime;
 

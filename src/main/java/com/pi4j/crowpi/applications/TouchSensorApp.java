@@ -1,8 +1,8 @@
 package com.pi4j.crowpi.applications;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.TouchSensorComponent;
-import com.pi4j.context.Context;
 
 /**
  * Writes some Text output on Touch Sensor Events. After 20 seconds event handling is disable and the App waits for

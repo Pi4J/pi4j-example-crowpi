@@ -1,8 +1,8 @@
 package com.pi4j.crowpi.applications;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.ButtonMatrixComponent;
-import com.pi4j.context.Context;
 
 import java.io.BufferedReader;
 import java.io.IOException;

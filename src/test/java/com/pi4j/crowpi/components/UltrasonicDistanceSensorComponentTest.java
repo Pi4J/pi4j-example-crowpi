@@ -10,7 +10,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -28,13 +27,13 @@ class UltrasonicDistanceSensorComponentTest extends ComponentTest {
 
     @ParameterizedTest
     @CsvSource({
-            "-20.0, 9.58",
-            "-10.0, 9.76",
-            "00.0, 9.94",
-            "10.0, 10.13",
-            "20.0, 10.30",
-            "30.0, 10.49",
-            "40.0, 10.67"
+        "-20.0, 9.58",
+        "-10.0, 9.76",
+        "00.0, 9.94",
+        "10.0, 10.13",
+        "20.0, 10.30",
+        "30.0, 10.49",
+        "40.0, 10.67"
     })
     void testDistanceCalculationDifferentTemperatures(double temperature, double expected) {
         // given
@@ -49,13 +48,13 @@ class UltrasonicDistanceSensorComponentTest extends ComponentTest {
 
     @ParameterizedTest
     @CsvSource({
-            "0.1, 1.72",
-            "0.5, 8.59",
-            "1.0, 17.18",
-            "3.0, 51.53",
-            "5.0, 85.88",
-            "10.0, 171.75",
-            "15, 257.63"
+        "0.1, 1.72",
+        "0.5, 8.59",
+        "1.0, 17.18",
+        "3.0, 51.53",
+        "5.0, 85.88",
+        "10.0, 171.75",
+        "15, 257.63"
     })
     void testDistanceCalculationDifferentPulses(double pulseLength, double expected) {
         // given

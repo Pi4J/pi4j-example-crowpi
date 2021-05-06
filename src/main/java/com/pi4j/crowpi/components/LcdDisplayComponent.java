@@ -1,7 +1,7 @@
 package com.pi4j.crowpi.components;
 
-import com.pi4j.crowpi.components.internal.MCP23008;
 import com.pi4j.context.Context;
+import com.pi4j.crowpi.components.internal.MCP23008;
 
 /**
  * This class provides a simple usage of a LCD Display with Pi4J and the CrowPi.

@@ -1,9 +1,9 @@
 package com.pi4j.crowpi.applications;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.UltrasonicDistanceSensorComponent;
 import com.pi4j.crowpi.components.exceptions.MeasurementException;
-import com.pi4j.context.Context;
 
 /**
  * Example Application of using the Crow Pi Ultrasonic Distance Sensor.

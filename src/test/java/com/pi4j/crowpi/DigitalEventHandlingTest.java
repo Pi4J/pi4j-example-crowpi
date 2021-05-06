@@ -1,8 +1,8 @@
 package com.pi4j.crowpi;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.components.events.DigitalEventProvider;
 import com.pi4j.crowpi.components.events.EventHandler;
-import com.pi4j.context.Context;
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalInputConfig;
 import com.pi4j.io.gpio.digital.DigitalState;

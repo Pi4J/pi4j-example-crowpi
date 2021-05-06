@@ -1,9 +1,9 @@
 package com.pi4j.crowpi;
 
-import com.pi4j.crowpi.helpers.CrowPiPlatform;
 import com.pi4j.Pi4J;
 import com.pi4j.context.Context;
 import com.pi4j.crowpi.applications.*;
+import com.pi4j.crowpi.helpers.CrowPiPlatform;
 import com.pi4j.library.pigpio.PiGpio;
 import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalInputProvider;
 import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalOutputProvider;

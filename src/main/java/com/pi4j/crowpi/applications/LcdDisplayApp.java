@@ -1,8 +1,8 @@
 package com.pi4j.crowpi.applications;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.LcdDisplayComponent;
-import com.pi4j.context.Context;
 
 /**
  * Example Application of using the Crow Pi LCD Display
@@ -17,7 +17,7 @@ public class LcdDisplayApp implements Application {
         lcd.initialize();
 
         // Write text to the lines separate
-        lcd.writeLine("Hello",1);
+        lcd.writeLine("Hello", 1);
         lcd.writeLine("   World!", 2);
 
         // Wait a little to have some time to read it

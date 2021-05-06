@@ -1,9 +1,9 @@
 package com.pi4j.crowpi.applications;
 
+import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.ButtonComponent;
 import com.pi4j.crowpi.components.definitions.Button;
-import com.pi4j.context.Context;
 
 /**
  * This example app initializes all four directional buttons and registers event handlers for every button. While this example itself does

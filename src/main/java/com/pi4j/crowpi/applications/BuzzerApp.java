@@ -1,7 +1,6 @@
 package com.pi4j.crowpi.applications;
 
 import com.pi4j.context.Context;
-
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.BuzzerComponent;
 import com.pi4j.crowpi.helpers.Note;
