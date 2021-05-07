@@ -14,6 +14,15 @@ public class UltrasonicDistanceSensorApp implements Application {
         // Create new tilt sensor component
         final var distanceSensor = new UltrasonicDistanceSensorComponent(pi4j);
 
+        // Configures the Sensor to find Object passing in a predefined distance
+        distanceSensor.onObjectFound(0, 50, () -> System.out.println("Sensor has found a Object in Range!"));
+        distanceSensor.onObjectDisappeared(0, 50, () -> System.out.println("Found Object disappeared!"));
+        sleep(10000);
+
+        // Clean up event handlers
+        distanceSensor.onObjectFound(0,0,null);
+        distanceSensor.onObjectDisappeared(0,0, null);
+
         // Just printing some text to the users
         System.out.println("Ultrasonic Distance Measurement starting ...");
         System.out.println("Let's find out the impact of temperature to ultrasonic measurements!");

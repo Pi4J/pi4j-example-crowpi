@@ -69,7 +69,7 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * @param pi4j Pi4J context
      */
     public UltrasonicDistanceSensorComponent(Context pi4j) {
-        this(pi4j, DEFAULT_PIN_TRIGGER, DEFAULT_PIN_ECHO, DEFAULT_POLLER_PERIOD_MS);
+        this(pi4j, DEFAULT_PIN_TRIGGER, DEFAULT_PIN_ECHO);
     }
 
     /**
@@ -78,9 +78,8 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * @param pi4j           Pi4J context
      * @param triggerAddress GPIO address of trigger output
      * @param echoAddress    GPIO address of echo input
-     * @param pollerPeriodMs Period of poller in milliseconds
      */
-    public UltrasonicDistanceSensorComponent(Context pi4j, int triggerAddress, int echoAddress, long pollerPeriodMs) {
+    public UltrasonicDistanceSensorComponent(Context pi4j, int triggerAddress, int echoAddress) {
         this.digitalInputEcho = pi4j.create(buildDigitalInputConfig(pi4j, echoAddress));
         this.digitalOutputTrigger = pi4j.create(buildDigitalOutputConfig(pi4j, triggerAddress));
 
@@ -89,7 +88,6 @@ public class UltrasonicDistanceSensorComponent extends Component {
         this.state = new AtomicBoolean(false);
 
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
-        this.startPoller(pollerPeriodMs);
     }
 
     /**
@@ -146,6 +144,12 @@ public class UltrasonicDistanceSensorComponent extends Component {
         this.maxRange = max;
         this.temperature = temperature;
         this.objectFoundHandler.set(handler);
+
+        if (handler != null) {
+            startPoller(DEFAULT_POLLER_PERIOD_MS);
+        } else {
+            stopPoller();
+        }
     }
 
     public void onObjectDisappeared(double min, double max, SimpleEventHandler handler) {
@@ -157,6 +161,12 @@ public class UltrasonicDistanceSensorComponent extends Component {
         this.maxRange = max;
         this.temperature = temperature;
         this.objectDisappearedHandler.set(handler);
+
+        if (handler != null) {
+            startPoller(DEFAULT_POLLER_PERIOD_MS);
+        } else {
+            stopPoller();
+        }
     }
 
     /**
@@ -287,7 +297,6 @@ public class UltrasonicDistanceSensorComponent extends Component {
             final var newState = result <= maxRange && result >= minRange;
             final var oldState = state.getAndSet(newState);
 
-            System.out.println("Measured: " + result);
             if (oldState == newState) {
                 return;
             }
