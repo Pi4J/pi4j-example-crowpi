@@ -25,9 +25,14 @@ public class UltrasonicDistanceSensorComponent extends Component {
      */
     private ScheduledFuture<?> poller;
 
+    /**
+     * Atomic simple event handler for "objectFound" and "objectDisappeared" event.
+     */
     private final AtomicReference<SimpleEventHandler> objectFoundHandler;
     private final AtomicReference<SimpleEventHandler> objectDisappearedHandler;
-
+    /**
+     * Variables used to generate SimpleEvents to provide object found and disappeared
+     */
     private final AtomicBoolean state;
     private double minRange;
     private double maxRange;
@@ -52,6 +57,7 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * Default temperature setting to calculate distances
      */
     protected static final double DEFAULT_TEMPERATURE = 20.0;
+
     /**
      * Default period in milliseconds of button state poller.
      * The poller will be run in a separate thread and executed every X milliseconds.
@@ -116,6 +122,15 @@ public class UltrasonicDistanceSensorComponent extends Component {
     }
 
     /**
+     * Returns the internal scheduled future for the poller thread or null if currently stopped.
+     *
+     * @return Active poller instance or null
+     */
+    protected ScheduledFuture<?> getPoller() {
+        return this.poller;
+    }
+
+    /**
      * Start a measurement with default temperature setting
      *
      * @return Measured distance [cm]
@@ -135,10 +150,29 @@ public class UltrasonicDistanceSensorComponent extends Component {
         return calculateDistance(pulseLength, temperature);
     }
 
+    /**
+     * Sets or disables the handler for the object found recognition.
+     * This event gets triggered whenever a object comes into the specified range
+     * Only a single event handler can be registered at once.
+     *
+     * @param min Minimum distance to the Object in cm
+     * @param max Maximum distance to the object in cm
+     * @param handler Event handler to call or null to disable
+     */
     public void onObjectFound(double min, double max, SimpleEventHandler handler) {
         this.onObjectFound(min, max, DEFAULT_TEMPERATURE, handler);
     }
 
+    /**
+     * Sets or disables the handler for the object found recognition.
+     * This event gets triggered whenever a object comes into the specified range
+     * Only a single event handler can be registered at once.
+     *
+     * @param min Minimum distance to the Object in cm
+     * @param max Maximum distance to the object in cm
+     * @param temperature Temperature the sensor is operating at [°C]
+     * @param handler Event handler to call or null to disable
+     */
     public void onObjectFound(double min, double max, double temperature, SimpleEventHandler handler) {
         this.minRange = min;
         this.maxRange = max;
@@ -152,10 +186,30 @@ public class UltrasonicDistanceSensorComponent extends Component {
         }
     }
 
+    /**
+     * Sets or disables the handler for the object disappear recognition.
+     * This event gets triggered whenever a object leaves the specified range
+     * Only a single event handler can be registered at once.
+     * Working with default temperature
+     *
+     * @param min Minimum distance to the Object in cm
+     * @param max Maximum distance to the object in cm
+     * @param handler Event handler to call or null to disable
+     */
     public void onObjectDisappeared(double min, double max, SimpleEventHandler handler) {
         this.onObjectDisappeared(min, max, DEFAULT_TEMPERATURE, handler);
     }
 
+    /**
+     * Sets or disables the handler for the object disappear recognition.
+     * This event gets triggered whenever a object leaves the specified range
+     * Only a single event handler can be registered at once.
+     *
+     * @param min Minimum distance to the Object in cm
+     * @param max Maximum distance to the object in cm
+     * @param temperature Temperature the sensor is operating at [°C]
+     * @param handler Event handler to call or null to disable
+     */
     public void onObjectDisappeared(double min, double max, double temperature, SimpleEventHandler handler) {
         this.minRange = min;
         this.maxRange = max;
@@ -290,17 +344,22 @@ public class UltrasonicDistanceSensorComponent extends Component {
             double result;
 
             try {
+                // Start a measurement
                 result = measure(temperature);
             } catch (MeasurementException e) {
                 return;
             }
+
+            // Evaluate there is an object in the range by previous measured value
             final var newState = result <= maxRange && result >= minRange;
             final var oldState = state.getAndSet(newState);
 
+            // Everything done if the state didn't change
             if (oldState == newState) {
                 return;
             }
 
+            // Fire events if the state changed
             if (newState) {
                 triggerSimpleEvent(objectFoundHandler.get());
             } else {
