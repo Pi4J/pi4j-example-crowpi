@@ -10,6 +10,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.sql.SQLOutput;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class UltrasonicDistanceSensorComponentTest extends ComponentTest {
@@ -109,5 +111,19 @@ class UltrasonicDistanceSensorComponentTest extends ComponentTest {
         // then
         assertNull(distanceSensor.getPoller());
         assertTrue(oldPoller.isDone());
+    }
+
+    @Test
+    void testRegisterAndDeregisterHandlers() {
+        // given
+        distanceSensor.onObjectFound(() -> System.out.println("Test"));
+        distanceSensor.onObjectDisappeared(() -> System.out.println("Test"));
+
+        // when
+        distanceSensor.onObjectDisappeared(null);
+        final var poller = distanceSensor.getPoller();
+
+        // then
+        assertFalse(poller.isDone());
     }
 }

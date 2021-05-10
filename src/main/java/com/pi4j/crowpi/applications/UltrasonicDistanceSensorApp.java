@@ -16,14 +16,16 @@ public class UltrasonicDistanceSensorApp implements Application {
 
         // Configures the Sensor to find Object passing in a predefined distance
         System.out.println("Searching for an object now...");
-        distanceSensor.onObjectFound(0, 50, () -> System.out.println("Sensor has found a Object in Range!"));
-        distanceSensor.onObjectDisappeared(0, 50, () -> System.out.println("Found Object disappeared!"));
+        distanceSensor.setDetectionRange(5,50);
+        distanceSensor.setMeasurementTemperature(23);
+        distanceSensor.onObjectFound(() -> System.out.println("Sensor has found a Object in Range!"));
+        distanceSensor.onObjectDisappeared(() -> System.out.println("Found Object disappeared!"));
         sleep(10000);
 
         // Clean up event handlers
         System.out.println("Searching completed.");
-        distanceSensor.onObjectFound(0, 0, null);
-        distanceSensor.onObjectDisappeared(0, 0, null);
+        distanceSensor.onObjectFound(null);
+        distanceSensor.onObjectDisappeared(null);
 
         // Just printing some text to the users
         System.out.println("Let's find out the impact of temperature to ultrasonic measurements!");

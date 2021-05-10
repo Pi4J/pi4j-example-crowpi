@@ -5,11 +5,13 @@ import com.pi4j.crowpi.components.events.SimpleEventHandler;
 import com.pi4j.crowpi.components.exceptions.MeasurementException;
 import com.pi4j.io.gpio.digital.*;
 
+import java.util.Collections;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -34,9 +36,10 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * Variables used to generate SimpleEvents to provide object found and disappeared
      */
     private final AtomicBoolean state;
-    private double minRange;
-    private double maxRange;
-    private double temperature;
+    private volatile double minRange = 2;
+    private volatile double maxRange = 300;
+    private volatile double temperature;
+    private final AtomicInteger numberOfHandlers;
 
     /**
      * Pi4J digital output instance used by this component
@@ -92,8 +95,46 @@ public class UltrasonicDistanceSensorComponent extends Component {
         this.objectFoundHandler = new AtomicReference<>();
         this.objectDisappearedHandler = new AtomicReference<>();
         this.state = new AtomicBoolean(false);
+        this.numberOfHandlers = new AtomicInteger(0);
 
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
+        this.temperature = DEFAULT_TEMPERATURE;
+    }
+
+    /**
+     * With this Method the range where a object should be recognized is defined.
+     *
+     * @param minRange Minimal distance to the object in cm
+     * @param maxRange Maximal distance to the object in cm
+     */
+    public void setDetectionRange(double minRange, double maxRange) {
+        if (minRange >= maxRange) {
+            throw new IllegalArgumentException("minRange has to be smaller than maxRange");
+        }
+
+        if (minRange < 2 || minRange > 300) {
+            throw new IllegalArgumentException("minRange out of allowed range. Allowed 2 - 300cm. Actual value was: " + minRange);
+        }
+
+        if (maxRange < 2 || maxRange > 300) {
+            throw new IllegalArgumentException("maxRange out of allowed range. Allowed 2 - 300cm. Actual value was: " + maxRange);
+        }
+
+        this.minRange = minRange;
+        this.maxRange = maxRange;
+    }
+
+    /**
+     * Sets the currently used measurement temperature by this ultrasonic sensor.
+     *
+     * @param temperature Temperature the sensor is operating at in [°C].
+     */
+    public void setMeasurementTemperature(double temperature) {
+        if (temperature > 40 || temperature < -20) {
+            throw new IllegalArgumentException("Temperature out of range. Allowed only -20°C to 40°C");
+        }
+
+        this.temperature = temperature;
     }
 
     /**
@@ -136,7 +177,7 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * @return Measured distance [cm]
      */
     public double measure() {
-        return measure(DEFAULT_TEMPERATURE);
+        return measure(temperature);
     }
 
     /**
@@ -155,33 +196,18 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * This event gets triggered whenever a object comes into the specified range
      * Only a single event handler can be registered at once.
      *
-     * @param min     Minimum distance to the Object in cm
-     * @param max     Maximum distance to the object in cm
      * @param handler Event handler to call or null to disable
      */
-    public void onObjectFound(double min, double max, SimpleEventHandler handler) {
-        this.onObjectFound(min, max, DEFAULT_TEMPERATURE, handler);
-    }
-
-    /**
-     * Sets or disables the handler for the object found recognition.
-     * This event gets triggered whenever a object comes into the specified range
-     * Only a single event handler can be registered at once.
-     *
-     * @param min         Minimum distance to the Object in cm
-     * @param max         Maximum distance to the object in cm
-     * @param temperature Temperature the sensor is operating at [°C]
-     * @param handler     Event handler to call or null to disable
-     */
-    public void onObjectFound(double min, double max, double temperature, SimpleEventHandler handler) {
-        this.minRange = min;
-        this.maxRange = max;
-        this.temperature = temperature;
+    public void onObjectFound(SimpleEventHandler handler) {
         this.objectFoundHandler.set(handler);
 
         if (handler != null) {
+            this.numberOfHandlers.getAndIncrement();
             startPoller(DEFAULT_POLLER_PERIOD_MS);
-        } else {
+            return;
+        }
+
+        if (this.numberOfHandlers.decrementAndGet() <= 0) {
             stopPoller();
         }
     }
@@ -190,35 +216,20 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * Sets or disables the handler for the object disappear recognition.
      * This event gets triggered whenever a object leaves the specified range
      * Only a single event handler can be registered at once.
-     * Working with default temperature
      *
-     * @param min     Minimum distance to the Object in cm
-     * @param max     Maximum distance to the object in cm
      * @param handler Event handler to call or null to disable
      */
-    public void onObjectDisappeared(double min, double max, SimpleEventHandler handler) {
-        this.onObjectDisappeared(min, max, DEFAULT_TEMPERATURE, handler);
-    }
+    public void onObjectDisappeared(SimpleEventHandler handler) {
 
-    /**
-     * Sets or disables the handler for the object disappear recognition.
-     * This event gets triggered whenever a object leaves the specified range
-     * Only a single event handler can be registered at once.
-     *
-     * @param min         Minimum distance to the Object in cm
-     * @param max         Maximum distance to the object in cm
-     * @param temperature Temperature the sensor is operating at [°C]
-     * @param handler     Event handler to call or null to disable
-     */
-    public void onObjectDisappeared(double min, double max, double temperature, SimpleEventHandler handler) {
-        this.minRange = min;
-        this.maxRange = max;
-        this.temperature = temperature;
         this.objectDisappearedHandler.set(handler);
 
         if (handler != null) {
+            this.numberOfHandlers.getAndIncrement();
             startPoller(DEFAULT_POLLER_PERIOD_MS);
-        } else {
+            return;
+        }
+
+        if (this.numberOfHandlers.decrementAndGet() <= 0) {
             stopPoller();
         }
     }
