@@ -10,8 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UltrasonicDistanceSensorComponentTest extends ComponentTest {
     protected UltrasonicDistanceSensorComponent distanceSensor;
@@ -74,9 +73,7 @@ class UltrasonicDistanceSensorComponentTest extends ComponentTest {
         double pulseLength = 0.6;
 
         // when
-        assertThrows(IllegalArgumentException.class, () -> {
-            distanceSensor.calculateDistance(pulseLength, temperature);
-        });
+        assertThrows(IllegalArgumentException.class, () -> distanceSensor.calculateDistance(pulseLength, temperature));
     }
 
     @Test
@@ -86,8 +83,45 @@ class UltrasonicDistanceSensorComponentTest extends ComponentTest {
         double pulseLength = 200.0;
 
         // when + then
-        assertThrows(MeasurementException.class, () -> {
-            distanceSensor.calculateDistance(pulseLength, temperature);
-        });
+        assertThrows(MeasurementException.class, () -> distanceSensor.calculateDistance(pulseLength, temperature));
+    }
+
+    @Test
+    void testStartPollerOverride() {
+        // when
+        distanceSensor.startPoller(1);
+        final var oldPoller = distanceSensor.getPoller();
+        distanceSensor.startPoller(1);
+        final var newPoller = distanceSensor.getPoller();
+
+        // then
+        assertTrue(oldPoller.isDone());
+        assertFalse(newPoller.isDone());
+    }
+
+    @Test
+    void testStopPoller() {
+        // when
+        distanceSensor.startPoller(1);
+        final var oldPoller = distanceSensor.getPoller();
+        distanceSensor.stopPoller();
+
+        // then
+        assertNull(distanceSensor.getPoller());
+        assertTrue(oldPoller.isDone());
+    }
+
+    @Test
+    void testRegisterAndDeregisterHandlers() {
+        // given
+        distanceSensor.onObjectFound(() -> System.out.println("Test"));
+        distanceSensor.onObjectDisappeared(() -> System.out.println("Test"));
+
+        // when
+        distanceSensor.onObjectDisappeared(null);
+        final var poller = distanceSensor.getPoller();
+
+        // then
+        assertFalse(poller.isDone());
     }
 }

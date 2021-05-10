@@ -395,7 +395,6 @@ public class ButtonMatrixComponent extends Component {
     private final class Poller implements Runnable {
         @Override
         public void run() {
-            final var start = System.nanoTime();
             for (int i = 0; i < selectors.length; i++) {
                 // Pull current selector LOW to analyze state of buttons
                 selectors[i].low();

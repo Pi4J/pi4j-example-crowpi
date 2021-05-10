@@ -14,8 +14,20 @@ public class UltrasonicDistanceSensorApp implements Application {
         // Create new tilt sensor component
         final var distanceSensor = new UltrasonicDistanceSensorComponent(pi4j);
 
+        // Configures the Sensor to find Object passing in a predefined distance
+        System.out.println("Searching for an object now...");
+        distanceSensor.setDetectionRange(5,50);
+        distanceSensor.setMeasurementTemperature(23);
+        distanceSensor.onObjectFound(() -> System.out.println("Sensor has found a Object in Range!"));
+        distanceSensor.onObjectDisappeared(() -> System.out.println("Found Object disappeared!"));
+        sleep(10000);
+
+        // Clean up event handlers
+        System.out.println("Searching completed.");
+        distanceSensor.onObjectFound(null);
+        distanceSensor.onObjectDisappeared(null);
+
         // Just printing some text to the users
-        System.out.println("Ultrasonic Distance Measurement starting ...");
         System.out.println("Let's find out the impact of temperature to ultrasonic measurements!");
 
         // Start a measurement with a temperature compensation like it is -10°C while measuring.
@@ -26,7 +38,7 @@ public class UltrasonicDistanceSensorApp implements Application {
         double measurementHot = distanceSensor.measure(30);
         System.out.println("If you room has 30°C now we measure: " + measurementHot + " cm");
         System.out.format("That's a difference of %.2f %%. Only caused by the difference of sonics. Physic is " +
-            "crazy", (measurementHot - measurementCold) / measurementCold * 100);
+            "crazy\n", (measurementHot - measurementCold) / measurementCold * 100);
 
         System.out.println("Lets now just measure for 10 Seconds. That gives some time to try the sensor a little.");
 
