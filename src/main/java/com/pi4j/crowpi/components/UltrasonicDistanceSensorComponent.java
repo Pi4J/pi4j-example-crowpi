@@ -155,8 +155,8 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * This event gets triggered whenever a object comes into the specified range
      * Only a single event handler can be registered at once.
      *
-     * @param min Minimum distance to the Object in cm
-     * @param max Maximum distance to the object in cm
+     * @param min     Minimum distance to the Object in cm
+     * @param max     Maximum distance to the object in cm
      * @param handler Event handler to call or null to disable
      */
     public void onObjectFound(double min, double max, SimpleEventHandler handler) {
@@ -168,10 +168,10 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * This event gets triggered whenever a object comes into the specified range
      * Only a single event handler can be registered at once.
      *
-     * @param min Minimum distance to the Object in cm
-     * @param max Maximum distance to the object in cm
+     * @param min         Minimum distance to the Object in cm
+     * @param max         Maximum distance to the object in cm
      * @param temperature Temperature the sensor is operating at [°C]
-     * @param handler Event handler to call or null to disable
+     * @param handler     Event handler to call or null to disable
      */
     public void onObjectFound(double min, double max, double temperature, SimpleEventHandler handler) {
         this.minRange = min;
@@ -192,8 +192,8 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * Only a single event handler can be registered at once.
      * Working with default temperature
      *
-     * @param min Minimum distance to the Object in cm
-     * @param max Maximum distance to the object in cm
+     * @param min     Minimum distance to the Object in cm
+     * @param max     Maximum distance to the object in cm
      * @param handler Event handler to call or null to disable
      */
     public void onObjectDisappeared(double min, double max, SimpleEventHandler handler) {
@@ -205,10 +205,10 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * This event gets triggered whenever a object leaves the specified range
      * Only a single event handler can be registered at once.
      *
-     * @param min Minimum distance to the Object in cm
-     * @param max Maximum distance to the object in cm
+     * @param min         Minimum distance to the Object in cm
+     * @param max         Maximum distance to the object in cm
      * @param temperature Temperature the sensor is operating at [°C]
-     * @param handler Event handler to call or null to disable
+     * @param handler     Event handler to call or null to disable
      */
     public void onObjectDisappeared(double min, double max, double temperature, SimpleEventHandler handler) {
         this.minRange = min;
