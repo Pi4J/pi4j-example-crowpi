@@ -11,7 +11,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UltrasonicDistanceSensorComponentTest extends ComponentTest {
     protected UltrasonicDistanceSensorComponent distanceSensor;
