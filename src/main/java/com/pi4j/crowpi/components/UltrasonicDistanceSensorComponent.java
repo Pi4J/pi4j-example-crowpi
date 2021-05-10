@@ -144,7 +144,7 @@ public class UltrasonicDistanceSensorComponent extends Component {
      *
      * @param pollerPeriodMs Polling period in milliseconds
      */
-    public void startPoller(long pollerPeriodMs) {
+    protected void startPoller(long pollerPeriodMs) {
         if (this.poller != null) {
             this.poller.cancel(true);
         }
@@ -155,10 +155,11 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * Stops the poller immediately, therefore causing the button states to be no longer refreshed.
      * If the poller is already stopped, this method will silently return and do nothing.
      */
-    public void stopPoller() {
+    protected void stopPoller() {
         if (this.poller != null) {
             this.poller.cancel(true);
             this.poller = null;
+            this.numberOfHandlers.set(0);
         }
     }
 
