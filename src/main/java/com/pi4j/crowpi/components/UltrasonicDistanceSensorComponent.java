@@ -39,7 +39,6 @@ public class UltrasonicDistanceSensorComponent extends Component {
     private volatile double minRange = 2;
     private volatile double maxRange = 300;
     private volatile double temperature;
-    private final AtomicInteger numberOfHandlers;
 
     /**
      * Pi4J digital output instance used by this component
@@ -95,7 +94,6 @@ public class UltrasonicDistanceSensorComponent extends Component {
         this.objectFoundHandler = new AtomicReference<>();
         this.objectDisappearedHandler = new AtomicReference<>();
         this.state = new AtomicBoolean(false);
-        this.numberOfHandlers = new AtomicInteger(0);
 
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
         this.temperature = DEFAULT_TEMPERATURE;
@@ -144,7 +142,7 @@ public class UltrasonicDistanceSensorComponent extends Component {
      *
      * @param pollerPeriodMs Polling period in milliseconds
      */
-    protected void startPoller(long pollerPeriodMs) {
+    protected synchronized void startPoller(long pollerPeriodMs) {
         if (this.poller != null) {
             this.poller.cancel(true);
         }
@@ -155,11 +153,10 @@ public class UltrasonicDistanceSensorComponent extends Component {
      * Stops the poller immediately, therefore causing the button states to be no longer refreshed.
      * If the poller is already stopped, this method will silently return and do nothing.
      */
-    protected void stopPoller() {
-        if (this.poller != null) {
+    protected synchronized void stopPoller() {
+        if (this.poller != null && objectDisappearedHandler.get() == null && objectFoundHandler.get() == null) {
             this.poller.cancel(true);
             this.poller = null;
-            this.numberOfHandlers.set(0);
         }
     }
 
@@ -203,12 +200,8 @@ public class UltrasonicDistanceSensorComponent extends Component {
         this.objectFoundHandler.set(handler);
 
         if (handler != null) {
-            this.numberOfHandlers.getAndIncrement();
             startPoller(DEFAULT_POLLER_PERIOD_MS);
-            return;
-        }
-
-        if (this.numberOfHandlers.decrementAndGet() <= 0) {
+        } else {
             stopPoller();
         }
     }
@@ -225,12 +218,8 @@ public class UltrasonicDistanceSensorComponent extends Component {
         this.objectDisappearedHandler.set(handler);
 
         if (handler != null) {
-            this.numberOfHandlers.getAndIncrement();
             startPoller(DEFAULT_POLLER_PERIOD_MS);
-            return;
-        }
-
-        if (this.numberOfHandlers.decrementAndGet() <= 0) {
+        } else {
             stopPoller();
         }
     }
