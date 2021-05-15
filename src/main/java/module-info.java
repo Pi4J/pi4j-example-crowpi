@@ -3,6 +3,7 @@ open module com.pi4j.crowpi {
     exports com.pi4j.crowpi.components;
     exports com.pi4j.crowpi.components.definitions;
     exports com.pi4j.crowpi.components.events;
+    exports com.pi4j.crowpi.components.exceptions;
     exports com.pi4j.crowpi.helpers;
 
     // Pi4J Modules

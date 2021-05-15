@@ -2,6 +2,7 @@ package com.pi4j.crowpi.components;
 
 import com.pi4j.context.Context;
 import com.pi4j.crowpi.components.exceptions.NfcException;
+import com.pi4j.crowpi.components.helpers.ByteHelpers;
 import com.pi4j.crowpi.components.internal.MFRC522;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.gpio.digital.DigitalOutputConfig;
@@ -27,6 +28,13 @@ public class NfcComponent extends MFRC522 {
 
     public String readCardSerial() throws NfcException {
         final var tag = select();
+        System.out.println("Card SAK: " + ByteHelpers.toString(tag.getSak()));
+        System.out.println("Card serial: " + tag.getSerial());
+
+        System.out.println("Attempting authentication...");
+        authenticate(AuthKey.getDefaultKeyB(), (byte) 8, tag);
+        deauthenticate();
+
         return tag.getSerial();
     }
 
@@ -35,6 +43,7 @@ public class NfcComponent extends MFRC522 {
             .id("BCM" + address)
             .name("NFC Power")
             .address(address)
+            .initial(DigitalState.LOW)
             .shutdown(DigitalState.LOW)
             .build();
     }

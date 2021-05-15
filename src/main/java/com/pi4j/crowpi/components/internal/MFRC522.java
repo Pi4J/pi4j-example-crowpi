@@ -71,7 +71,7 @@ public class MFRC522 extends Component {
     private void resetSystem() {
         // If reset pin is LOW (= device is shutdown), set it to HIGH to leave power-down mode
         // Otherwise execute a soft-reset command
-        if (!this.resetPin.isHigh()) {
+        if (this.resetPin.isLow()) {
             this.resetPin.high();
         } else {
             this.executePcd(PcdCommand.SOFT_RESET);
@@ -319,6 +319,77 @@ public class MFRC522 extends Component {
         return new Tag(uidBytes, uidSak);
     }
 
+    protected void authenticate(AuthKey key, byte blockAddr, Tag tag) throws NfcException {
+        // Prepare buffer for authentication command
+        final byte[] buffer = new byte[12];
+        buffer[0] = key.getType().getCommand().getValue();
+        buffer[1] = blockAddr;
+        System.arraycopy(key.getBytes(), 0, buffer, 2, Math.min(6, key.getLength()));
+        System.arraycopy(tag.getUid(), tag.getUidLength() - 4, buffer, 8, Math.min(4, tag.getUidLength()));
+
+        System.out.println("Auth buffer: " + ByteHelpers.toString(buffer));
+
+        // Start authentication against PICC
+        sendPiccRequest(PcdCommand.MF_AUTHENT, PcdComIrq.IDLE_IRQ, buffer);
+    }
+
+    public void deauthenticate() {
+        clearBitMask(PcdRegister.STATUS_2_REG, (byte) 0x08); // MFCrypto1On[0]
+    }
+
+    protected final static class AuthKey {
+        private final Type type;
+        private final byte[] bytes;
+
+        public AuthKey(Type type, byte[] bytes) {
+            if (bytes.length != 6) {
+                throw new IllegalArgumentException("Length of key must be exactly 6 bytes");
+            }
+
+            this.type = type;
+            this.bytes = bytes;
+        }
+
+        public static AuthKey getDefaultKeyA() {
+            return new AuthKey(Type.KEY_A, getDefaultKey());
+        }
+
+        public static AuthKey getDefaultKeyB() {
+            return new AuthKey(Type.KEY_B, getDefaultKey());
+        }
+
+        private static byte[] getDefaultKey() {
+            return new byte[]{(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF};
+        }
+
+        public byte[] getBytes() {
+            return bytes;
+        }
+
+        public int getLength() {
+            return bytes.length;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public enum Type {
+            KEY_A(PiccCommand.MF_AUTH_KEY_A),
+            KEY_B(PiccCommand.MF_AUTH_KEY_B);
+
+            private final PiccCommand command;
+
+            Type(PiccCommand command) {
+                this.command = command;
+            }
+
+            public PiccCommand getCommand() {
+                return command;
+            }
+        }
+    }
+
     protected final static class Tag {
         private final byte[] uid;
         private final byte sak;
@@ -336,6 +407,10 @@ public class MFRC522 extends Component {
 
         public byte[] getUid() {
             return uid;
+        }
+
+        public int getUidLength() {
+            return uid.length;
         }
 
         public byte getSak() {
@@ -419,19 +494,15 @@ public class MFRC522 extends Component {
 
     private PiccResponse transceivePicc(byte[] txData, int txLastBits, int rxAlignBits) throws NfcException {
         final var waitIrq = Set.of(PcdComIrq.RX_IRQ, PcdComIrq.IDLE_IRQ);
-        return sendPiccRequest(PcdCommand.TRANSCEIVE, waitIrq, txData, txLastBits, rxAlignBits);
+        return sendPiccRequest(PcdCommand.TRANSCEIVE, waitIrq, txData, txLastBits, rxAlignBits, false);
+    }
+
+    private PiccResponse sendPiccRequest(PcdCommand command, PcdComIrq waitIrq, byte[] txData) throws NfcException {
+        return sendPiccRequest(command, Set.of(waitIrq), txData);
     }
 
     private PiccResponse sendPiccRequest(PcdCommand command, Set<PcdComIrq> waitIrq, byte[] txData) throws NfcException {
-        return sendPiccRequest(command, waitIrq, txData, 0, 0);
-    }
-
-    private PiccResponse sendPiccRequest(PcdCommand command, Set<PcdComIrq> waitIrq, byte[] txData, int txLastBits) throws NfcException {
-        return sendPiccRequest(command, waitIrq, txData, txLastBits, 0);
-    }
-
-    private PiccResponse sendPiccRequest(PcdCommand command, Set<PcdComIrq> waitIrq, byte[] txData, int txLastBits, int rxAlignBits) throws NfcException {
-        return sendPiccRequest(command, waitIrq, txData, txLastBits, 0, false);
+        return sendPiccRequest(command, waitIrq, txData, 0, 0, false);
     }
 
     private PiccResponse sendPiccRequest(PcdCommand command, Set<PcdComIrq> waitIrq, byte[] txData, int txLastBits, int rxAlignBits, boolean checkCrc) throws NfcException {
@@ -479,10 +550,17 @@ public class MFRC522 extends Component {
             throw new NfcException(earlyError);
         }
 
-        // Receive data from PICC
-        final var rxLength = readRegister(PcdRegister.FIFO_LEVEL_REG) & 0xFF;
-        final var rxData = readRegister(PcdRegister.FIFO_DATA_REG, rxLength, rxAlignBits);
-        final var rxLastBits = readRegister(PcdRegister.CONTROL_REG) & 0x07;
+        // Prepare default response values
+        byte[] rxData = new byte[0];
+        int rxLength = 0;
+        int rxLastBits = 0;
+
+        // Receive data from PICC if not authentication
+        if (command != PcdCommand.MF_AUTHENT) {
+            rxLength = readRegister(PcdRegister.FIFO_LEVEL_REG) & 0xFF;
+            rxData = readRegister(PcdRegister.FIFO_DATA_REG, rxLength, rxAlignBits);
+            rxLastBits = readRegister(PcdRegister.CONTROL_REG) & 0x07;
+        }
 
         // Check for collision error
         var lateError = PcdError.matchErrReg(errorReg, PcdError.COLL_ERR);
@@ -1005,6 +1083,14 @@ public class MFRC522 extends Component {
          * Invites PICCs in state IDLE and HALT to go to READY(*) and prepare for anticollision or selection. 7 bit frame.
          */
         WUPA(0x52),
+        /**
+         * Perform authentication with Key A
+         */
+        MF_AUTH_KEY_A(0x60),
+        /**
+         * Perform authentication with Key B
+         */
+        MF_AUTH_KEY_B(0x61),
         /**
          * Cascade Tag.
          * Not really a command, but used during anti collision.
