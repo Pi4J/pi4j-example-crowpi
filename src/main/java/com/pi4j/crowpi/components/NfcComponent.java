@@ -15,6 +15,8 @@ public class NfcComponent extends MFRC522 {
     protected static final int DEFAULT_SPI_CHANNEL = 0;
     protected static final int DEFAULT_SPI_BAUD_RATE = 1000000;
 
+    protected MFRC522.Tag tag;
+
     public NfcComponent(Context pi4j) {
         this(pi4j, DEFAULT_POWER_PIN, DEFAULT_SPI_CHANNEL, DEFAULT_SPI_BAUD_RATE);
     }
@@ -27,15 +29,16 @@ public class NfcComponent extends MFRC522 {
     }
 
     public String readCardSerial() throws NfcException {
-        final var tag = select();
+        tag = select();
         System.out.println("Card SAK: " + ByteHelpers.toString(tag.getSak()));
         System.out.println("Card serial: " + tag.getSerial());
 
-        System.out.println("Attempting authentication...");
-        authenticate(AuthKey.getDefaultKeyB(), (byte) 8, tag);
-        deauthenticate();
-
         return tag.getSerial();
+    }
+
+    public byte[] readCard(byte blockAddr) throws NfcException {
+        authenticate(AuthKey.getDefaultKeyB(), blockAddr, tag);
+        return mifareRead(blockAddr);
     }
 
     private static DigitalOutputConfig buildDigitalOutputConfig(Context pi4j, int address) {

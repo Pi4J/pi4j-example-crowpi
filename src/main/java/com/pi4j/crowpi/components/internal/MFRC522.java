@@ -24,6 +24,7 @@ public class MFRC522 extends Component {
     }
 
     private void init() {
+        // Reset component to initial state
         resetSystem();
         resetTransmission();
 
@@ -36,6 +37,7 @@ public class MFRC522 extends Component {
         writeRegister(PcdRegister.TX_ASK_REG, (byte) 0b0100_0000); // Force100ASK[1]
         writeRegister(PcdRegister.MODE_REG, (byte) 0b0011_1101); // TxWaitRF[1], PolMFin[1], CRCPreset[01] (= 0x6363 / ISO 14443-3 CRC_A)
 
+        // Enable antenna to communicate with nearby PICCs
         setAntennaState(true);
     }
 
@@ -81,13 +83,12 @@ public class MFRC522 extends Component {
         sleep(50);
 
         // Ensure that soft power-down mode is no longer active
-        while (true) {
-            final var softPowerDown = (readRegister(PcdRegister.COMMAND_REG) & (1 << 4)) != 0;
-            if (!softPowerDown) {
-                break;
-            }
+        while ((readRegister(PcdRegister.COMMAND_REG) & (1 << 4)) != 0) {
             sleep(10);
         }
+
+        // Deauthenticate from previous PICC, this is not covered by soft resets
+        deauthenticate();
     }
 
     protected Tag select() throws NfcException {
@@ -337,6 +338,24 @@ public class MFRC522 extends Component {
         clearBitMask(PcdRegister.STATUS_2_REG, (byte) 0x08); // MFCrypto1On[0]
     }
 
+    public byte[] mifareRead(byte blockAddr) throws NfcException {
+        // Construct payload and calculate CRC_A checksum
+        final var payload = new byte[]{PiccCommand.MF_READ.getValue(), blockAddr};
+        final var checksum = calculateCrc(payload);
+
+        // Build buffer based on payload and CRC_A checksum
+        final var buffer = new byte[payload.length + checksum.length];
+        System.arraycopy(payload, 0, buffer, 0, payload.length);
+        System.arraycopy(checksum, 0, buffer, payload.length, checksum.length);
+
+        try {
+            final var response = transceivePicc(buffer, 0, 0, true);
+            return response.getBytes();
+        } catch (NfcException ignored) {
+            return null;
+        }
+    }
+
     protected final static class AuthKey {
         private final Type type;
         private final byte[] bytes;
@@ -493,8 +512,12 @@ public class MFRC522 extends Component {
     }
 
     private PiccResponse transceivePicc(byte[] txData, int txLastBits, int rxAlignBits) throws NfcException {
+        return transceivePicc(txData, txLastBits, rxAlignBits, false);
+    }
+
+    private PiccResponse transceivePicc(byte[] txData, int txLastBits, int rxAlignBits, boolean checkCrc) throws NfcException {
         final var waitIrq = Set.of(PcdComIrq.RX_IRQ, PcdComIrq.IDLE_IRQ);
-        return sendPiccRequest(PcdCommand.TRANSCEIVE, waitIrq, txData, txLastBits, rxAlignBits, false);
+        return sendPiccRequest(PcdCommand.TRANSCEIVE, waitIrq, txData, txLastBits, rxAlignBits, checkCrc);
     }
 
     private PiccResponse sendPiccRequest(PcdCommand command, PcdComIrq waitIrq, byte[] txData) throws NfcException {
@@ -1084,14 +1107,6 @@ public class MFRC522 extends Component {
          */
         WUPA(0x52),
         /**
-         * Perform authentication with Key A
-         */
-        MF_AUTH_KEY_A(0x60),
-        /**
-         * Perform authentication with Key B
-         */
-        MF_AUTH_KEY_B(0x61),
-        /**
          * Cascade Tag.
          * Not really a command, but used during anti collision.
          */
@@ -1107,7 +1122,26 @@ public class MFRC522 extends Component {
         /**
          * Anti collision/Select, Cascade Level 3.
          */
-        SEL_CL3(0x97);
+        SEL_CL3(0x97),
+
+        /**
+         * [MIFARE Classic/Ultralight] Reads one 16 byte block from the authenticated sector of the PICC.
+         * Also used for MIFARE Ultralight.
+         */
+        MF_READ(0x30),
+        /**
+         * [MIFARE Classic/Ultralight] Writes one 16 byte block to the authenticated sector of the PICC.
+         * Called "COMPATIBILITY WRITE" for MIFARE Ultralight.
+         */
+        MF_WRITE(0xA0),
+        /**
+         * [MIFARE Classic] Perform authentication with Key A
+         */
+        MF_AUTH_KEY_A(0x60),
+        /**
+         * [MIFARE Classic] Perform authentication with Key B
+         */
+        MF_AUTH_KEY_B(0x61);
 
         private final byte value;
 

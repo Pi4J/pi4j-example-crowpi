@@ -4,6 +4,7 @@ import com.pi4j.context.Context;
 import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.NfcComponent;
 import com.pi4j.crowpi.components.exceptions.NfcException;
+import com.pi4j.crowpi.components.helpers.ByteHelpers;
 
 public class NfcApp implements Application {
     @Override
@@ -17,12 +18,18 @@ public class NfcApp implements Application {
             if (isPresent) {
                 try {
                     System.out.println("Card serial: " + nfc.readCardSerial());
+                    for (int i = 0; i <= 0x3F; i++) {
+                        final var contents = ByteHelpers.toString(nfc.readCard((byte) i));
+                        System.out.println("Card contents at block [" + i + "]: " + contents);
+                    }
                 } catch (NfcException e) {
                     e.printStackTrace();
+                } finally {
+                    nfc.deauthenticate();
                 }
             }
 
-            sleep(1000);
+            sleep(10000);
         }
     }
 }

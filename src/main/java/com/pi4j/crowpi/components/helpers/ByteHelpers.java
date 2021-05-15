@@ -18,6 +18,10 @@ public class ByteHelpers {
     }
 
     public static String toString(byte[] bytes) {
+        if (bytes == null) {
+            return "<null>";
+        }
+
         char[] chars = new char[bytes.length * 2];
         for (int i = 0; i < bytes.length; i++) {
             int value = bytes[i] & 0xFF;
