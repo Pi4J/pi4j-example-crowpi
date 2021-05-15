@@ -11,11 +11,17 @@ public class NfcApp implements Application {
         final var nfc = new NfcComponent(pi4j);
 
         while (true) {
-            try {
-                nfc.requestA(new byte[2]);
-            } catch (NfcException e) {
-                e.printStackTrace();
+            final boolean isPresent = nfc.isCardPresent();
+            System.out.println("Card present: " + isPresent);
+
+            if (isPresent) {
+                try {
+                    System.out.println("Card serial: " + nfc.readCardSerial());
+                } catch (NfcException e) {
+                    e.printStackTrace();
+                }
             }
+
             sleep(1000);
         }
     }

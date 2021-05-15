@@ -1,6 +1,7 @@
 package com.pi4j.crowpi.components;
 
 import com.pi4j.context.Context;
+import com.pi4j.crowpi.components.exceptions.NfcException;
 import com.pi4j.crowpi.components.internal.MFRC522;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.gpio.digital.DigitalOutputConfig;
@@ -22,6 +23,11 @@ public class NfcComponent extends MFRC522 {
             pi4j.create(buildDigitalOutputConfig(pi4j, gpioPowerPin)),
             pi4j.create(buildSpiConfig(pi4j, spiChannel, spiBaud))
         );
+    }
+
+    public String readCardSerial() throws NfcException {
+        final var tag = select();
+        return tag.getSerial();
     }
 
     private static DigitalOutputConfig buildDigitalOutputConfig(Context pi4j, int address) {
