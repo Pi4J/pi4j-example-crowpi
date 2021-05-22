@@ -6,6 +6,7 @@ open module com.pi4j.crowpi {
     exports com.pi4j.crowpi.components.exceptions;
     exports com.pi4j.crowpi.components.helpers;
     exports com.pi4j.crowpi.components.internal;
+    exports com.pi4j.crowpi.components.internal.rfid;
     exports com.pi4j.crowpi.helpers;
 
     // Pi4J Modules
