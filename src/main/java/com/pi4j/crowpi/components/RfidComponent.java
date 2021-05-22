@@ -16,6 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -86,6 +87,12 @@ public class RfidComponent extends MFRC522 {
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
     }
 
+    /**
+     * Sets or disables the handler for any new card which gets in the proximity of the PCD.
+     * Previously written cards are automatically being ignored due to being in the HALT state.
+     *
+     * @param handler Event handler to call when new card is approached
+     */
     public synchronized void onCardDetected(EventHandler<RfidCard> handler) {
         this.cardDetectedHandler.set(handler);
         if (handler != null) {
@@ -95,6 +102,35 @@ public class RfidComponent extends MFRC522 {
         }
     }
 
+    /**
+     * Acts like {@link #onCardDetected(EventHandler)}, but only executes the handler once and waits for the event to happen.
+     * This can be used to simplify synchronous programming without having to deal with asynchronous event logic.
+     *
+     * @param handler Event handler to call when new card is approached
+     */
+    public void waitForCard(EventHandler<RfidCard> handler) {
+        final var done = new AtomicBoolean(false);
+
+        // Register new event handler which triggers exactly once
+        onCardDetected(card -> {
+            handler.handle(card);
+            onCardDetected(null);
+            done.set(true);
+        });
+
+        // Wait until event handler has been called once
+        while (!done.get()) {
+            sleep(10);
+        }
+    }
+
+    /**
+     * (Re-)starts the poller with the desired time period in milliseconds.
+     * If the poller is already running, it will be cancelled and rescheduled with the given time.
+     * The first poll happens immediately in a separate thread and does not get delayed.
+     *
+     * @param pollerPeriodMs Polling period in milliseconds
+     */
     protected void startPoller(long pollerPeriodMs) {
         if (this.poller != null) {
             this.poller.cancel(true);
@@ -102,6 +138,10 @@ public class RfidComponent extends MFRC522 {
         this.poller = scheduler.scheduleAtFixedRate(new Poller(), 0, pollerPeriodMs, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Stops the poller immediately, therefore causing RFID cards to be no longer detected.
+     * If the poller is already stopped, this method will silently return and do nothing.
+     */
     protected void stopPoller() {
         if (this.poller != null) {
             this.poller.cancel(true);
@@ -143,6 +183,11 @@ public class RfidComponent extends MFRC522 {
             .build();
     }
 
+    /**
+     * Poller class which implements {@link Runnable} to be used with {@link ScheduledExecutorService} for repeated execution.
+     * This poller consecutively calls {@link MFRC522#isNewCardPresent()} to check for any new idle PICCs within the proximity of the PCD.
+     * If any new card is found, it will be read and passed to the registered handler before being put into a HALT state.
+     */
     private final class Poller implements Runnable {
         @Override
         public void run() {
@@ -167,11 +212,11 @@ public class RfidComponent extends MFRC522 {
             } catch (RfidUnsupportedCardException e) {
                 // While this card is unsupported, this is not an abnormal exception
                 // We therefore handle this situation separately from the generic RfidException to avoid resetting the MFRC522
-                System.out.println("Unsupported RFID card: " + e.getCardType());
+                logger.warn("Ignoring unsupported RFID card type: {}", e.getCardType());
             } catch (RfidException e) {
                 // Reset the MFRC522 for any abnormal exceptions
                 // This is required to ensure further operation is possible
-                System.out.println("Abnormal RFID exception: " + e.getMessage());
+                logger.warn("Resetting RFID component due to abnormal exception: {}", e);
                 reset();
             } finally {
                 // Always attempt to uninitialize the current card

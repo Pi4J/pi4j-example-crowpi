@@ -1,9 +1,12 @@
 package com.pi4j.crowpi.components.internal.rfid;
 
-import com.pi4j.crowpi.components.helpers.Logger;
 import com.pi4j.crowpi.components.exceptions.RfidException;
+import com.pi4j.crowpi.components.helpers.Logger;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
