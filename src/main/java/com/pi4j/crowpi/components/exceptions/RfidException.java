@@ -7,6 +7,10 @@ public class RfidException extends Exception {
         super(message);
     }
 
+    public RfidException(String message, Throwable previous) {
+        super(message, previous);
+    }
+
     public RfidException(PcdError error) {
         super(error.getDescription());
     }

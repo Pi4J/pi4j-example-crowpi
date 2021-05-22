@@ -8,26 +8,78 @@ import com.pi4j.crowpi.components.helpers.ByteHelpers;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.spi.Spi;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
 
+/**
+ * Implementation of MFRC522 RFID Reader/Writer used for interacting with RFID cards.
+ * Uses SPI via Pi4J for communication with the PCD (Proximity Coupling Device).
+ * The official name for cards is PICC (Proximity Integrated Circuit Card).
+ */
 public class MFRC522 extends Component {
+    /**
+     * Pi4J digital output optionally used as reset pin for the MFRC522
+     */
     private final DigitalOutput resetPin;
+
+    /**
+     * Pi4J SPI instance
+     */
     private final Spi spi;
 
+    /**
+     * Timeout in milliseconds when calculating CRC_A checksums on the PCD
+     */
     private static final long PCD_CHECKSUM_TIMEOUT_MS = 100;
+
+    /**
+     * Timeout in milliseconds for communication with a PICC
+     */
     private static final long PICC_COMMAND_TIMEOUT_MS = 250;
+
+    /**
+     * Well-known value used by MIFARE PICCs as ACKnowledge response
+     */
     private static final byte PICC_MIFARE_ACK = 0xA;
 
+    /**
+     * Creates a new MFRC522 instance without a reset pin for the given SPI instance from Pi4J.
+     *
+     * @param spi SPI instance
+     */
+    public MFRC522(Spi spi) {
+        this(null, spi);
+    }
+
+    /**
+     * Creates a new MFRC522 instance using the given reset pin and SPI instance from Pi4J.
+     *
+     * @param resetPin Digital output used as reset pin for MFRC522, high is considered as power-on, low as power-off
+     * @param spi      SPI instance
+     */
     public MFRC522(DigitalOutput resetPin, Spi spi) {
         this.resetPin = resetPin;
         this.spi = spi;
         this.init();
     }
 
-    private void init() {
-        // Reset component to initial state
-        reset();
+    /**
+     * Resets the PCD into a well-known state and calls {@link #init()} to achieve a well-known state.
+     * Internally this will either trigger a hard- or soft-reset depending on the current PCD condition.
+     * After calling this method, the PCD will be ready for communication with PICCs.
+     */
+    public void reset() {
+        resetSystem();
+        resetTransmission();
+        init();
+    }
 
+    /**
+     * This will also setup the internal timer to use for timeout handling and enables the CRC coprocessor.
+     * The antennas of the PCD will automatically be enabled as part of this routine.
+     */
+    private void init() {
         // Setup internal timer with 40kHz / 25us and 25ms auto-timeout
         writeRegister(PcdRegister.T_MODE_REG, (byte) 0b1000_0000); // TAuto[1], TGated[00], TAutoRestart[0], TPrescaler_Hi[0000]
         writeRegister(PcdRegister.T_PRESCALER_REG, (byte) 0b1010_1001); // TPrescaler_Lo[10101001]
@@ -41,14 +93,13 @@ public class MFRC522 extends Component {
         setAntennaState(true);
     }
 
-    public void setAntennaState(boolean on) {
-        if (on) {
-            setBitMask(PcdRegister.TX_CONTROL_REG, (byte) 0x03); // Tx1RFEn[1], Tx1RFEn[1]
-        } else {
-            clearBitMask(PcdRegister.TX_CONTROL_REG, (byte) 0x03); // Tx1RFEn[0], Tx1RFEn[0]
-        }
-    }
-
+    /**
+     * Returns a boolean if at least one PICC is currently in the proximity of the PCD.
+     * Any potential communication errors are silently ignored and result in true.
+     * As anti-collision is handled later on, {@link RfidCollisionException} is treated as success.
+     *
+     * @return True if PICC is near PCD, otherwise false
+     */
     public boolean isCardPresent() {
         resetTransmission();
         try {
@@ -61,11 +112,43 @@ public class MFRC522 extends Component {
         }
     }
 
-    public void reset() {
-        resetSystem();
-        resetTransmission();
+    /**
+     * Selects a single PICC and transitions it from READY to ACTIVE state, then returns an appropriate {@link RfidCard} instance.
+     *
+     * @return Card instance for further interaction
+     * @throws RfidException Communication with PICC failed or SAK is unsupported
+     */
+    public RfidCard initializeCard() throws RfidException {
+        final var cardUid = select();
+        final var cardType = RfidCardType.fromSak(cardUid.getSak());
+
+        //noinspection SwitchStatementWithTooFewBranches
+        switch (cardType) {
+            case MIFARE_CLASSIC_1K:
+                return new Mifare1K(this, cardUid);
+            default:
+                throw new RfidException("Unsupported card type: " + cardType);
+        }
     }
 
+    /**
+     * Enables or disables the TX1 and TX2 antennas required for powering the PICCs.
+     * Must be called after each reset as antennas are disabled by default.
+     *
+     * @param on True to enable, false to disable antennas
+     */
+    protected void setAntennaState(boolean on) {
+        if (on) {
+            setBitMask(PcdRegister.TX_CONTROL_REG, (byte) 0x03); // Tx1RFEn[1], Tx2RFEn[1]
+        } else {
+            clearBitMask(PcdRegister.TX_CONTROL_REG, (byte) 0x03); // Tx1RFEn[0], Tx2RFEn[0]
+        }
+    }
+
+    /**
+     * Reset the transmission and modulation framing of the MFRC522 PCD.
+     * This should always be called after a hard- or soft-reset.
+     */
     private void resetTransmission() {
         // Reset baud rates
         writeRegister(PcdRegister.TX_MODE_REG, (byte) 0x00); // TxSpeed[000] = 106kBd
@@ -75,26 +158,23 @@ public class MFRC522 extends Component {
         writeRegister(PcdRegister.MOD_WIDTH_REG, (byte) 0x26); // ModWidth[0x26]
     }
 
+    /**
+     * Pulls the reset pin to HIGH to enable the PCD or alternatively triggers a soft-reset if already powered or not present.
+     * This method will sleep a short amount of time (<0.2s usually) to ensure the PCD is ready.
+     */
     private void resetSystem() {
-        // If reset pin is LOW (= device is shutdown), set it to HIGH to leave power-down mode
-        // Otherwise execute a soft-reset command
-//        if (this.resetPin.isLow()) {
-//            this.resetPin.high();
-//        } else {
-//            this.executePcd(PcdCommand.SOFT_RESET);
-//        }
-
-        // FIXME
-        if (this.resetPin.isHigh()) {
-            this.resetPin.low();
-            sleep(100);
+        // If reset pin is present and LOW (= device is shutdown), set it to HIGH to leave power-down mode
+        // Otherwise execute a soft-reset command on the PCD
+        if (this.resetPin != null && this.resetPin.isLow()) {
+            this.resetPin.high();
+        } else {
+            this.executePcd(PcdCommand.SOFT_RESET);
         }
-        this.resetPin.high();
 
         // Give the PCD some time to startup
         sleep(50);
 
-        // Ensure that soft power-down mode is no longer active
+        // Ensure that soft power-down mode is not active
         while ((readRegister(PcdRegister.COMMAND_REG) & (1 << 4)) != 0) {
             sleep(10);
         }
@@ -103,12 +183,18 @@ public class MFRC522 extends Component {
         mifareStopCrypto1();
     }
 
-    protected RfidUid select() throws RfidException {
-        return select(0);
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private RfidUid select(int validBits) throws RfidException {
+    /**
+     * Selects a single PICC by executing the ANTICOLLISION and SELECT procedure according to ISO 14443.
+     * This method expects at least one PICC in READY state, which can be achieved using {@link #requestA(byte[])} or {@link #wakeupA(byte[])}.
+     * <p>
+     * Upon successful completion, a single PICC will now be in ACTIVE state and ready for communication.
+     * All other PICCs will return to their IDLE or HALT state and no longer conflict with each other.
+     * The UID of the targeted PICC will be returned which should be stored for further interaction.
+     *
+     * @return UID of PICC transitioned into ACTIVE state
+     * @throws RfidException Unable to select PICC, e.g. timeout, missing presence, protocol error, ...
+     */
+    protected RfidCardUid select() throws RfidException {
         // Prepare buffer with 9 bytes length (7 byte UID + 2 byte CRC_A)
         // This buffer must contain the following structure:
         //      Byte 0: SEL         Cascade Level Selector
@@ -139,29 +225,14 @@ public class MFRC522 extends Component {
             // Initialize for current cascade level and determine if cascade tag must be parsed
             buffer[0] = cascadeLevel.getCommand().getValue();
             final int uidOffset = cascadeLevel.getUidOffset();
-            final boolean useCascadeTag = (validBits != 0) && (uidBytes.size() > cascadeLevel.getNextThreshold());
+            final boolean useCascadeTag = uidBytes.size() > cascadeLevel.getNextThreshold();
 
-            // Calculate how many bits should be known at the current cascade level
-            // If result is negative, clamp to zero
-            int knownLevelBits = Math.max(0, validBits - (8 * uidOffset));
+            // We do not know any bits of this cascade level yet
+            int knownLevelBits = 0;
 
             // Add cascade tag command to buffer if needed
-            int bufferIndex = 2;
             if (useCascadeTag) {
-                buffer[bufferIndex++] = PiccCommand.CASCADE_TAG.getValue();
-            }
-
-            // Copy required amount of bytes into buffer to represent all known bits
-            final int bytesRequired = knownLevelBits / 8 + (knownLevelBits % 8 == 0 ? 0 : 1);
-            if (bytesRequired > 0) {
-                // Restrict copying to four bytes or three bytes when using CT
-                final int maxBytesToCopy = useCascadeTag ? 3 : 4;
-                final int bytesToCopy = Math.min(bytesRequired, maxBytesToCopy);
-
-                // Copy bytes into buffer starting from UID offset
-                for (int i = 0; i < bytesToCopy; i++) {
-                    buffer[bufferIndex++] = uidBytes.get(uidOffset + i);
-                }
+                buffer[2] = PiccCommand.CASCADE_TAG.getValue();
             }
 
             // Add size of cascade tag to current known bits after copying data
@@ -329,10 +400,20 @@ public class MFRC522 extends Component {
         }
 
         // Return new tag instance
-        return new RfidUid(uidBytes, uidSak);
+        return new RfidCardUid(uidBytes, uidSak);
     }
 
-    protected void mifareAuth(MifareKey key, byte blockAddr, RfidUid uid) throws RfidException {
+    /**
+     * Authenticates the sector to which the specified block belongs for MIFARE PICCs.
+     * A valid key A or key B must be provided based on the required access privileges.
+     * Do not forget to call {@link #mifareStopCrypto1()} once PICC communication is complete.
+     *
+     * @param key       Authentication key to use for this sector
+     * @param blockAddr Block address for which sector gets authenticated
+     * @param uid       UID of the PICC, required as part of the authentication
+     * @throws RfidException Authentication against PICC has failed
+     */
+    protected void mifareAuth(MifareKey key, byte blockAddr, RfidCardUid uid) throws RfidException {
         // Prepare buffer for authentication command
         final byte[] buffer = new byte[12];
         buffer[0] = key.getType().getCommand().getValue();
@@ -346,11 +427,24 @@ public class MFRC522 extends Component {
         sendPiccRequest(PcdCommand.MF_AUTHENT, PcdComIrq.IDLE_IRQ, buffer);
     }
 
+    /**
+     * Stops the encrypted communication towards the PICC, must be called when {@link #mifareAuth(MifareKey, byte, RfidCardUid)} was used.
+     * Without calling this method, communication with other PICCs is impossible aside from resetting the PCD.
+     */
     public void mifareStopCrypto1() {
         clearBitMask(PcdRegister.STATUS_2_REG, (byte) 0x08); // MFCrypto1On[0]
     }
 
-    public byte[] mifareRead(byte blockAddr) throws RfidException {
+    /**
+     * Reads the specified block from a MIFARE PICC using {@link PiccCommand#MF_READ}.
+     * The affected sector must be authenticated in advance using {@link #mifareAuth(MifareKey, byte, RfidCardUid)}.
+     * WARNING: Not all block contain user-provided data, make sure to pay attention to this when deciding which blocks to read.
+     *
+     * @param blockAddr Block address to read from
+     * @return Data read from PICC, length varies depending on type
+     * @throws RfidException Reading data from specified block has failed
+     */
+    protected byte[] mifareRead(byte blockAddr) throws RfidException {
         // Construct payload and calculate CRC_A checksum
         final var payload = new byte[]{PiccCommand.MF_READ.getValue(), blockAddr};
         final var checksum = calculateCrc(payload);
@@ -364,7 +458,16 @@ public class MFRC522 extends Component {
         return response.getBytes();
     }
 
-    public void mifareWrite(byte blockAddr, byte[] dataBuffer) throws RfidException {
+    /**
+     * Writes the specified amount of data using {@link PiccCommand#MF_WRITE} to a MIFARE PICC.
+     * The affected sector must be authenticated in advance using {@link #mifareAuth(MifareKey, byte, RfidCardUid)}.
+     * WARNING: Overwriting critical blocks of data, e.g. the sector trailers, will PERMANENTLY brick the PICC.
+     *
+     * @param blockAddr  Block address to write to
+     * @param dataBuffer Data buffer to write, must have correct length for used PICC
+     * @throws RfidException Writing data to specified block has failed
+     */
+    protected void mifareWrite(byte blockAddr, byte[] dataBuffer) throws RfidException {
         final var cmdBuffer = new byte[]{PiccCommand.MF_WRITE.getValue(), blockAddr};
         System.out.println("MIFARE Write Part 1: " + ByteHelpers.toString(cmdBuffer));
         mifareTransceive(cmdBuffer);
@@ -372,6 +475,12 @@ public class MFRC522 extends Component {
         mifareTransceive(dataBuffer);
     }
 
+    /**
+     * Transceives data to a MIFARE PICC by using CRC_A checksums and expecting a {@link #PICC_MIFARE_ACK} response.
+     *
+     * @param payload Data to be sent to the MIFARE PICC
+     * @throws RfidException Invalid response from PICC or received MIFARE NACK
+     */
     private void mifareTransceive(byte[] payload) throws RfidException {
         // Ensure payload is not too long
         if (payload == null || payload.length > 16) {
@@ -398,6 +507,14 @@ public class MFRC522 extends Component {
         }
     }
 
+    /**
+     * Calculates the CRC_A checksum on the PCD for the given payload.
+     * This operation is also subject to the default {@link #PCD_CHECKSUM_TIMEOUT_MS} timeout.
+     *
+     * @param data Payload for which checksum should be calculated
+     * @return Calculated CRC_A checksum, exactly two bytes
+     * @throws RfidTimeoutException Checksum operation timed out on PCD
+     */
     private byte[] calculateCrc(byte[] data) throws RfidTimeoutException {
         // Trigger CRC_A checksum calculation on PCD
         executePcd(PcdCommand.IDLE); // Pause any active command
@@ -426,14 +543,33 @@ public class MFRC522 extends Component {
         throw new RfidTimeoutException("CRC calculation deadline reached after " + PCD_CHECKSUM_TIMEOUT_MS + " milliseconds");
     }
 
+    /**
+     * Sends a REQA command to the PICC to transition from IDLE into READY state.
+     *
+     * @see #requestOrWakeupA(PiccCommand, byte[])
+     */
     private void requestA(byte[] buffer) throws RfidException {
         requestOrWakeupA(PiccCommand.REQA, buffer);
     }
 
+    /**
+     * Sends a WUPA command to the PICC to transition from HALT or IDLE into READY state.
+     *
+     * @see #requestOrWakeupA(PiccCommand, byte[])
+     */
     private void wakeupA(byte[] buffer) throws RfidException {
         requestOrWakeupA(PiccCommand.WUPA, buffer);
     }
 
+    /**
+     * Sends a REQA or WUPA command to the PICC to start communication with a PICC.
+     * REQA will transition a PICC from IDLE into READY state.
+     * WUPA will transition a PICC in either HALT or IDLE into READY state.
+     *
+     * @param command Must be either {@link PiccCommand#REQA} or {@link PiccCommand#WUPA}
+     * @param buffer  Buffer to transmit as part of the REQA/WUPA command, must be exactly two bytes
+     * @throws RfidException Invalid response received from PICC
+     */
     private void requestOrWakeupA(PiccCommand command, byte[] buffer) throws RfidException {
         // Ensure command is supported by this method
         if (command != PiccCommand.REQA && command != PiccCommand.WUPA) {
@@ -459,31 +595,80 @@ public class MFRC522 extends Component {
         System.out.println(response);
     }
 
+    /**
+     * Transceives data to the PICC expecting no partial bytes in either direction with CRC_A checksum processing disabled by default.
+     *
+     * @see #transceivePicc(byte[], int, int, boolean)
+     */
     private PiccResponse transceivePicc(byte[] txData) throws RfidException {
         return transceivePicc(txData, 0);
     }
 
+    /**
+     * Transceives data to the PICC expecting a reply with no partial bytes with CRC_A checksum processing disabled by default.
+     *
+     * @see #transceivePicc(byte[], int, int, boolean)
+     */
     private PiccResponse transceivePicc(byte[] txData, int txLastBits) throws RfidException {
         return transceivePicc(txData, txLastBits, 0);
     }
 
+    /**
+     * Transceives data to the PICC with CRC_A checksum processing disabled by default.
+     *
+     * @see #transceivePicc(byte[], int, int, boolean)
+     */
     private PiccResponse transceivePicc(byte[] txData, int txLastBits, int rxAlignBits) throws RfidException {
         return transceivePicc(txData, txLastBits, rxAlignBits, false);
     }
 
+    /**
+     * Transmits data to the PICC and receives the resulting data, also known as transceiving.
+     * Uses the PCD command {@link PcdCommand#TRANSCEIVE} for interacting with the PICC.
+     *
+     * @param txData      Data to be transmitted to the PICC
+     * @param txLastBits  Number of valid bits to be transmitted as part of the last byte, 0 means all 8 bits are valid
+     * @param rxAlignBits Position of first valid bit in received data, 0 means all 8 bits are valid
+     * @param checkCrc    Boolean which specifies if CRC_A checksum according to ISO-14443 should be processed
+     * @return Response from PICC with result data
+     * @throws RfidException Timeout, collision or generic error occurred during PICC request
+     */
     private PiccResponse transceivePicc(byte[] txData, int txLastBits, int rxAlignBits, boolean checkCrc) throws RfidException {
         final var waitIrq = Set.of(PcdComIrq.RX_IRQ, PcdComIrq.IDLE_IRQ);
         return sendPiccRequest(PcdCommand.TRANSCEIVE, waitIrq, txData, txLastBits, rxAlignBits, checkCrc);
     }
 
+    /**
+     * Sends a request to the PICC with a single wait IRQ and CRC_A checksum processing disabled by default.
+     *
+     * @see #sendPiccRequest(PcdCommand, Set, byte[], int, int, boolean)
+     */
     private PiccResponse sendPiccRequest(PcdCommand command, PcdComIrq waitIrq, byte[] txData) throws RfidException {
         return sendPiccRequest(command, Set.of(waitIrq), txData);
     }
 
+    /**
+     * Sends a request to the PICC with CRC_A checksum processing disabled by default.
+     *
+     * @see #sendPiccRequest(PcdCommand, Set, byte[], int, int, boolean)
+     */
     private PiccResponse sendPiccRequest(PcdCommand command, Set<PcdComIrq> waitIrq, byte[] txData) throws RfidException {
         return sendPiccRequest(command, waitIrq, txData, 0, 0, false);
     }
 
+    /**
+     * Sends a request to the PICC, waits for an appropriate response and processes it accordingly.
+     * Common error IRQs are automatically handled and a timeout of {@link #PICC_COMMAND_TIMEOUT_MS} applies.
+     *
+     * @param command     PCD command to use which will trigger PICC communication
+     * @param waitIrq     IRQs to consider as an indicator for a valid response
+     * @param txData      Bytes used as data for the PCD command, effectively influencing what is sent to the PICC
+     * @param txLastBits  Number of valid bits to be transmitted as part of the last byte, 0 means all 8 bits are valid
+     * @param rxAlignBits Position of first valid bit in received data, 0 means all 8 bits are valid
+     * @param checkCrc    Boolean which specifies if CRC_A checksum according to ISO-14443 should be processed
+     * @return Response from PICC with payload
+     * @throws RfidException Timeout, collision or generic error occurred during PICC request
+     */
     private PiccResponse sendPiccRequest(PcdCommand command, Set<PcdComIrq> waitIrq, byte[] txData, int txLastBits, int rxAlignBits, boolean checkCrc) throws RfidException {
         // Calculate adjustments for bit-oriented frames
         // BitFramingReg[6..4] => RxAlign, position of first bit to be stored in FIFO, 0 = use all bits
@@ -581,14 +766,31 @@ public class MFRC522 extends Component {
         return new PiccResponse(rxData, rxLength, rxLastBits);
     }
 
+    /**
+     * Executes the specified command on the PCD by writing to {@link PcdRegister#COMMAND_REG}.
+     *
+     * @param command Command to execute.
+     */
     private void executePcd(PcdCommand command) {
         writeRegister(PcdRegister.COMMAND_REG, command.getValue());
     }
 
+    /**
+     * Writes a single byte to the specified PCD register.
+     *
+     * @param register PCD register to write
+     * @param value    Byte to be written
+     */
     private void writeRegister(PcdRegister register, byte value) {
         spi.transfer(new byte[]{register.getWriteAddress(), value});
     }
 
+    /**
+     * Writes one or more bytes to the specified PCD register.
+     *
+     * @param register PCD register to write
+     * @param values   Bytes to be written
+     */
     private void writeRegister(PcdRegister register, byte[] values) {
         final var buffer = new byte[values.length + 1];
         buffer[0] = register.getWriteAddress();
@@ -597,18 +799,40 @@ public class MFRC522 extends Component {
         spi.transfer(buffer);
     }
 
+    /**
+     * Writes a short to the specified PCD registers by splitting into two bytes.
+     *
+     * @param registerHigh PCD register where upper half (MSB) is stored
+     * @param registerLow  PCD register where lower half (LSB) is stored
+     * @param value        Short to be written to registers
+     */
     private void writeRegister(PcdRegister registerHigh, PcdRegister registerLow, short value) {
         int tmp = value & 0xFFFF;
         writeRegister(registerHigh, (byte) ((tmp >> 8) & 0xFF));
         writeRegister(registerLow, (byte) (tmp & 0xFF));
     }
 
+    /**
+     * Reads a single byte from the specified PCD register.
+     *
+     * @param register PCD register to read
+     * @return Byte read from register
+     */
     private byte readRegister(PcdRegister register) {
         final var buffer = new byte[]{register.getReadAddress(), 0};
         spi.transfer(buffer);
         return buffer[1];
     }
 
+    /**
+     * Reads the specified amount of bytes from the specified PCD register.
+     * Supports bit-oriented frames where the first relevant bit is shifted accordingly.
+     *
+     * @param register    PCD register to read
+     * @param length      Amount of bytes to read from the PCD including the partial byte (only applicable if rxAlignBits != 0)
+     * @param rxAlignBits Position of first bit which is relevant, specify 0 to consider all 8 bits valid
+     * @return Byte array with retrieved data
+     */
     private byte[] readRegister(PcdRegister register, int length, int rxAlignBits) {
         // Break out early if zero-length was given
         if (length == 0) {
@@ -646,6 +870,12 @@ public class MFRC522 extends Component {
         return result;
     }
 
+    /**
+     * Manipulates the specified PCD register by setting all bits according to the bitmask
+     *
+     * @param register PCD register to manipulate
+     * @param mask     Bitmask to set
+     */
     private void setBitMask(PcdRegister register, byte mask) {
         final byte oldValue = readRegister(register);
         final byte newValue = (byte) (oldValue | mask);
@@ -654,6 +884,12 @@ public class MFRC522 extends Component {
         }
     }
 
+    /**
+     * Manipulates the specified PCD register by clearing all bits according to the bitmask
+     *
+     * @param register PCD register to manipulate
+     * @param mask     Bitmask to clear
+     */
     private void clearBitMask(PcdRegister register, byte mask) {
         final byte oldValue = readRegister(register);
         final byte newValue = (byte) (oldValue & ~mask);
@@ -661,5 +897,4 @@ public class MFRC522 extends Component {
             writeRegister(register, (byte) (oldValue & ~mask));
         }
     }
-
 }

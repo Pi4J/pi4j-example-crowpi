@@ -28,11 +28,13 @@ enum PcdDivIrq {
         return this.value;
     }
 
+    /**
+     * Helper method to define if the specified DIV IRQ register (previously read elsewhere) has this specific IRQ set.
+     *
+     * @param divIrqReg Value of DIV IRQ register
+     * @return True if set, false if unset
+     */
     public boolean isSet(byte divIrqReg) {
         return (divIrqReg & getValue()) != 0;
-    }
-
-    public boolean isClear(byte divIrqReg) {
-        return !isSet(divIrqReg);
     }
 }

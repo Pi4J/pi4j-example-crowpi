@@ -49,11 +49,13 @@ enum PcdComIrq {
         return this.value;
     }
 
+    /**
+     * Helper method to define if the specified COM IRQ register (previously read elsewhere) has this specific IRQ set.
+     *
+     * @param comIrqReg Value of COM IRQ register
+     * @return True if set, false if unset
+     */
     public boolean isSet(byte comIrqReg) {
         return (comIrqReg & getValue()) != 0;
-    }
-
-    public boolean isClear(byte comIrqReg) {
-        return !isSet(comIrqReg);
     }
 }

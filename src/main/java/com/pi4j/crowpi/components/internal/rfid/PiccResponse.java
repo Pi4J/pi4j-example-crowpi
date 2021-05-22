@@ -1,6 +1,6 @@
 package com.pi4j.crowpi.components.internal.rfid;
 
-import java.util.Arrays;
+import com.pi4j.crowpi.components.helpers.ByteHelpers;
 
 final class PiccResponse {
     private final byte[] bytes;
@@ -8,6 +8,11 @@ final class PiccResponse {
     private final int lastBits;
 
     public PiccResponse(byte[] bytes, int length, int lastBits) {
+        // Ensure provided response has same length as expected length
+        if (bytes.length != length) {
+            throw new IllegalArgumentException("Provided response buffer does not match expected length");
+        }
+
         this.bytes = bytes;
         this.length = length;
         this.lastBits = lastBits & 0x7;
@@ -27,10 +32,6 @@ final class PiccResponse {
 
     @Override
     public String toString() {
-        return "PiccResponse{" +
-            "bytes=" + Arrays.toString(bytes) +
-            ", length=" + length +
-            ", lastBits=" + lastBits +
-            '}';
+        return "PiccResponse(" + length + "," + lastBits + ")[" + ByteHelpers.toString(bytes) + "]";
     }
 }

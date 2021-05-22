@@ -4,19 +4,30 @@ import com.pi4j.crowpi.components.helpers.ByteHelpers;
 
 import java.util.List;
 
-
-public final class RfidUid {
+/**
+ * UID of RFID PICC / card which contains UID + SAK
+ */
+public final class RfidCardUid {
+    /**
+     * UID in bytes
+     */
     private final byte[] uid;
+    /**
+     * SAK byte, used to determine type
+     */
     private final byte sak;
+    /**
+     *
+     */
     private final String serial;
 
-    public RfidUid(byte[] uid, byte sak) {
+    public RfidCardUid(byte[] uid, byte sak) {
         this.uid = uid;
         this.sak = sak;
         this.serial = ByteHelpers.toString(uid);
     }
 
-    public RfidUid(List<Byte> uidBytes, byte sak) {
+    public RfidCardUid(List<Byte> uidBytes, byte sak) {
         this(ByteHelpers.toArray(uidBytes), sak);
     }
 

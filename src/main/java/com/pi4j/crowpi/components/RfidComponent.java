@@ -1,44 +1,76 @@
 package com.pi4j.crowpi.components;
 
 import com.pi4j.context.Context;
-import com.pi4j.crowpi.components.exceptions.RfidException;
-import com.pi4j.crowpi.components.helpers.ByteHelpers;
 import com.pi4j.crowpi.components.internal.rfid.MFRC522;
-import com.pi4j.crowpi.components.internal.rfid.Mifare1K;
-import com.pi4j.crowpi.components.internal.rfid.RfidCard;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.gpio.digital.DigitalOutputConfig;
 import com.pi4j.io.gpio.digital.DigitalState;
 import com.pi4j.io.spi.Spi;
 import com.pi4j.io.spi.SpiConfig;
 
+/**
+ * Implementation of the CrowPi RFID component using SPI with Pi4J
+ */
 public class RfidComponent extends MFRC522 {
-    protected static final int DEFAULT_POWER_PIN = 25;
+    /**
+     * Default GPIO BCM address of reset pin for RFID component
+     */
+    protected static final int DEFAULT_RESET_PIN = 25;
+    /**
+     * Default SPI channel for the RFID component on the CrowPi
+     */
     protected static final int DEFAULT_SPI_CHANNEL = 0;
+    /**
+     * Default SPI baud rate for the RFID component on the CrowPi
+     */
     protected static final int DEFAULT_SPI_BAUD_RATE = 1000000;
 
+    /**
+     * Creates a new RFID component with the default reset pin, channel and baud rate.
+     *
+     * @param pi4j Pi4J context
+     */
     public RfidComponent(Context pi4j) {
-        this(pi4j, DEFAULT_POWER_PIN, DEFAULT_SPI_CHANNEL, DEFAULT_SPI_BAUD_RATE);
+        this(pi4j, DEFAULT_RESET_PIN, DEFAULT_SPI_CHANNEL, DEFAULT_SPI_BAUD_RATE);
     }
 
-    public RfidComponent(Context pi4j, int gpioPowerPin, int spiChannel, int spiBaud) {
+    /**
+     * Creates a new RFID component with a custom channel, baud rate and no reset pin.
+     *
+     * @param pi4j       Pi4J context
+     * @param spiChannel SPI channel
+     * @param spiBaud    SPI baud rate
+     */
+    public RfidComponent(Context pi4j, int spiChannel, int spiBaud) {
         super(
-            pi4j.create(buildDigitalOutputConfig(pi4j, gpioPowerPin)),
+            null,
             pi4j.create(buildSpiConfig(pi4j, spiChannel, spiBaud))
         );
     }
 
-    public RfidCard initializeCard() throws RfidException {
-        final var tag = select();
-
-        if (tag.getSak() == 0x08) {
-            return new Mifare1K(this, tag);
-        } else {
-            throw new RfidException("Unsupported SAK " + ByteHelpers.toString(tag.getSak()) + ", only MIFARE Classic 1K is supported");
-        }
+    /**
+     * Creates a new RFID component with a custom reset pin, channel and baud rate.
+     *
+     * @param pi4j         Pi4J context
+     * @param gpioResetPin BCM address of GPIO reset pin
+     * @param spiChannel   SPI channel
+     * @param spiBaud      SPI baud rate
+     */
+    public RfidComponent(Context pi4j, int gpioResetPin, int spiChannel, int spiBaud) {
+        super(
+            pi4j.create(buildResetPinConfig(pi4j, gpioResetPin)),
+            pi4j.create(buildSpiConfig(pi4j, spiChannel, spiBaud))
+        );
     }
 
-    private static DigitalOutputConfig buildDigitalOutputConfig(Context pi4j, int address) {
+    /**
+     * Buidls a new digital output configuration for the GPIO reset pin
+     *
+     * @param pi4j    Pi4J context
+     * @param address BCM address
+     * @return Digital output configuration
+     */
+    private static DigitalOutputConfig buildResetPinConfig(Context pi4j, int address) {
         return DigitalOutput.newConfigBuilder(pi4j)
             .id("BCM" + address)
             .name("RFID Reset Pin")
@@ -48,6 +80,14 @@ public class RfidComponent extends MFRC522 {
             .build();
     }
 
+    /**
+     * Builds a new SPI configuration for the RFID component
+     *
+     * @param pi4j    Pi4J context
+     * @param channel SPI channel
+     * @param baud    SPI baud rate
+     * @return SPI configuration
+     */
     private static SpiConfig buildSpiConfig(Context pi4j, int channel, int baud) {
         return Spi.newConfigBuilder(pi4j)
             .id("SPI" + channel)
@@ -56,5 +96,4 @@ public class RfidComponent extends MFRC522 {
             .baud(baud)
             .build();
     }
-
 }

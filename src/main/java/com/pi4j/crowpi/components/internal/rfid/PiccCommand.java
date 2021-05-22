@@ -60,7 +60,7 @@ enum PiccCommand {
     private final byte value;
 
     PiccCommand(int value) {
-        this.value = (byte) value;
+        this((byte) value);
     }
 
     PiccCommand(byte value) {

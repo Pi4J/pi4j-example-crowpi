@@ -1,6 +1,5 @@
 package com.pi4j.crowpi.components.internal.rfid;
 
-import com.pi4j.crowpi.components.RfidComponent;
 import com.pi4j.crowpi.components.exceptions.RfidException;
 import com.pi4j.crowpi.components.helpers.ByteHelpers;
 
@@ -10,29 +9,70 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Implementation of MIFARE Classic 1K cards with 16 sectors with 4 blocks (16 bytes) each.
+ * First sector with manufacturer block and sector trailers are explicitly hidden from the user.
+ */
 public final class Mifare1K extends RfidCard {
+    /**
+     * Number of available sectors on this card
+     */
     private static final byte SECTOR_COUNT = 16;
+    /**
+     * Number of available blocks per sector
+     */
     private static final byte BLOCKS_PER_SECTOR = 4;
+    /**
+     * Number of bytes per block
+     */
     private static final byte BYTES_PER_BLOCK = 16;
+    /**
+     * Total amount of available blocks on this card
+     */
     private static final byte BLOCK_COUNT = SECTOR_COUNT * BLOCKS_PER_SECTOR;
 
-    private final RfidComponent rfidComponent;
+    /**
+     * Instance of MFRC522 which created this card instance
+     */
+    private final MFRC522 mfrc522;
+
+    /**
+     * Set of integers to be considered as forbidden blocks
+     */
     private final Set<Integer> forbiddenBlocks;
+    /**
+     * Pre-calculated capacity in bytes of this card
+     */
     private final int totalCapacity;
+    /**
+     * Cache for storing the most recently authenticated sector
+     */
     private int lastAuthedSector = -1;
 
-    public Mifare1K(RfidComponent rfidComponent, RfidUid uid) {
+    /**
+     * Creates a new card instance for the given RFID component and PICC UID
+     *
+     * @param mfrc522 MFRC522 instance which detected this card
+     * @param uid     UID of this card / PICC
+     */
+    Mifare1K(MFRC522 mfrc522, RfidCardUid uid) {
         super(uid);
-        this.rfidComponent = rfidComponent;
+        this.mfrc522 = mfrc522;
         this.forbiddenBlocks = determineForbiddenBlocks();
         this.totalCapacity = (BLOCK_COUNT - forbiddenBlocks.size()) * BYTES_PER_BLOCK;
         System.out.println(this.forbiddenBlocks);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int getCapacity() {
         return totalCapacity;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected byte[] readBytes() throws RfidException {
         final var buffer = new ByteArrayOutputStream();
@@ -47,14 +87,17 @@ public final class Mifare1K extends RfidCard {
 
             // Read block from card into buffer
             authenticate(block);
-            buffer.writeBytes(rfidComponent.mifareRead((byte) block));
+            buffer.writeBytes(mfrc522.mifareRead((byte) block));
         }
 
         return buffer.toByteArray();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    protected void writeBytes(byte[] data) throws RfidException {
+    protected void writeBytes(byte[] data) throws RfidException, IllegalArgumentException {
         // Ensure data fits within capacity
         if (data.length > getCapacity()) {
             throw new IllegalArgumentException("Unable to store data with " + data.length + " bytes, maximum capacity is " + getCapacity() + " bytes");
@@ -80,7 +123,7 @@ public final class Mifare1K extends RfidCard {
 
                 System.out.println("Writing chunk " + ByteHelpers.toString(chunk) + " (" + chunk.length + " bytes) to block " + blockAddr);
                 authenticate(blockAddr);
-                rfidComponent.mifareWrite((byte) blockAddr, chunk);
+                mfrc522.mifareWrite((byte) blockAddr, chunk);
             }
 
             // Advance to next block
@@ -93,6 +136,30 @@ public final class Mifare1K extends RfidCard {
         }
     }
 
+    /**
+     * Starts MIFARE authentication for the sector of the specified block address.
+     * To avoid unnecessary repetition for contiguous blocks in the same sector, this method remembers the most recently authed sector.
+     * If the current sector happens to be the same one, the authentication gets silently skipped.
+     *
+     * @param blockAddr Address of block whose sector must be authenticated
+     * @throws RfidException Authentication failure
+     */
+    private void authenticate(int blockAddr) throws RfidException {
+        final int sectorAddr = blockAddr / BLOCKS_PER_SECTOR;
+        System.out.println("Authenticating sector " + sectorAddr + " for block " + blockAddr);
+        if (lastAuthedSector != sectorAddr) {
+            mfrc522.mifareAuth(MifareKey.getDefaultKeyB(), (byte) blockAddr, getUid());
+            lastAuthedSector = sectorAddr;
+        }
+    }
+
+    /**
+     * Determine all forbidden blocks for this card and return them as a set.
+     * Modifying this method inappropriately may PERMANENTLY brick your card.
+     * This specific implementation excludes the whole first sector as well as all sector trailers.
+     *
+     * @return Addresses of forbidden blocks
+     */
     private Set<Integer> determineForbiddenBlocks() {
         // Initialize list of forbidden blocks
         final var forbiddenBlocks = new HashSet<Integer>();
@@ -108,14 +175,5 @@ public final class Mifare1K extends RfidCard {
         }
 
         return Collections.unmodifiableSet(forbiddenBlocks);
-    }
-
-    private void authenticate(int blockAddr) throws RfidException {
-        final int sectorAddr = blockAddr / BLOCKS_PER_SECTOR;
-        System.out.println("Authenticating sector " + sectorAddr + " for block " + blockAddr);
-        if (lastAuthedSector != sectorAddr) {
-            rfidComponent.mifareAuth(MifareKey.getDefaultKeyB(), (byte) blockAddr, getUid());
-            lastAuthedSector = sectorAddr;
-        }
     }
 }

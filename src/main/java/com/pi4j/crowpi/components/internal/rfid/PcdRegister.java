@@ -172,6 +172,13 @@ enum PcdRegister {
         this((byte) value);
     }
 
+    /**
+     * Pre-calculates the read and write address for this register and stores them.
+     * To differentiate between a read and a write, reads have the MSB set, whereas writes have the MSB clear.
+     * While this could be calculated on-the-fly, these values are used so often that it makes sense to cache them.
+     *
+     * @param value Raw address of register with MSB unset, used for calculating R/W addresses
+     */
     PcdRegister(byte value) {
         this.value = value;
         this.writeAddress = (byte) ((value << 1) & 0x7E);
