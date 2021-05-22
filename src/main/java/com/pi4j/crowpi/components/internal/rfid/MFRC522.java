@@ -261,7 +261,7 @@ public class MFRC522 extends Component {
 
         // Loop until all required cascading levels have been processed
         while (!uidComplete) {
-            System.out.println("Processing cascade level: " + cascadeLevel);
+            logger.debug("Processing UID cascade level {}", cascadeLevel);
 
             // Initialize for current cascade level and determine if cascade tag must be parsed
             buffer[0] = cascadeLevel.getCommand().getValue();
@@ -298,7 +298,6 @@ public class MFRC522 extends Component {
                 // Determine if we are handling SELECT or ANTI COLLISION based on known bits for this cascade level
                 if (knownLevelBits >= 32) {
                     // We know all bits in this cascade level and can treat this as a SELECT
-                    System.out.println("Prepare SELECT request");
 
                     // Set NVB and BCC values in buffer
                     buffer[1] = 0x70; // Set NVB to 7 full bytes and 0 extra bits
@@ -315,9 +314,11 @@ public class MFRC522 extends Component {
                     // Copy result into buffer starting at 6th byte to get BCC and CRC_A (3 bytes)
                     rxTargetOffset = 6;
                     rxBytes = 3;
+
+                    // Print log message about SELECT request
+                    logger.debug("Preparing SELECT request with payload {}", ByteHelpers.toString(buffer));
                 } else {
                     // We do not know all bits in this cascade level and must treat this as ANTI COLLISION
-                    System.out.println("Prepare ANTI COLLISION request");
 
                     // Calculate required size of transmit buffer
                     txFullBytes = (knownLevelBits / 8) + 2; // Calculate number of fully known bytes (+2 for SEL and NVB)
@@ -329,14 +330,14 @@ public class MFRC522 extends Component {
                     // Copy result into unused part of buffer (starts after previously filled bytes)
                     rxTargetOffset = txFullBytes;
                     rxBytes = buffer.length - txFullBytes;
+
+                    // Print log message about ANTI COLLISION request
+                    logger.debug("Preparing ANTI COLLISION request with payload {}", ByteHelpers.toString(buffer));
                 }
 
                 // Prepare request buffer based on required size for storing all full bytes and extra bits
                 final int txBytes = txFullBytes + (txExtraBits != 0 ? 1 : 0);
                 final var requestBuffer = Arrays.copyOfRange(buffer, 0, txBytes);
-
-                System.out.println("Request buffer: " + ByteHelpers.toString(requestBuffer));
-                System.out.println("Request buffer length: " + requestBuffer.length);
 
                 // Try to receive UID for this cascade level from PICC
                 try {
@@ -346,20 +347,15 @@ public class MFRC522 extends Component {
                     // Store buffer and length in result variables outside of this loop
                     responseBuffer = response.getBytes();
                     responseLength = response.getLength();
-                    System.out.println("Response offset: " + rxTargetOffset);
 
                     // Copy response back into buffer starting at previously determined offset
                     System.arraycopy(responseBuffer, 0, buffer, rxTargetOffset, Math.min(rxBytes, responseLength));
-
-                    // Debug
-                    System.out.println("Response buffer: " + ByteHelpers.toString(responseBuffer) + " (" + responseBuffer.length + " bytes)");
-                    System.out.println("Response length: " + responseLength);
+                    logger.debug("Received PICC response: {}", ByteHelpers.toString(responseBuffer));
 
                     // Determine how to continue
-                    System.out.println("Known bits of cascade level: " + knownLevelBits);
                     if (knownLevelBits >= 32) {
                         // This has been a SELECT, we can finalize processing
-                        System.out.println("Handling SELECT response...");
+                        logger.debug("Handling SELECT response with {} known bits on this cascade level", knownLevelBits);
 
                         // Verify that SAK (Select Acknowledge) of response is valid
                         if (responseLength != 3 || txExtraBits != 0) {
@@ -370,11 +366,11 @@ public class MFRC522 extends Component {
                         selectComplete = true;
                     } else {
                         // This has been an ANTI COLLISION, we must continue but now know all bits of this cascade level
-                        System.out.println("Handling ANTI COLLISION response...");
+                        logger.debug("Handling ANTI COLLISION response with {} known bits on this cascade level", knownLevelBits);
                         knownLevelBits = 32;
                     }
                 } catch (RfidCollisionException ignored) {
-                    System.out.println("Handling collision exception...");
+                    logger.debug("Handling detected collision between multiple PICCs");
 
                     // Retrieve collision position register from PICC
                     final byte collReg = readRegister(PcdRegister.COLL_REG);
@@ -410,8 +406,7 @@ public class MFRC522 extends Component {
             // Verify CRC_A checksum of SAK
             final byte[] actualChecksum = new byte[]{responseBuffer[1], responseBuffer[2]};
             final byte[] expectedChecksum = calculateCrc(new byte[]{responseBuffer[0]});
-            System.out.println("Expected SAK checksum: " + ByteHelpers.toString(expectedChecksum));
-            System.out.println("Actual SAK checksum: " + ByteHelpers.toString(actualChecksum));
+            logger.debug("SAK checksum: expected={} actual={}", ByteHelpers.toString(expectedChecksum), ByteHelpers.toString(actualChecksum));
             if (!Arrays.equals(actualChecksum, expectedChecksum)) {
                 throw new RfidException("Checksum of SAK does not match expected value");
             }
@@ -462,7 +457,8 @@ public class MFRC522 extends Component {
         System.arraycopy(key.getBytes(), 0, buffer, 2, Math.min(6, key.getLength()));
         System.arraycopy(uid.getUid(), uid.getUidLength() - 4, buffer, 8, Math.min(4, uid.getUidLength()));
 
-        System.out.println("Auth buffer: " + ByteHelpers.toString(buffer));
+        // Log authentication buffer
+        logger.debug("Using MIFARE authentication against PICC with {}", ByteHelpers.toString(buffer));
 
         // Start authentication against PICC
         sendPiccRequest(PcdCommand.MF_AUTHENT, PcdComIrq.IDLE_IRQ, buffer);
@@ -509,10 +505,13 @@ public class MFRC522 extends Component {
      * @throws RfidException Writing data to specified block has failed
      */
     protected void mifareWrite(byte blockAddr, byte[] dataBuffer) throws RfidException {
+        // Generate command buffer for first step
         final var cmdBuffer = new byte[]{PiccCommand.MF_WRITE.getValue(), blockAddr};
-        System.out.println("MIFARE Write Part 1: " + ByteHelpers.toString(cmdBuffer));
+        logger.debug("Executing first step for MIFARE write using {}", ByteHelpers.toString(cmdBuffer));
         mifareTransceive(cmdBuffer);
-        System.out.println("MIFARE Write Part 2: " + ByteHelpers.toString(dataBuffer));
+
+        // Transmit actual payload as second step
+        logger.debug("Executing second step for MIFARE write using {}", ByteHelpers.toString(dataBuffer));
         mifareTransceive(dataBuffer);
     }
 
@@ -538,8 +537,7 @@ public class MFRC522 extends Component {
 
         // Transceive buffer to PICC and verify response
         final var response = transceivePicc(buffer);
-        System.out.println("Response: " + ByteHelpers.toString(response.getBytes()));
-        System.out.println("Response Bits: " + response.getLastBits());
+        logger.debug("Response from MIFARE transceive: {}", ByteHelpers.toString(response.getBytes()));
         if (response.getBytes().length != 1 || response.getLastBits() != 4) {
             throw new RfidException("PICC response must be exactly 4 bits for MIFARE ACK");
         }
@@ -632,8 +630,6 @@ public class MFRC522 extends Component {
         if (response.getLength() != 2 || response.getLastBits() != 0) {
             throw new RfidException("Received invalid response to REQA/WUPA command");
         }
-
-        System.out.println(response);
     }
 
     /**

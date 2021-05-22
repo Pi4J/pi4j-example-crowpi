@@ -60,7 +60,6 @@ public final class Mifare1K extends RfidCard {
         this.mfrc522 = mfrc522;
         this.forbiddenBlocks = determineForbiddenBlocks();
         this.totalCapacity = (BLOCK_COUNT - forbiddenBlocks.size()) * BYTES_PER_BLOCK;
-        System.out.println(this.forbiddenBlocks);
     }
 
     /**
@@ -78,16 +77,16 @@ public final class Mifare1K extends RfidCard {
         final var buffer = new ByteArrayOutputStream();
 
         // Read all available blocks from card
-        for (int block = 0; block < BLOCK_COUNT; block++) {
+        for (int blockAddr = 0; blockAddr < BLOCK_COUNT; blockAddr++) {
             // Skip block if marked as forbidden
-            if (forbiddenBlocks.contains(block)) {
-                System.out.println("Skipping forbidden block " + block);
+            if (forbiddenBlocks.contains(blockAddr)) {
+                logger.trace("Skipping read of forbidden block #{}", blockAddr);
                 continue;
             }
 
             // Read block from card into buffer
-            authenticate(block);
-            buffer.writeBytes(mfrc522.mifareRead((byte) block));
+            authenticate(blockAddr);
+            buffer.writeBytes(mfrc522.mifareRead((byte) blockAddr));
         }
 
         return buffer.toByteArray();
@@ -121,9 +120,11 @@ public final class Mifare1K extends RfidCard {
             if (!forbiddenBlocks.contains(blockAddr)) {
                 final var chunk = chunks.pop();
 
-                System.out.println("Writing chunk " + ByteHelpers.toString(chunk) + " (" + chunk.length + " bytes) to block " + blockAddr);
+                logger.debug("Writing chunk {} to block #{}", ByteHelpers.toString(chunk), blockAddr);
                 authenticate(blockAddr);
                 mfrc522.mifareWrite((byte) blockAddr, chunk);
+            } else {
+                logger.trace("Skipping write of forbidden block #{}", blockAddr);
             }
 
             // Advance to next block
@@ -140,14 +141,15 @@ public final class Mifare1K extends RfidCard {
      * Starts MIFARE authentication for the sector of the specified block address.
      * To avoid unnecessary repetition for contiguous blocks in the same sector, this method remembers the most recently authed sector.
      * If the current sector happens to be the same one, the authentication gets silently skipped.
+     * This method always uses the default key B which all cards use by default.
      *
      * @param blockAddr Address of block whose sector must be authenticated
      * @throws RfidException Authentication failure
      */
     private void authenticate(int blockAddr) throws RfidException {
         final int sectorAddr = blockAddr / BLOCKS_PER_SECTOR;
-        System.out.println("Authenticating sector " + sectorAddr + " for block " + blockAddr);
         if (lastAuthedSector != sectorAddr) {
+            logger.debug("Using MIFARE authentication for block #{} in sector #{}", blockAddr, sectorAddr);
             mfrc522.mifareAuth(MifareKey.getDefaultKeyB(), (byte) blockAddr, getUid());
             lastAuthedSector = sectorAddr;
         }

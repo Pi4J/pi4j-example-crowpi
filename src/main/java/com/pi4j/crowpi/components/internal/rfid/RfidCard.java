@@ -1,5 +1,6 @@
 package com.pi4j.crowpi.components.internal.rfid;
 
+import com.pi4j.crowpi.components.helpers.Logger;
 import com.pi4j.crowpi.components.exceptions.RfidException;
 
 import java.io.*;
@@ -15,6 +16,11 @@ public abstract class RfidCard {
      * Determined UID of this card
      */
     private final RfidCardUid uid;
+
+    /**
+     * Logger instance
+     */
+    protected final Logger logger = new Logger(this.getClass());
 
     /**
      * Creates a new RFID card instance for the given PICC UID.
@@ -57,7 +63,7 @@ public abstract class RfidCard {
         }
 
         // Write serialized bytes to card
-        System.out.println("!!! Writing " + byteArrayOutputStream.size() + " bytes to card");
+        logger.debug("Writing object with {} bytes to card", byteArrayOutputStream.size());
         writeBytes(byteArrayOutputStream.toByteArray());
     }
 

@@ -19,8 +19,11 @@ public class RfidApp implements Application {
             System.out.println("Capacity: " + card.getCapacity() + " bytes");
 
             try {
-                final var person = card.readObject(Person.class);
-                System.out.println(person);
+                final var input = new Person("Patrick", "Velder", "Zürich", LocalDate.of(1993, 10, 13));
+                card.writeObject(input);
+
+                final var output = card.readObject(Person.class);
+                System.out.println(output);
             } catch (RfidException e) {
                 e.printStackTrace();
             }
