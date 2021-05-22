@@ -36,7 +36,7 @@ public class RfidApp implements Application {
 
         // Wait for the user to approach a first card and write person A
         System.out.println("Please approach a first card to write person A");
-        rfid.waitForCard(card -> {
+        rfid.waitForNewCard(card -> {
             try {
                 card.writeObject(personA);
                 System.out.println("Person A was written to card " + card.getSerial());
@@ -47,7 +47,7 @@ public class RfidApp implements Application {
 
         // Wait for the user to approach a second card and write person B
         System.out.println("Please approach a second card to write person B");
-        rfid.waitForCard(card -> {
+        rfid.waitForNewCard(card -> {
             try {
                 card.writeObject(personB);
                 System.out.println("Person B was written to card " + card.getSerial());

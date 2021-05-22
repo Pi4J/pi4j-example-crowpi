@@ -36,9 +36,17 @@ public class RfidComponent extends MFRC522 {
      */
     protected static final int DEFAULT_SPI_BAUD_RATE = 1000000;
 
+    /**
+     * Default polling period in milliseconds for detecting new cards
+     */
     protected static final long DEFAULT_POLLER_PERIOD_MS = 100;
 
+    /**
+     * Atomic reference to event handler for card detection
+     */
     private final AtomicReference<EventHandler<RfidCard>> cardDetectedHandler;
+
+    private final AtomicBoolean pollOnlyNewCards;
 
     /**
      * Scheduler instance for running the poller thread.
@@ -84,6 +92,7 @@ public class RfidComponent extends MFRC522 {
         );
 
         this.cardDetectedHandler = new AtomicReference<>();
+        this.pollOnlyNewCards = new AtomicBoolean(true);
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
     }
 
@@ -103,20 +112,49 @@ public class RfidComponent extends MFRC522 {
     }
 
     /**
+     * Blocks current thread until a new card has been detected, then runs the handler and continues.
+     *
+     * @see #waitForCard(EventHandler, boolean)
+     */
+    public void waitForNewCard(EventHandler<RfidCard> handler) {
+        waitForCard(handler, true);
+    }
+
+    /**
+     * Blocks current thread until any card has been detected, then runs the handler and continues.
+     *
+     * @see #waitForCard(EventHandler, boolean)
+     */
+    public void waitForAnyCard(EventHandler<RfidCard> handler) {
+        waitForCard(handler, false);
+    }
+
+    /**
      * Acts like {@link #onCardDetected(EventHandler)}, but only executes the handler once and waits for the event to happen.
      * This can be used to simplify synchronous programming without having to deal with asynchronous event logic.
      *
      * @param handler Event handler to call when new card is approached
+     * @param onlyNew Specifies if only new cards (true) or any card (false) should be detected
      */
-    public void waitForCard(EventHandler<RfidCard> handler) {
+    private void waitForCard(EventHandler<RfidCard> handler, boolean onlyNew) {
         final var done = new AtomicBoolean(false);
 
         // Register new event handler which triggers exactly once
         onCardDetected(card -> {
-            handler.handle(card);
-            onCardDetected(null);
-            done.set(true);
+            try {
+                handler.handle(card);
+            } finally {
+                onCardDetected(null);
+                this.pollOnlyNewCards.set(true);
+                done.set(true);
+            }
         });
+
+        // If only new has been disabled, switch poller mode to detect any card
+        // This will wakeup any existing cards, forcing them to be re-detected
+        if (!onlyNew) {
+            this.pollOnlyNewCards.set(false);
+        }
 
         // Wait until event handler has been called once
         while (!done.get()) {
@@ -226,9 +264,16 @@ public class RfidComponent extends MFRC522 {
                 return;
             }
 
-            // Abort if no new card is within proximity of PCD
-            if (!isNewCardPresent()) {
-                return;
+            // Abort if no eligible card is within proximity of PCD
+            // We can either only check for new cards (REQA) or any card (WUPA)
+            if (pollOnlyNewCards.get()) {
+                if (!isNewCardPresent()) {
+                    return;
+                }
+            } else {
+                if (!isAnyCardPresent()) {
+                    return;
+                }
             }
 
             // Trigger onCardDetected handler for this new PICC
