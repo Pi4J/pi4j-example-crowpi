@@ -5,7 +5,6 @@ import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.RfidComponent;
 import com.pi4j.crowpi.components.exceptions.RfidException;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -56,12 +55,12 @@ public class RfidApp implements Application {
     public void execute(Context pi4j) {
         final var rfid = new RfidComponent(pi4j);
 
-        while (true) {
+        for (int i = 0; i < 3; i++) {
             try {
-                System.out.println("Card present: " + rfid.isCardPresent());
+                System.out.println(">>> Card present: " + rfid.isAnyCardPresent());
                 final var card = rfid.initializeCard();
-                System.out.println("Card serial: " + card.getSerial());
-                System.out.println("Card capacity: " + card.getCapacity() + " bytes");
+                System.out.println(">>> Card serial: " + card.getSerial());
+                System.out.println(">>> Card capacity: " + card.getCapacity() + " bytes");
 
                 final var input = new Person(
                     "John", "Doe",
@@ -69,16 +68,13 @@ public class RfidApp implements Application {
                     LocalDate.of(1980, 1, 23)
                 );
 
-                try {
-                    card.writeObject(input);
-                    System.out.println(">>> Reading person...");
-                    final var output = card.readObject(Person.class);
-                    System.out.println(output);
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
+                card.writeObject(input);
+                System.out.println(">>> Reading person...");
+                final var output = card.readObject(Person.class);
+                System.out.println(output);
 
-                break;
+                rfid.uninitializeCard();
+                System.out.println(">>> Put card to sleep - Zzz");
             } catch (RfidException e) {
                 e.printStackTrace();
             }

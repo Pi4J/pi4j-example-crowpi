@@ -94,16 +94,46 @@ public class MFRC522 extends Component {
     }
 
     /**
+     * Returns a boolean if at least one new PICC is in the proximity of the PCD.
+     * This means that only PICCs in IDLE state are considered, meaning a REQA gets sent.
+     *
+     * @see #isCardPresent(boolean)
+     */
+    public boolean isNewCardPresent() {
+        return isCardPresent(true);
+    }
+
+    /**
+     * Returns a boolean if at least one PICC is in the proximity of the PCD.
+     * This means that al PICCs in either IDLE or HALT state are considered, meaning a WUPA gets sent.
+     *
+     * @see #isCardPresent(boolean)
+     */
+    public boolean isAnyCardPresent() {
+        return isCardPresent(false);
+    }
+
+    /**
      * Returns a boolean if at least one PICC is currently in the proximity of the PCD.
      * Any potential communication errors are silently ignored and result in true.
      * As anti-collision is handled later on, {@link RfidCollisionException} is treated as success.
+     * <p>
+     * The parameter {@code onlyNew} determines if PICCs in HALT state should be ignored (true) or not (false).
+     * This allows for processing multiple cards one after another as the state of a PICC may differ:
+     * - Any newly approached PICC defaults to IDLE state and would get picked up in either situation
+     * - Any previously read PICC transitions to HALT state after calling {@link #uninitializeCard()}
      *
+     * @param onlyNew True if only new PICCs (IDLE state) should be considered, otherwise false
      * @return True if PICC is near PCD, otherwise false
      */
-    public boolean isCardPresent() {
+    private boolean isCardPresent(boolean onlyNew) {
         resetTransmission();
         try {
-            requestA(new byte[2]);
+            if (onlyNew) {
+                requestA(new byte[2]);
+            } else {
+                wakeupA(new byte[2]);
+            }
             return true;
         } catch (RfidCollisionException ignored) {
             return true;
@@ -114,6 +144,7 @@ public class MFRC522 extends Component {
 
     /**
      * Selects a single PICC and transitions it from READY to ACTIVE state, then returns an appropriate {@link RfidCard} instance.
+     * Must only be called when a previous call to {@link #isNewCardPresent()} returned true.
      *
      * @return Card instance for further interaction
      * @throws RfidException Communication with PICC failed or SAK is unsupported
@@ -129,6 +160,15 @@ public class MFRC522 extends Component {
             default:
                 throw new RfidException("Unsupported card type: " + cardType);
         }
+    }
+
+    /**
+     * Uninitializes the currently active card by sending it back into HALT state and stopping encrypted communication.
+     * Any previously created instance of {@link RfidCard} will be INVALID and must no longer be used after calling this method.
+     */
+    public void uninitializeCard() throws RfidException {
+        haltA();
+        mifareStopCrypto1();
     }
 
     /**
@@ -593,6 +633,31 @@ public class MFRC522 extends Component {
         }
 
         System.out.println(response);
+    }
+
+    /**
+     * Halts the PICC which is currently in ACTIVE state
+     *
+     * @throws RfidException Halting of PICC failed
+     */
+    private void haltA() throws RfidException {
+        // Construct payload and calculate CRC_A checksum
+        final var payload = new byte[]{PiccCommand.HLTA.getValue(), 0};
+        final var checksum = calculateCrc(payload);
+
+        // Build buffer based on payload and CRC_A checksum
+        final var buffer = new byte[payload.length + checksum.length];
+        System.arraycopy(payload, 0, buffer, 0, payload.length);
+        System.arraycopy(checksum, 0, buffer, payload.length, checksum.length);
+
+        // Send the command to the PICC and expect a timeout
+        // Funnily enough this is the only acceptable result, a valid response or any other error is considered as a failure
+        try {
+            transceivePicc(buffer);
+            throw new RfidException("Could not halt currently active PICC");
+        } catch (RfidTimeoutException e) {
+            // Do nothing here, this is what we expect as a timeout signals success
+        }
     }
 
     /**
