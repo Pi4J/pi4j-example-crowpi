@@ -1,15 +1,9 @@
 package com.pi4j.crowpi.components.exceptions;
 
 /**
- * This class provides exceptions when measurements fail
+ * Generic class used for indicating measurement failures for various components
  */
 public class MeasurementException extends RuntimeException {
-
-    /**
-     * Exception to throw when a measurement fails
-     *
-     * @param message Exception reason message
-     */
     public MeasurementException(String message) {
         super(message);
     }
