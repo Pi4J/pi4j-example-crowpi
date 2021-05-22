@@ -3,7 +3,6 @@ package com.pi4j.crowpi.components;
 import com.pi4j.context.Context;
 import com.pi4j.crowpi.components.definitions.Button;
 import com.pi4j.crowpi.components.events.DigitalEventProvider;
-import com.pi4j.crowpi.components.events.EventListener;
 import com.pi4j.crowpi.components.events.SimpleEventHandler;
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalInputConfig;

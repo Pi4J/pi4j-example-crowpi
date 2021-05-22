@@ -5,13 +5,11 @@ import com.pi4j.crowpi.components.events.SimpleEventHandler;
 import com.pi4j.crowpi.components.exceptions.MeasurementException;
 import com.pi4j.io.gpio.digital.*;
 
-import java.util.Collections;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
