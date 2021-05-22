@@ -468,7 +468,7 @@ public class MFRC522 extends Component {
      * Stops the encrypted communication towards the PICC, must be called when {@link #mifareAuth(MifareKey, byte, RfidCardUid)} was used.
      * Without calling this method, communication with other PICCs is impossible aside from resetting the PCD.
      */
-    public void mifareStopCrypto1() {
+    protected void mifareStopCrypto1() {
         clearBitMask(PcdRegister.STATUS_2_REG, (byte) 0x08); // MFCrypto1On[0]
     }
 
