@@ -1,8 +1,8 @@
 package com.pi4j.crowpi.components.events;
 
 /**
- * Generic functional interface for simple event handlers.
- * Usually supposed to be called / triggered within {@link SimpleEventProvider#dispatchSimpleEvents(EventListener, Object)}
+ * Generic functional interface for simple event handlers, which are event handlers without a parameter.
+ * Usually supposed to be called / triggered within {@link SimpleEventProvider#dispatchSimpleEvents(Object)}
  */
 @FunctionalInterface
 public interface SimpleEventHandler {

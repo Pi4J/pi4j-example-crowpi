@@ -97,7 +97,7 @@ public class TouchSensorComponent extends Component implements DigitalEventProvi
      * {@inheritDoc}
      */
     @Override
-    public void dispatchSimpleEvents(EventListener listener, TouchState state) {
+    public void dispatchSimpleEvents(TouchState state) {
         switch (state) {
             case TOUCHED:
                 triggerSimpleEvent(onTouched);

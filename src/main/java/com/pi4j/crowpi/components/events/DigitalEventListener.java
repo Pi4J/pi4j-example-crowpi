@@ -54,7 +54,7 @@ public class DigitalEventListener<V> implements EventListener, DigitalStateChang
      */
     @Override
     public void onDigitalStateChange(DigitalStateChangeEvent event) {
-        handler.handle(this, mapper.apply(event.state()));
+        handler.handle(mapper.apply(event.state()));
     }
 
     /**

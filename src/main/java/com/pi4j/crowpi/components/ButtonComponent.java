@@ -110,7 +110,7 @@ public class ButtonComponent extends Component implements DigitalEventProvider<B
      * {@inheritDoc}
      */
     @Override
-    public void dispatchSimpleEvents(EventListener listener, ButtonState state) {
+    public void dispatchSimpleEvents(ButtonState state) {
         switch (state) {
             case DOWN:
                 triggerSimpleEvent(onDown);

@@ -118,7 +118,7 @@ public class TiltSensorComponent extends Component implements DigitalEventProvid
      * {@inheritDoc}
      */
     @Override
-    public void dispatchSimpleEvents(EventListener listener, TiltState value) {
+    public void dispatchSimpleEvents(TiltState value) {
         switch (value) {
             case LEFT:
                 triggerSimpleEvent(onTiltLeft);

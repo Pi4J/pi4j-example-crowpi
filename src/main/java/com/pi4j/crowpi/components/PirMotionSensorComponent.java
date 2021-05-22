@@ -83,7 +83,7 @@ public class PirMotionSensorComponent extends Component implements DigitalEventP
      * {@inheritDoc}
      */
     @Override
-    public void dispatchSimpleEvents(EventListener listener, MotionState state) {
+    public void dispatchSimpleEvents(MotionState state) {
         switch (state) {
             case MOVEMENT:
                 triggerSimpleEvent(onMovement);

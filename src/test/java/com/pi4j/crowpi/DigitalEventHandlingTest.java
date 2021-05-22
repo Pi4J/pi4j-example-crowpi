@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DigitalEventHandlingTest extends ComponentTest {
     protected DummyComponent component;
-    protected static final EventHandler<Boolean> dummyHandler = (listener, state) -> {
+    protected static final EventHandler<Boolean> dummyHandler = state -> {
     };
 
     @BeforeEach
