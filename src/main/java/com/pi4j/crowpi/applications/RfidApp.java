@@ -10,6 +10,25 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public class RfidApp implements Application {
+    @Override
+    public void execute(Context pi4j) {
+        final var rfid = new RfidComponent(pi4j);
+
+        rfid.onCardDetected(card -> {
+            System.out.println("Serial: " + card.getSerial());
+            System.out.println("Capacity: " + card.getCapacity() + " bytes");
+
+            try {
+                final var person = card.readObject(Person.class);
+                System.out.println(person);
+            } catch (RfidException e) {
+                e.printStackTrace();
+            }
+        });
+
+        sleep(30000);
+    }
+
     public static final class Person implements Serializable {
         private final UUID uuid;
         private final String firstName;
@@ -48,39 +67,6 @@ public class RfidApp implements Application {
         @Override
         public String toString() {
             return getUuid() + ": " + getFirstName() + " " + getLastName() + " @ " + getAddress() + ", born " + getDateOfBirth();
-        }
-    }
-
-    @Override
-    public void execute(Context pi4j) {
-        final var rfid = new RfidComponent(pi4j);
-
-        for (int i = 0; i < 3; i++) {
-            try {
-                System.out.println(">>> Card present: " + rfid.isAnyCardPresent());
-                final var card = rfid.initializeCard();
-                System.out.println(">>> Card serial: " + card.getSerial());
-                System.out.println(">>> Card capacity: " + card.getCapacity() + " bytes");
-
-                final var input = new Person(
-                    "John", "Doe",
-                    "123 Maple Street, Anytown, PA 17101",
-                    LocalDate.of(1980, 1, 23)
-                );
-
-                card.writeObject(input);
-                System.out.println(">>> Reading person...");
-                final var output = card.readObject(Person.class);
-                System.out.println(output);
-
-                rfid.uninitializeCard();
-                System.out.println(">>> Put card to sleep - Zzz");
-            } catch (RfidException e) {
-                e.printStackTrace();
-            }
-
-            sleep(1000);
-            rfid.reset();
         }
     }
 }

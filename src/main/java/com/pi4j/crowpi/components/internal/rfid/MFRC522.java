@@ -4,6 +4,7 @@ import com.pi4j.crowpi.components.Component;
 import com.pi4j.crowpi.components.exceptions.RfidCollisionException;
 import com.pi4j.crowpi.components.exceptions.RfidException;
 import com.pi4j.crowpi.components.exceptions.RfidTimeoutException;
+import com.pi4j.crowpi.components.exceptions.RfidUnsupportedCardException;
 import com.pi4j.crowpi.components.helpers.ByteHelpers;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.spi.Spi;
@@ -147,7 +148,7 @@ public class MFRC522 extends Component {
      * Must only be called when a previous call to {@link #isNewCardPresent()} returned true.
      *
      * @return Card instance for further interaction
-     * @throws RfidException Communication with PICC failed or SAK is unsupported
+     * @throws RfidException Communication with PICC failed or card is unsupported
      */
     public RfidCard initializeCard() throws RfidException {
         final var cardUid = select();
@@ -158,7 +159,7 @@ public class MFRC522 extends Component {
             case MIFARE_CLASSIC_1K:
                 return new Mifare1K(this, cardUid);
             default:
-                throw new RfidException("Unsupported card type: " + cardType);
+                throw new RfidUnsupportedCardException(cardType);
         }
     }
 
