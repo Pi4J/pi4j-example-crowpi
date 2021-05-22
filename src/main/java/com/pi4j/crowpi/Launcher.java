@@ -31,7 +31,7 @@ public final class Launcher implements Runnable {
         new LcdDisplayApp(),
         new LedMatrixApp(),
         new LightSensorApp(),
-        new NfcApp(),
+        new RfidApp(),
         new PirMotionSensorApp(),
         new RelayApp(),
         new SevenSegmentApp(),

@@ -1,9 +1,9 @@
 package com.pi4j.crowpi.components.internal;
 
 import com.pi4j.crowpi.components.Component;
-import com.pi4j.crowpi.components.exceptions.NfcCollisionException;
-import com.pi4j.crowpi.components.exceptions.NfcException;
-import com.pi4j.crowpi.components.exceptions.NfcTimeoutException;
+import com.pi4j.crowpi.components.exceptions.RfidCollisionException;
+import com.pi4j.crowpi.components.exceptions.RfidException;
+import com.pi4j.crowpi.components.exceptions.RfidTimeoutException;
 import com.pi4j.crowpi.components.helpers.ByteHelpers;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.spi.Spi;
@@ -16,6 +16,7 @@ public class MFRC522 extends Component {
 
     private static final long PCD_CHECKSUM_TIMEOUT_MS = 100;
     private static final long PICC_COMMAND_TIMEOUT_MS = 250;
+    private static final byte PICC_MIFARE_ACK = 0xA;
 
     public MFRC522(DigitalOutput resetPin, Spi spi) {
         this.resetPin = resetPin;
@@ -25,8 +26,7 @@ public class MFRC522 extends Component {
 
     private void init() {
         // Reset component to initial state
-        resetSystem();
-        resetTransmission();
+        reset();
 
         // Setup internal timer with 40kHz / 25us and 25ms auto-timeout
         writeRegister(PcdRegister.T_MODE_REG, (byte) 0b1000_0000); // TAuto[1], TGated[00], TAutoRestart[0], TPrescaler_Hi[0000]
@@ -54,11 +54,16 @@ public class MFRC522 extends Component {
         try {
             requestA(new byte[2]);
             return true;
-        } catch (NfcCollisionException e) {
+        } catch (RfidCollisionException ignored) {
             return true;
         } catch (Exception ignored) {
             return false;
         }
+    }
+
+    public void reset() {
+        resetSystem();
+        resetTransmission();
     }
 
     private void resetTransmission() {
@@ -73,11 +78,18 @@ public class MFRC522 extends Component {
     private void resetSystem() {
         // If reset pin is LOW (= device is shutdown), set it to HIGH to leave power-down mode
         // Otherwise execute a soft-reset command
-        if (this.resetPin.isLow()) {
-            this.resetPin.high();
-        } else {
-            this.executePcd(PcdCommand.SOFT_RESET);
+//        if (this.resetPin.isLow()) {
+//            this.resetPin.high();
+//        } else {
+//            this.executePcd(PcdCommand.SOFT_RESET);
+//        }
+
+        // FIXME
+        if (this.resetPin.isHigh()) {
+            this.resetPin.low();
+            sleep(100);
         }
+        this.resetPin.high();
 
         // Give the PCD some time to startup
         sleep(50);
@@ -88,15 +100,15 @@ public class MFRC522 extends Component {
         }
 
         // Deauthenticate from previous PICC, this is not covered by soft resets
-        deauthenticate();
+        mifareStopCrypto1();
     }
 
-    protected Tag select() throws NfcException {
+    protected Tag select() throws RfidException {
         return select(0);
     }
 
     @SuppressWarnings("SameParameterValue")
-    private Tag select(int validBits) throws NfcException {
+    private Tag select(int validBits) throws RfidException {
         // Prepare buffer with 9 bytes length (7 byte UID + 2 byte CRC_A)
         // This buffer must contain the following structure:
         //      Byte 0: SEL         Cascade Level Selector
@@ -239,7 +251,7 @@ public class MFRC522 extends Component {
 
                         // Verify that SAK (Select Acknowledge) of response is valid
                         if (responseLength != 3 || txExtraBits != 0) {
-                            throw new NfcException("Received invalid SAK from PICC, expected exactly 24 bits");
+                            throw new RfidException("Received invalid SAK from PICC, expected exactly 24 bits");
                         }
 
                         // Break out of this anti-collision loop
@@ -249,13 +261,13 @@ public class MFRC522 extends Component {
                         System.out.println("Handling ANTI COLLISION response...");
                         knownLevelBits = 32;
                     }
-                } catch (NfcCollisionException ignored) {
+                } catch (RfidCollisionException ignored) {
                     System.out.println("Handling collision exception...");
 
                     // Retrieve collision position register from PICC
                     final byte collReg = readRegister(PcdRegister.COLL_REG);
                     if ((collReg & 0x20) != 0) {
-                        throw new NfcCollisionException("Can not continue due to in valid collision position");
+                        throw new RfidCollisionException("Can not continue due to in valid collision position");
                     }
 
                     // Calculate collision position as a value between 1 and 32
@@ -264,7 +276,7 @@ public class MFRC522 extends Component {
 
                     // Abort if we made no progress in this iteration
                     if (collisionPos <= knownLevelBits) {
-                        throw new NfcCollisionException("Can not continue due to lack of progress in anti collision routine");
+                        throw new RfidCollisionException("Can not continue due to lack of progress in anti collision routine");
                     }
 
                     // Calculate the index of the byte and bit where the collision occurred
@@ -280,7 +292,7 @@ public class MFRC522 extends Component {
 
             // Throw an exception if we received no valid response
             if (responseBuffer == null || responseLength < 1) {
-                throw new NfcException("Could not finish selection of target PICC as part of anti-collision routine");
+                throw new RfidException("Could not finish selection of target PICC as part of anti-collision routine");
             }
 
             // Verify CRC_A checksum of SAK
@@ -289,7 +301,7 @@ public class MFRC522 extends Component {
             System.out.println("Expected SAK checksum: " + ByteHelpers.toString(expectedChecksum));
             System.out.println("Actual SAK checksum: " + ByteHelpers.toString(actualChecksum));
             if (!Arrays.equals(actualChecksum, expectedChecksum)) {
-                throw new NfcException("Checksum of SAK does not match expected value");
+                throw new RfidException("Checksum of SAK does not match expected value");
             }
 
             // Calculate how many UID bytes where retrieved
@@ -301,7 +313,7 @@ public class MFRC522 extends Component {
             for (int i = 0; i < bytesToCopy; i++) {
                 uidBytes.add(buffer[bufferOffset + i]);
                 if (uidBytes.size() != uidOffset + i + 1) {
-                    throw new NfcException("UID result buffer has invalid size");
+                    throw new RfidException("UID result buffer has invalid size");
                 }
             }
 
@@ -320,7 +332,7 @@ public class MFRC522 extends Component {
         return new Tag(uidBytes, uidSak);
     }
 
-    protected void authenticate(AuthKey key, byte blockAddr, Tag tag) throws NfcException {
+    protected void mifareAuth(MifareKey key, byte blockAddr, Tag tag) throws RfidException {
         // Prepare buffer for authentication command
         final byte[] buffer = new byte[12];
         buffer[0] = key.getType().getCommand().getValue();
@@ -334,11 +346,11 @@ public class MFRC522 extends Component {
         sendPiccRequest(PcdCommand.MF_AUTHENT, PcdComIrq.IDLE_IRQ, buffer);
     }
 
-    public void deauthenticate() {
+    public void mifareStopCrypto1() {
         clearBitMask(PcdRegister.STATUS_2_REG, (byte) 0x08); // MFCrypto1On[0]
     }
 
-    public byte[] mifareRead(byte blockAddr) throws NfcException {
+    public byte[] mifareRead(byte blockAddr) throws RfidException {
         // Construct payload and calculate CRC_A checksum
         final var payload = new byte[]{PiccCommand.MF_READ.getValue(), blockAddr};
         final var checksum = calculateCrc(payload);
@@ -348,19 +360,49 @@ public class MFRC522 extends Component {
         System.arraycopy(payload, 0, buffer, 0, payload.length);
         System.arraycopy(checksum, 0, buffer, payload.length, checksum.length);
 
-        try {
-            final var response = transceivePicc(buffer, 0, 0, true);
-            return response.getBytes();
-        } catch (NfcException ignored) {
-            return null;
+        final var response = transceivePicc(buffer, 0, 0, true);
+        return response.getBytes();
+    }
+
+    public void mifareWrite(byte blockAddr, byte[] dataBuffer) throws RfidException {
+        final var cmdBuffer = new byte[]{PiccCommand.MF_WRITE.getValue(), blockAddr};
+        System.out.println("MIFARE Write Part 1: " + ByteHelpers.toString(cmdBuffer));
+        mifareTransceive(cmdBuffer);
+        System.out.println("MIFARE Write Part 2: " + ByteHelpers.toString(dataBuffer));
+        mifareTransceive(dataBuffer);
+    }
+
+    private void mifareTransceive(byte[] payload) throws RfidException {
+        // Ensure payload is not too long
+        if (payload == null || payload.length > 16) {
+            throw new IllegalArgumentException("Payload must be a byte array with up to 16 bytes");
+        }
+
+        // Calculate CRC_A checksum for payload
+        final var checksum = calculateCrc(payload);
+
+        // Generate final buffer with payload and checksum
+        final var buffer = new byte[payload.length + checksum.length];
+        System.arraycopy(payload, 0, buffer, 0, payload.length);
+        System.arraycopy(checksum, 0, buffer, payload.length, checksum.length);
+
+        // Transceive buffer to PICC and verify response
+        final var response = transceivePicc(buffer);
+        System.out.println("Response: " + ByteHelpers.toString(response.getBytes()));
+        System.out.println("Response Bits: " + response.getLastBits());
+        if (response.getBytes().length != 1 || response.getLastBits() != 4) {
+            throw new RfidException("PICC response must be exactly 4 bits for MIFARE ACK");
+        }
+        if (response.getBytes()[0] != PICC_MIFARE_ACK) {
+            throw new RfidException("Received MIFARE NACK from PICC due to unknown error");
         }
     }
 
-    protected final static class AuthKey {
+    protected final static class MifareKey {
         private final Type type;
         private final byte[] bytes;
 
-        public AuthKey(Type type, byte[] bytes) {
+        public MifareKey(Type type, byte[] bytes) {
             if (bytes.length != 6) {
                 throw new IllegalArgumentException("Length of key must be exactly 6 bytes");
             }
@@ -369,12 +411,12 @@ public class MFRC522 extends Component {
             this.bytes = bytes;
         }
 
-        public static AuthKey getDefaultKeyA() {
-            return new AuthKey(Type.KEY_A, getDefaultKey());
+        public static MifareKey getDefaultKeyA() {
+            return new MifareKey(Type.KEY_A, getDefaultKey());
         }
 
-        public static AuthKey getDefaultKeyB() {
-            return new AuthKey(Type.KEY_B, getDefaultKey());
+        public static MifareKey getDefaultKeyB() {
+            return new MifareKey(Type.KEY_B, getDefaultKey());
         }
 
         private static byte[] getDefaultKey() {
@@ -409,7 +451,7 @@ public class MFRC522 extends Component {
         }
     }
 
-    protected final static class Tag {
+    public final static class Tag {
         private final byte[] uid;
         private final byte sak;
         private final String serial;
@@ -446,7 +488,7 @@ public class MFRC522 extends Component {
         }
     }
 
-    private byte[] calculateCrc(byte[] data) throws NfcTimeoutException {
+    private byte[] calculateCrc(byte[] data) throws RfidTimeoutException {
         // Trigger CRC_A checksum calculation on PCD
         executePcd(PcdCommand.IDLE); // Pause any active command
         writeRegister(PcdRegister.DIV_IRQ_REG, (byte) 0x04); // Clear CRCIRq interrupt request bits
@@ -471,18 +513,18 @@ public class MFRC522 extends Component {
         } while (System.currentTimeMillis() < deadline);
 
         // Throw exception if timeout was reached
-        throw new NfcTimeoutException("CRC calculation deadline reached after " + PCD_CHECKSUM_TIMEOUT_MS + " milliseconds");
+        throw new RfidTimeoutException("CRC calculation deadline reached after " + PCD_CHECKSUM_TIMEOUT_MS + " milliseconds");
     }
 
-    protected void requestA(byte[] buffer) throws NfcException {
+    private void requestA(byte[] buffer) throws RfidException {
         requestOrWakeupA(PiccCommand.REQA, buffer);
     }
 
-    protected void wakeupA(byte[] buffer) throws NfcException {
+    private void wakeupA(byte[] buffer) throws RfidException {
         requestOrWakeupA(PiccCommand.WUPA, buffer);
     }
 
-    private void requestOrWakeupA(PiccCommand command, byte[] buffer) throws NfcException {
+    private void requestOrWakeupA(PiccCommand command, byte[] buffer) throws RfidException {
         // Ensure command is supported by this method
         if (command != PiccCommand.REQA && command != PiccCommand.WUPA) {
             throw new IllegalArgumentException("Command must be either REQA or WUPA");
@@ -501,34 +543,38 @@ public class MFRC522 extends Component {
 
         // Ensure response is valid
         if (response.getLength() != 2 || response.getLastBits() != 0) {
-            throw new NfcException("Received invalid response to REQA/WUPA command");
+            throw new RfidException("Received invalid response to REQA/WUPA command");
         }
 
         System.out.println(response);
     }
 
-    private PiccResponse transceivePicc(byte[] txData, int txLastBits) throws NfcException {
+    private PiccResponse transceivePicc(byte[] txData) throws RfidException {
+        return transceivePicc(txData, 0);
+    }
+
+    private PiccResponse transceivePicc(byte[] txData, int txLastBits) throws RfidException {
         return transceivePicc(txData, txLastBits, 0);
     }
 
-    private PiccResponse transceivePicc(byte[] txData, int txLastBits, int rxAlignBits) throws NfcException {
+    private PiccResponse transceivePicc(byte[] txData, int txLastBits, int rxAlignBits) throws RfidException {
         return transceivePicc(txData, txLastBits, rxAlignBits, false);
     }
 
-    private PiccResponse transceivePicc(byte[] txData, int txLastBits, int rxAlignBits, boolean checkCrc) throws NfcException {
+    private PiccResponse transceivePicc(byte[] txData, int txLastBits, int rxAlignBits, boolean checkCrc) throws RfidException {
         final var waitIrq = Set.of(PcdComIrq.RX_IRQ, PcdComIrq.IDLE_IRQ);
         return sendPiccRequest(PcdCommand.TRANSCEIVE, waitIrq, txData, txLastBits, rxAlignBits, checkCrc);
     }
 
-    private PiccResponse sendPiccRequest(PcdCommand command, PcdComIrq waitIrq, byte[] txData) throws NfcException {
+    private PiccResponse sendPiccRequest(PcdCommand command, PcdComIrq waitIrq, byte[] txData) throws RfidException {
         return sendPiccRequest(command, Set.of(waitIrq), txData);
     }
 
-    private PiccResponse sendPiccRequest(PcdCommand command, Set<PcdComIrq> waitIrq, byte[] txData) throws NfcException {
+    private PiccResponse sendPiccRequest(PcdCommand command, Set<PcdComIrq> waitIrq, byte[] txData) throws RfidException {
         return sendPiccRequest(command, waitIrq, txData, 0, 0, false);
     }
 
-    private PiccResponse sendPiccRequest(PcdCommand command, Set<PcdComIrq> waitIrq, byte[] txData, int txLastBits, int rxAlignBits, boolean checkCrc) throws NfcException {
+    private PiccResponse sendPiccRequest(PcdCommand command, Set<PcdComIrq> waitIrq, byte[] txData, int txLastBits, int rxAlignBits, boolean checkCrc) throws RfidException {
         // Calculate adjustments for bit-oriented frames
         // BitFramingReg[6..4] => RxAlign, position of first bit to be stored in FIFO, 0 = use all bits
         // BitFramingReg[2..0] => TxLastBits, number of transmitted bits in last byte, 0 = use all bits
@@ -552,8 +598,13 @@ public class MFRC522 extends Component {
         final long deadline = System.currentTimeMillis() + PICC_COMMAND_TIMEOUT_MS;
         do {
             final byte comIrqReg = readRegister(PcdRegister.COM_IRQ_REG);
-            if (waitIrq.stream().anyMatch(irq -> irq.isSet(comIrqReg)) || PcdComIrq.TIMER_IRQ.isSet(comIrqReg)) {
+            // Did we receive any of the expected IRQs? If so, break out of loop without timeout
+            if (waitIrq.stream().anyMatch(irq -> irq.isSet(comIrqReg))) {
                 deadlineReached = false;
+                break;
+            }
+            // Did we receive a timer IRQ? Nothing happened for 25ms (see init() method), abort with timeout
+            if (PcdComIrq.TIMER_IRQ.isSet(comIrqReg)) {
                 break;
             }
         } while (System.currentTimeMillis() < deadline);
@@ -563,14 +614,14 @@ public class MFRC522 extends Component {
 
         // Handle potential timeout of PICC command execution
         if (deadlineReached) {
-            throw new NfcTimeoutException("Deadline reached after " + PICC_COMMAND_TIMEOUT_MS + " milliseconds");
+            throw new RfidTimeoutException("Deadline reached after " + PICC_COMMAND_TIMEOUT_MS + " milliseconds");
         }
 
         // Throw an exception if error register contains any unexpected error
         final byte errorReg = readRegister(PcdRegister.ERROR_REG);
         final var earlyError = PcdError.matchErrReg(errorReg, PcdError.BUFFER_OVFL, PcdError.PARITY_ERR, PcdError.PROTOCOL_ERR);
         if (earlyError != null) {
-            throw new NfcException(earlyError);
+            throw new RfidException(earlyError);
         }
 
         // Prepare default response values
@@ -588,19 +639,19 @@ public class MFRC522 extends Component {
         // Check for collision error
         var lateError = PcdError.matchErrReg(errorReg, PcdError.COLL_ERR);
         if (lateError != null) {
-            throw new NfcCollisionException();
+            throw new RfidCollisionException();
         }
 
         // Perform CRC checks if enabled and response is not empty
         if (rxLength > 0 && checkCrc) {
             // NAK responses from MIFARE Classic PICCs are unsupported
             if (rxLength == 1 && rxLastBits == 4) {
-                throw new NfcException("MIFARE lassic NAK can not be used with CRC checksum verification");
+                throw new RfidException("MIFARE lassic NAK can not be used with CRC checksum verification");
             }
 
             // At least two full CRC_A checksum bytes are required
             if (rxLength < 2 || rxLastBits != 0) {
-                throw new NfcException("Receive buffer is too small for CRC checksum verification");
+                throw new RfidException("Receive buffer is too small for CRC checksum verification");
             }
 
             // Determine actual checksum and calculate expected checksum using CRC_A
@@ -609,8 +660,12 @@ public class MFRC522 extends Component {
 
             // Throw an exception if the checksums do not match
             if (!Arrays.equals(actualChecksum, expectedChecksum)) {
-                throw new NfcException("CRC checksum mismatch during verification");
+                throw new RfidException("CRC checksum mismatch during verification");
             }
+
+            // Strip CRC from response
+            rxLength -= 2;
+            rxData = Arrays.copyOfRange(rxData, 0, rxLength);
         }
 
         return new PiccResponse(rxData, rxLength, rxLastBits);
@@ -1101,6 +1156,11 @@ public class MFRC522 extends Component {
          * Invites PICCs in state IDLE to go to READY and prepare for anticollision or selection. 7 bit frame.
          */
         REQA(0x26),
+        /**
+         * HaLT command, Type A.
+         * Instructs an ACTIVE PICC to go to state HALT.
+         */
+        HLTA(0x50),
         /**
          * Wake-UP command, Type A.
          * Invites PICCs in state IDLE and HALT to go to READY(*) and prepare for anticollision or selection. 7 bit frame.
