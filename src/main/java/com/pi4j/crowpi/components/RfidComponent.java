@@ -131,7 +131,7 @@ public class RfidComponent extends MFRC522 {
      *
      * @param pollerPeriodMs Polling period in milliseconds
      */
-    protected void startPoller(long pollerPeriodMs) {
+    protected synchronized void startPoller(long pollerPeriodMs) {
         if (this.poller != null) {
             this.poller.cancel(true);
         }
@@ -142,11 +142,38 @@ public class RfidComponent extends MFRC522 {
      * Stops the poller immediately, therefore causing RFID cards to be no longer detected.
      * If the poller is already stopped, this method will silently return and do nothing.
      */
-    protected void stopPoller() {
+    protected synchronized void stopPoller() {
         if (this.poller != null) {
             this.poller.cancel(true);
             this.poller = null;
         }
+    }
+
+    /**
+     * Returns the internal scheduled future for the poller thread or null if currently stopped.
+     *
+     * @return Active poller instance or null
+     */
+    protected ScheduledFuture<?> getPoller() {
+        return this.poller;
+    }
+
+    /**
+     * Returns the current reset pin for the RFID component.
+     *
+     * @return Reset pin as digital output
+     */
+    protected DigitalOutput getResetPin() {
+        return this.resetPin;
+    }
+
+    /**
+     * Returns the current SPI instance for the LED matrix.
+     *
+     * @return SPI instance
+     */
+    protected Spi getSpi() {
+        return this.spi;
     }
 
     /**

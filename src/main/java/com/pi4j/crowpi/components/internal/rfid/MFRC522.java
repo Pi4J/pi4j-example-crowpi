@@ -22,12 +22,12 @@ public class MFRC522 extends Component {
     /**
      * Pi4J digital output optionally used as reset pin for the MFRC522
      */
-    private final DigitalOutput resetPin;
+    protected final DigitalOutput resetPin;
 
     /**
      * Pi4J SPI instance
      */
-    private final Spi spi;
+    protected final Spi spi;
 
     /**
      * Timeout in milliseconds when calculating CRC_A checksums on the PCD
@@ -62,7 +62,7 @@ public class MFRC522 extends Component {
     public MFRC522(DigitalOutput resetPin, Spi spi) {
         this.resetPin = resetPin;
         this.spi = spi;
-        this.init();
+        this.reset();
     }
 
     /**
