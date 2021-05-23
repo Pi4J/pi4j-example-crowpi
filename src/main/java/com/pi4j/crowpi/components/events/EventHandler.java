@@ -1,17 +1,16 @@
 package com.pi4j.crowpi.components.events;
 
 /**
- * Generic functional interface for event handlers called by component event listeners.
+ * Generic functional interface used for for event handlers.
  *
- * @param <V> Type of value which gets passed once an event occurs.
+ * @param <V> Type of event value
  */
 @FunctionalInterface
 public interface EventHandler<V> {
     /**
-     * Handles a specific event based on implementation needs.
+     * Handles an event based on implementation needs.
      *
-     * @param listener Event listener which triggered this handler
-     * @param value    Event value
+     * @param value Event value
      */
-    void handle(EventListener listener, V value);
+    void handle(V value);
 }

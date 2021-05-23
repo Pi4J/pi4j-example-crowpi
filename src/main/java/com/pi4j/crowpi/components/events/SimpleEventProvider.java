@@ -3,7 +3,7 @@ package com.pi4j.crowpi.components.events;
 /**
  * Generic simple event provider with empty default implementation.
  * Implementing this interface in a class allows mapping raw event values to simple events.
- * Each implementation is responsible for actually triggering the simple events within {@link #dispatchSimpleEvents(EventListener, Object)}.
+ * Each implementation is responsible for actually triggering the simple events within {@link #dispatchSimpleEvents(Object)}.
  *
  * @param <E> Type of value which gets passed to event handlers.
  */
@@ -13,9 +13,8 @@ public interface SimpleEventProvider<E> {
      * This method allows mapping various value/state changes to simple events.
      * Must be attached using {@link DigitalEventProvider#addListener(EventHandler)}.
      *
-     * @param listener Event listener
      * @param value    Event value
      */
-    default void dispatchSimpleEvents(EventListener listener, E value) {
+    default void dispatchSimpleEvents(E value) {
     }
 }

@@ -2,7 +2,6 @@ package com.pi4j.crowpi.components;
 
 import com.pi4j.context.Context;
 import com.pi4j.crowpi.components.events.DigitalEventProvider;
-import com.pi4j.crowpi.components.events.EventListener;
 import com.pi4j.crowpi.components.events.FlappingEventProvider;
 import com.pi4j.crowpi.components.events.SimpleEventHandler;
 import com.pi4j.io.gpio.digital.DigitalInput;
@@ -118,7 +117,7 @@ public class TiltSensorComponent extends Component implements DigitalEventProvid
      * {@inheritDoc}
      */
     @Override
-    public void dispatchSimpleEvents(EventListener listener, TiltState value) {
+    public void dispatchSimpleEvents(TiltState value) {
         switch (value) {
             case LEFT:
                 triggerSimpleEvent(onTiltLeft);
