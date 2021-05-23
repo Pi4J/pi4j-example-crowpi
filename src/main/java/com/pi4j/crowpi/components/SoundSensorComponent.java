@@ -136,7 +136,7 @@ public class SoundSensorComponent extends Component implements DigitalEventProvi
      * {@inheritDoc}
      */
     @Override
-    public void dispatchSimpleEvents(EventListener listener, SoundState state) {
+    public void dispatchSimpleEvents(SoundState state) {
         switch (state) {
             case NOISE:
                 triggerSimpleEvent(onNoise);
