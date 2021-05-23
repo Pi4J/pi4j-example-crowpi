@@ -2,7 +2,6 @@ package com.pi4j.crowpi.components;
 
 import com.pi4j.context.Context;
 import com.pi4j.crowpi.components.events.DigitalEventProvider;
-import com.pi4j.crowpi.components.events.EventListener;
 import com.pi4j.crowpi.components.events.SimpleEventHandler;
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalInputConfig;
@@ -97,7 +96,7 @@ public class TouchSensorComponent extends Component implements DigitalEventProvi
      * {@inheritDoc}
      */
     @Override
-    public void dispatchSimpleEvents(EventListener listener, TouchState state) {
+    public void dispatchSimpleEvents(TouchState state) {
         switch (state) {
             case TOUCHED:
                 triggerSimpleEvent(onTouched);

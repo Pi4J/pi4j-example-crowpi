@@ -1,8 +1,14 @@
 package com.pi4j.crowpi.components;
 
 import com.pi4j.crowpi.components.events.SimpleEventHandler;
+import com.pi4j.crowpi.components.helpers.Logger;
 
 public abstract class Component {
+    /**
+     * Logger instance
+     */
+    protected final Logger logger = new Logger(this.getClass());
+
     /**
      * Utility function to sleep for the specified amount of milliseconds.
      * An {@link InterruptedException} will be catched and ignored while setting the interrupt flag again.

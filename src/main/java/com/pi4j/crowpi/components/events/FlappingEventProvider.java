@@ -100,11 +100,10 @@ public class FlappingEventProvider<V> implements EventHandler<V> {
      * Implementation of {@link EventHandler} which must be added as a listener for this event provider to work.
      * It will track all state changes between value A and B and automatically resets or fires the handler accordingly.
      *
-     * @param listener Event listener which triggered this handler
-     * @param value    Event value
+     * @param value Event value
      */
     @Override
-    public synchronized void handle(EventListener listener, V value) {
+    public synchronized void handle(V value) {
         // Skip if no handler is defined
         if (handler == null) {
             return;
