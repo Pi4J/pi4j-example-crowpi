@@ -2,4 +2,8 @@ module:com.pi4j.crowpi
 com.pi4j.crowpi.components
 com.pi4j.crowpi.components.definitions
 com.pi4j.crowpi.components.events
+com.pi4j.crowpi.components.exceptions
+com.pi4j.crowpi.components.helpers
+com.pi4j.crowpi.components.internal
+com.pi4j.crowpi.components.internal.rfid
 com.pi4j.crowpi.helpers
