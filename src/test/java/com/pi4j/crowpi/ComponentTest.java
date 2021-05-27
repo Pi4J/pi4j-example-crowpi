@@ -22,6 +22,8 @@ import com.pi4j.plugin.mock.provider.spi.MockSpiProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import java.util.Arrays;
+
 public abstract class ComponentTest {
     protected Context pi4j;
 
@@ -45,7 +47,7 @@ public abstract class ComponentTest {
 
     @SuppressWarnings("RedundantThrows")
     @AfterEach
-    public void tearDown() throws Exception {
+    public void tearDownBase() throws Exception {
         pi4j.shutdown();
     }
 
@@ -55,6 +57,10 @@ public abstract class ComponentTest {
 
     protected MockDigitalOutput toMock(DigitalOutput digitalOutput) {
         return toMock(MockDigitalOutput.class, digitalOutput);
+    }
+
+    protected MockDigitalOutput[] toMock(DigitalOutput[] digitalOutputs) {
+        return Arrays.stream(digitalOutputs).map(this::toMock).toArray(MockDigitalOutput[]::new);
     }
 
     protected MockI2C toMock(I2C i2c) {
@@ -68,4 +74,5 @@ public abstract class ComponentTest {
     private <T> T toMock(Class<T> type, Object instance) {
         return type.cast(instance);
     }
+
 }

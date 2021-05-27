@@ -40,6 +40,10 @@ public class StepMotorComponent extends Component {
      */
     private final long pulseMilliseconds;
     /**
+     * Array of digital outputs used by this component, can be contained within {@link #stepsForward} or {@link #stepsBackward}
+     */
+    private final DigitalOutput[] digitalOutputs;
+    /**
      * Pre-generated list of forward steps, containing a set of all digital outputs which need to be pulsed for each step
      */
     private final List<Set<DigitalOutput>> stepsForward;
@@ -73,9 +77,9 @@ public class StepMotorComponent extends Component {
         this.pulseMilliseconds = pulseMilliseconds;
 
         // Initialize digital outputs
-        final var outputs = new DigitalOutput[addresses.length];
+        this.digitalOutputs = new DigitalOutput[addresses.length];
         for (int i = 0; i < addresses.length; i++) {
-            outputs[i] = pi4j.create(buildDigitalOutputConfig(pi4j, addresses[i]));
+            this.digitalOutputs[i] = pi4j.create(buildDigitalOutputConfig(pi4j, addresses[i]));
         }
 
         // Transform two-dimensional array with steps into List<Set<DigitalOutput>>
@@ -84,15 +88,15 @@ public class StepMotorComponent extends Component {
         this.stepsForward = new ArrayList<>();
         for (final var step : steps) {
             // Generate set of outputs driven as part of this step
-            final var stepOutputs = new HashSet<DigitalOutput>();
+            final var stepOutputs = new LinkedHashSet<DigitalOutput>();
             for (final var outputIndex : step) {
                 // Ensure output index is within bounds
-                if (outputIndex < 0 || outputIndex > outputs.length) {
-                    throw new IllegalArgumentException("Output index must be between 0 and " + outputs.length);
+                if (outputIndex < 0 || outputIndex > this.digitalOutputs.length) {
+                    throw new IllegalArgumentException("Output index must be between 0 and " + this.digitalOutputs.length);
                 }
 
                 // Add specified output to set
-                stepOutputs.add(outputs[outputIndex]);
+                stepOutputs.add(this.digitalOutputs[outputIndex]);
             }
 
             // Add collected step outputs to list of steps
@@ -163,6 +167,15 @@ public class StepMotorComponent extends Component {
                 }
             }
         }
+    }
+
+    /**
+     * Returns an array of all initialized digital outputs for this component
+     *
+     * @return Digital output instances
+     */
+    protected DigitalOutput[] getDigitalOutputs() {
+        return digitalOutputs;
     }
 
     /**
