@@ -20,7 +20,7 @@ public class SoundSensorApp implements Application {
         final var count = new AtomicInteger();
 
         // Initialize a SoundSensor component
-        var soundSensor = new SoundSensorComponent(pi4j);
+        final var soundSensor = new SoundSensorComponent(pi4j);
 
         // If it is already noisy we can not run the clap example. You need to setup the potentiometer first.
         if (soundSensor.isNoisy()) {
@@ -28,21 +28,24 @@ public class SoundSensorApp implements Application {
             return;
         }
 
+        // Define how many times to clap
+        final int CLAP_THRESHOLD = 3;
+
         // Ready to start the example so register the event handler which counts the number of claps.
         soundSensor.onNoise(() -> {
-            var currentCounter = count.getAndIncrement();
-            if (3 - currentCounter > 0) {
-                System.out.println("You clapped! " + (3 - currentCounter) + " more times " +
-                    "to finish");
-            } else {
-                System.out.println("Done");
+            final int currentCounter = count.incrementAndGet();
+            if (currentCounter < CLAP_THRESHOLD) {
+                System.out.println("You clapped! " + (CLAP_THRESHOLD - currentCounter) + " more times to finish");
             }
         });
 
         // Loop until clapped 3 times
-        while (count.get() < 3) {
+        while (count.get() < CLAP_THRESHOLD) {
             sleep(10);
         }
+
+        // Three times so application completed
+        System.out.println("Done");
 
         // Clean the event handler
         soundSensor.onNoise(null);
