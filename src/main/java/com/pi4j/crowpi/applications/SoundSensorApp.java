@@ -17,7 +17,7 @@ public class SoundSensorApp implements Application {
 
         // Initialize clap counting variable
         // There is a special kind of integer used because java lambda functions support only final variables
-        AtomicInteger count = new AtomicInteger();
+        final var count = new AtomicInteger();
 
         // Initialize a SoundSensor component
         var soundSensor = new SoundSensorComponent(pi4j);
