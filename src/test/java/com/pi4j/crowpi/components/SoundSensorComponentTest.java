@@ -23,11 +23,8 @@ public class SoundSensorComponentTest extends ComponentTest {
 
     @Test
     public void testGetSensorState() {
-        // given
-        SoundSensorComponent.SoundState resultState;
-
         // when
-        resultState = soundSensor.getState();
+        final var resultState = soundSensor.getState();
 
         // then
         Assertions.assertEquals(SoundSensorComponent.SoundState.SILENT, resultState);
