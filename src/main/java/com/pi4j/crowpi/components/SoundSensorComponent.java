@@ -73,7 +73,7 @@ public class SoundSensorComponent extends Component implements DigitalEventProvi
      * @return Returns true if there is a noise currently registered by the sensor
      */
     public boolean isNoisy() {
-        return digitalInput.isLow();
+        return this.getState() == SoundState.NOISE;
     }
 
     /**
@@ -82,7 +82,7 @@ public class SoundSensorComponent extends Component implements DigitalEventProvi
      * @return Returns true if it is silent around the sensor
      */
     public boolean isSilent() {
-        return digitalInput.isHigh();
+        return this.getState() == SoundState.SILENT;
     }
 
     /**

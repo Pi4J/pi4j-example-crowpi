@@ -1,28 +1,31 @@
 package com.pi4j.crowpi.components;
 
 import com.pi4j.crowpi.ComponentTest;
-import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalState;
+import com.pi4j.plugin.mock.provider.gpio.digital.MockDigitalInput;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SoundSensorComponentTest extends ComponentTest {
     protected SoundSensorComponent soundSensor;
-    protected DigitalInput din;
+    protected MockDigitalInput din;
 
     @BeforeEach
     public void setUp() {
         soundSensor = new SoundSensorComponent(pi4j);
-        din = soundSensor.getDigitalInput();
+        din = toMock(soundSensor.getDigitalInput());
     }
 
     @Test
     public void testGetSensorState() {
+        // given
+        din.mockState(DigitalState.LOW);
+
         // when
         final var resultState = soundSensor.getState();
 
@@ -31,15 +34,31 @@ public class SoundSensorComponentTest extends ComponentTest {
     }
 
     @Test
-    public void testIsNoise() {
+    public void testNoise() {
         // given
-        boolean result;
+        din.mockState(DigitalState.HIGH);
 
         // when
-        result = soundSensor.isSilent();
+        final boolean isSilent = soundSensor.isSilent();
+        final boolean isNoisy = soundSensor.isNoisy();
 
         // then
-        assertEquals(din.isHigh(), result);
+        assertFalse(isSilent);
+        assertTrue(isNoisy);
+    }
+
+    @Test
+    public void testSilence() {
+        // given
+        din.mockState(DigitalState.LOW);
+
+        // when
+        final boolean isSilent = soundSensor.isSilent();
+        final boolean isNoisy = soundSensor.isNoisy();
+
+        // then
+        assertTrue(isSilent);
+        assertFalse(isNoisy);
     }
 
     @ParameterizedTest
