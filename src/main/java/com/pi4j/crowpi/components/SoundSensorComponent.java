@@ -48,7 +48,7 @@ public class SoundSensorComponent extends Component implements DigitalEventProvi
      * Create sound sensor component with custom parameters
      *
      * @param pi4j     Pi4J context
-     * @param address  GPIO Pin of Raspberry
+     * @param address  Custom BCM pin address
      * @param debounce Time to debounce the sound sensor in microseconds
      */
     public SoundSensorComponent(Context pi4j, int address, long debounce) {
