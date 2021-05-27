@@ -35,6 +35,7 @@ public final class Launcher implements Runnable {
         new PirMotionSensorApp(),
         new RelayApp(),
         new SevenSegmentApp(),
+        new SoundSensorApp(),
         new TiltSensorApp(),
         new TouchSensorApp(),
         new UltrasonicDistanceSensorApp(),
