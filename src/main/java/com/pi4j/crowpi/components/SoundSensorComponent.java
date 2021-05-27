@@ -122,9 +122,9 @@ public class SoundSensorComponent extends Component implements DigitalEventProvi
     @Override
     public SoundState mapDigitalState(DigitalState digitalState) {
         switch (digitalState) {
-            case HIGH:
-                return SoundState.NOISE;
             case LOW:
+                return SoundState.NOISE;
+            case HIGH:
                 return SoundState.SILENT;
             case UNKNOWN:
             default:

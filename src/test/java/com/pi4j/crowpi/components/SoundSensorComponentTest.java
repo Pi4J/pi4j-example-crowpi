@@ -24,7 +24,7 @@ public class SoundSensorComponentTest extends ComponentTest {
     @Test
     public void testGetSensorState() {
         // given
-        din.mockState(DigitalState.LOW);
+        din.mockState(DigitalState.HIGH);
 
         // when
         final var resultState = soundSensor.getState();
@@ -36,7 +36,7 @@ public class SoundSensorComponentTest extends ComponentTest {
     @Test
     public void testNoise() {
         // given
-        din.mockState(DigitalState.HIGH);
+        din.mockState(DigitalState.LOW);
 
         // when
         final boolean isSilent = soundSensor.isSilent();
@@ -50,7 +50,7 @@ public class SoundSensorComponentTest extends ComponentTest {
     @Test
     public void testSilence() {
         // given
-        din.mockState(DigitalState.LOW);
+        din.mockState(DigitalState.HIGH);
 
         // when
         final boolean isSilent = soundSensor.isSilent();
@@ -64,8 +64,8 @@ public class SoundSensorComponentTest extends ComponentTest {
     @ParameterizedTest
     @CsvSource({
         "UNKNOWN,UNKNOWN",
-        "LOW,SILENT",
-        "HIGH,NOISE"
+        "HIGH,SILENT",
+        "LOW,NOISE"
     })
     void testMapDigitalState(DigitalState digitalState, SoundSensorComponent.SoundState expected) {
         // when
