@@ -34,6 +34,7 @@ public final class Launcher implements Runnable {
         new RfidApp(),
         new PirMotionSensorApp(),
         new RelayApp(),
+        new ServoMotorApp(),
         new SevenSegmentApp(),
         new SoundSensorApp(),
         new StepMotorApp(),
