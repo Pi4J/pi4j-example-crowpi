@@ -41,7 +41,9 @@ public class ServoMotorApp implements Application {
         System.out.println("By using the setRange() method, we can automatically map our temperature range to the servo range!");
         System.out.println("As an example, in five seconds the servo will show -10º which should be on the far left of the servo.");
         sleep(2000);
-        servoMotor.setRange(-10, -20, +40);
+
+        servoMotor.setRange(-20, +40); // This will define our range as values between -20 and +40
+        servoMotor.moveOnRange(-10); // This will map -10 based on the previously defined range
 
         // And this demo is over, sleep for a second to give the servo some time to position itself
         sleep(1000);

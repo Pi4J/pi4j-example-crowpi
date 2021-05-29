@@ -58,6 +58,15 @@ public class ServoMotorComponent extends Component {
     private final float maxDutyCycle;
 
     /**
+     * Minimum value for user-defined range, defaults to 0
+     */
+    private float minRange = 0;
+    /**
+     * Maximum value for user-defined range, defaults to 1
+     */
+    private float maxRange = 1;
+
+    /**
      * Creates a new step motor component with the default pin, angle range as well as duty cycle range.
      *
      * @param pi4j Pi4J context
@@ -117,19 +126,41 @@ public class ServoMotorComponent extends Component {
      * @param percent Percentage value, automatically clamped between 0 and 100
      */
     public void setPercent(float percent) {
-        setRange(percent, 0, 100);
+        moveOnRange(percent, 0, 100);
     }
 
     /**
-     * Maps the given value in a specified range to the full range the servo motor can achieve.
-     * As an example, specifying a value of 1 for a range
+     * Maps the given value based on the range previously defined with {@link #setRange(float, float)} to the full range of the servo.
+     * If {@link #setRange(float, float)} was not called before, the default range of 0-1 (as float) is being used.
      *
-     * @param value    Value to map
-     * @param minValue Minimum value for user-specified range
-     * @param maxValue Maximum value for user-specified range
+     * @param value Value to map
      */
-    public void setRange(float value, float minValue, float maxValue) {
+    public void moveOnRange(float value) {
+        moveOnRange(value, minRange, maxRange);
+    }
+
+    /**
+     * Maps the given value based on the given input range to the full range of the servo.
+     * Unlike {@link #moveOnRange(float)}, this method will NOT use or adjust the values set by {@link #setRange(float, float)}.
+     *
+     * @param value Value to map
+     * @param minValue Minimum range value
+     * @param maxValue Maximum range value
+     */
+    public void moveOnRange(float value, float minValue, float maxValue) {
         pwm.on(mapToDutyCycle(value, minValue, maxValue));
+    }
+
+    /**
+     * Adjusts the minimum and maximum for the user-defined range which can be used in combination with {@link #moveOnRange(float)}.
+     * This method will only affect future calls to {@link #moveOnRange(float)} and does not change the current position.
+     *
+     * @param minValue Minimum range value
+     * @param maxValue Maximum range value
+     */
+    public void setRange(float minValue, float maxValue) {
+        this.minRange = minValue;
+        this.maxRange = maxValue;
     }
 
     /**

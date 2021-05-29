@@ -122,13 +122,12 @@ class ServoMotorComponentTest extends ComponentTest {
         "3," + DUTY_CYCLE_CENTER,
         "6," + DUTY_CYCLE_MAX,
     })
-    void testSetRange(float value, float expectedDutyCycle) {
+    void testMoveOnRange(float value, float expectedDutyCycle) {
         // given
-        final float minimumValue = 0;
-        final float maximumValue = 6;
+        servoMotor.setRange(0, 6);
 
         // when
-        servoMotor.setRange(value, minimumValue, maximumValue);
+        servoMotor.moveOnRange(value);
 
         // then
         assertEquals(expectedDutyCycle, pwm.getDutyCycle());
@@ -143,11 +142,10 @@ class ServoMotorComponentTest extends ComponentTest {
     })
     void testSetRangeClamping(float value, float expectedDutyCycle) {
         // given
-        final float minimumValue = 0;
-        final float maximumValue = 6;
+        servoMotor.setRange(0, 6);
 
         // when
-        servoMotor.setRange(value, minimumValue, maximumValue);
+        servoMotor.moveOnRange(value);
 
         // then
         assertEquals(expectedDutyCycle, pwm.getDutyCycle());
@@ -156,11 +154,10 @@ class ServoMotorComponentTest extends ComponentTest {
     @Test
     void testSetRangeInverted() {
         // given
-        final float minimumValue = 6;
-        final float maximumValue = 0;
+        servoMotor.setRange(6, 0);
 
         // when
-        servoMotor.setRange(3, minimumValue, maximumValue);
+        servoMotor.moveOnRange(3);
 
         // then
         assertEquals(DUTY_CYCLE_CENTER, pwm.getDutyCycle());
