@@ -28,6 +28,7 @@ public final class Launcher implements Runnable {
         new ButtonMatrixApp(),
         new BuzzerApp(),
         new ExampleApp(),
+        new HumiTempApp(),
         new IrReceiverApp(),
         new LcdDisplayApp(),
         new LedMatrixApp(),
