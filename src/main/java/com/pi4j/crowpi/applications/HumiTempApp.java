@@ -5,6 +5,9 @@ import com.pi4j.crowpi.Application;
 import com.pi4j.crowpi.components.HumiTempComponent;
 import com.pi4j.crowpi.components.SoundSensorComponent;
 
+/**
+ * A simple demo application reading current temperature and humidity from the DHT11 sensor on the CrowPi
+ */
 public class HumiTempApp implements Application {
     @Override
     public void execute(Context pi4j) {

@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * This example demonstrates the temperature and humidity component on the CrowPi.
  * As Java does not allow for precise enough timings itself, this component does not use Pi4J to retrieve the pulses
- * of the GPIO pin for the IR sensor and instead relies on a linux system driver which reads the pulses and write the
+ * of the GPIO pin for DHT11 sensor and instead relies on a linux system driver which reads the pulses and write the
  * results into a file.ut.
  * <p>
  * A clean alternative would be using a separate microcontroller which handles the super precise timing-based communication itself and
