@@ -16,7 +16,6 @@ class HumiTempComponentTest extends ComponentTest {
     @BeforeEach
     void setUp() {
         this.humiTempComponent = new HumiTempComponent();
-
     }
 
     @Test

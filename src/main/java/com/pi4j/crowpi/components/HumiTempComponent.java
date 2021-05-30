@@ -46,7 +46,7 @@ public class HumiTempComponent extends Component {
     private volatile double humidity;
 
     /**
-     * Creates a new humidity and temperature sensor component with default paths
+     * Creates a new humidity and temperature sensor component with default path and polling interval
      */
     public HumiTempComponent() {
         this(DEFAULT_HUMI_PATH, DEFAULT_TEMP_PATH, DEFAULT_POLLING_DELAY_MS);
@@ -62,7 +62,7 @@ public class HumiTempComponent extends Component {
     }
 
     /**
-     * Creates a new humidity and temperature sensor component with custom paths
+     * Creates a new humidity and temperature sensor component with custom paths and polling interval
      *
      * @param humiPath       Path to the file containing humidity
      * @param tempPath       Path to the file containing temperature
@@ -151,7 +151,7 @@ public class HumiTempComponent extends Component {
         }
 
         /**
-         * Calculates and Converts a string to a value
+         * Calculates and converts a string into a temperature or humidity value
          *
          * @param line Pass the a line of a humidity or temperature file here
          * @return Return the calculated value as double
