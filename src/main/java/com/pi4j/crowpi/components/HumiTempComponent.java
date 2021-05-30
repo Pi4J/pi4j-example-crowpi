@@ -1,16 +1,20 @@
 package com.pi4j.crowpi.components;
 
-import com.pi4j.crowpi.components.exceptions.MeasurementException;
-
 import java.io.*;
-import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Implementation of the CrowPi DHT11.
+ * This example demonstrates the temperature and humidity component on the CrowPi.
+ * As Java does not allow for precise enough timings itself, this component does not use Pi4J to retrieve the pulses
+ * of the GPIO pin for the IR sensor and instead relies on a linux system driver which reads the pulses and write the
+ * results into a file.ut.
+ * <p>
+ * A clean alternative would be using a separate microcontroller which handles the super precise timing-based communication itself and
+ * interacts with the Raspberry Pi using I²C, SPI or any other bus. This would offload the work and guarantee even more accurate results. As
+ * the CrowPi does not have such a dedicated microcontroller though, using this driver was the best available approach.
  */
 public class HumiTempComponent extends Component {
     /**
@@ -22,13 +26,21 @@ public class HumiTempComponent extends Component {
      */
     private ScheduledFuture<?> poller;
 
+    /**
+     * Default paths to the files which are written by the DHT11 driver
+     */
     private final static String DEFAULT_HUMI_PATH = "/sys/devices/platform/dht11@4/iio:device0/in_humidityrelative_input";
     private final static String DEFAULT_TEMP_PATH = "/sys/devices/platform/dht11@4/iio:device0/in_temp_input";
-    private final static int DEFAULT_POLLING_DELAY_MS = 1000;
-
+    /**
+     * Paths effectively used to read the values
+     */
     private final String humiPath;
     private final String tempPath;
-    private final int pollingDelayMs;
+
+    /**
+     * Polling interval of the file reading poller. Do not go to fast it might cause some issues.
+     */
+    private final static int DEFAULT_POLLING_DELAY_MS = 1000;
 
     private volatile double temperature;
     private volatile double humidity;
@@ -59,15 +71,24 @@ public class HumiTempComponent extends Component {
     public HumiTempComponent(String humiPath, String tempPath, int pollingDelayMs) {
         this.humiPath = humiPath;
         this.tempPath = tempPath;
-        this.pollingDelayMs = pollingDelayMs;
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
         this.startPoller(pollingDelayMs);
     }
 
+    /**
+     * Gets the last read humidity
+     *
+     * @return Return the humidity in %
+     */
     public double getHumidity() {
         return this.humidity;
     }
 
+    /**
+     * Gets the last read temperature
+     *
+     * @return Returns the temperature in °C
+     */
     public double getTemperature() {
         return this.temperature;
     }
@@ -84,17 +105,6 @@ public class HumiTempComponent extends Component {
             this.poller.cancel(true);
         }
         this.poller = scheduler.scheduleAtFixedRate(new Poller(), 0, pollerPeriodMs, TimeUnit.MILLISECONDS);
-    }
-
-    /**
-     * Stops the poller immediately, therefore causing the button states to be no longer refreshed.
-     * If the poller is already stopped, this method will silently return and do nothing.
-     */
-    protected synchronized void stopPoller() {
-        if (this.poller != null) {
-            this.poller.cancel(true);
-            this.poller = null;
-        }
     }
 
     /**
@@ -116,27 +126,37 @@ public class HumiTempComponent extends Component {
             // Read humidity file and convert to value
             try {
                 humidity = convertToValue(readFile(humiPath));
-            } catch (IOException e) {
-                System.out.println("Reading the file failed. Don't worry that happens sometimes");
+            } catch (IOException ignored) {
+                ;
             }
             // Read temperature file and convert to value
             try {
                 temperature = convertToValue(readFile(tempPath));
-            } catch (IOException e) {
-                System.out.println("Reading the file failed. Don't worry that happens sometimes");
+            } catch (IOException ignored) {
+                ;
             }
-
-            System.out.println("Temperature: " + temperature);
-            System.out.println("Humidity: " + humidity);
         }
 
-        private String readFile(String path) throws IOException {
+        /**
+         * Reads a specified file and returns the first line as string
+         *
+         * @param path Path to the file
+         * @return First line of the file as string
+         * @throws IOException If the reading fails the IOException is thrown
+         */
+        protected String readFile(String path) throws IOException {
             try (var input = new BufferedReader(new FileReader(path))) {
                 return input.readLine();
             }
         }
 
-        private double convertToValue(String line) {
+        /**
+         * Calculates and Converts a string to a value
+         *
+         * @param line Pass the a line of a humidity or temperature file here
+         * @return Return the calculated value as double
+         */
+        protected double convertToValue(String line) {
             return Double.parseDouble(line) / 1000;
         }
     }
