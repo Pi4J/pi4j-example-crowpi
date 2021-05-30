@@ -14,6 +14,9 @@ dtparam=auto=on
 # Enable GPIO-IR
 dtoverlay=gpio-ir,gpio_pin=20
 
+# Enable DHT11
+dtoverlay=dht11,gpiopin=4
+
 # Enable DRM VC4 V3D with up to 2 frame buffers
 dtoverlay=vc4-fkms-v3d
 max_framebuffers=2
