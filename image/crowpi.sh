@@ -41,6 +41,7 @@ apt-get -qqy -o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-co
 apt-get -qqy install \
   git \
   imagemagick \
+  lirc \
   maven \
   openjdk-11-jdk
 rm -rf /var/lib/apt/lists/*
@@ -74,6 +75,9 @@ rm /etc/xdg/autostart/piwiz.desktop
 # Disable screen blanking by default
 mkdir -p /etc/X11/xorg.conf.d/
 cp /usr/share/raspi-config/10-blanking.conf /etc/X11/xorg.conf.d/
+
+# Remove default backgrounds
+rm /usr/share/rpd-wallpaper/*.jpg
 
 # Override system-wide default wallpaper
 sed -i 's/wallpaper=.*/wallpaper=\/opt\/fhnw\/wallpaper-static.jpg/g' /etc/xdg/pcmanfm/LXDE-pi/desktop-items-*.conf
