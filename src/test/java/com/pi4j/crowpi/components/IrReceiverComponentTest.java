@@ -58,20 +58,17 @@ class IrReceiverComponentTest extends ComponentTest {
     @Test
     void testAutoRestartPoller() throws InterruptedException {
         // given
-        final var latch1 = new CountDownLatch(1);
-        final var latch2 = new CountDownLatch(2);
-
-        irReceiver.pollerProcessFactory = () -> {
-            latch1.countDown();
-            latch2.countDown();
-            return new MockPollerProcess();
-        };
+        final var oldPollerLatch = new CountDownLatch(1);
+        irReceiver.pollerProcessFactory = () -> new MockPollerProcess(oldPollerLatch);
         irReceiver.onKeyPressed(key -> {
         });
 
         final var pollerManager = irReceiver.getPollerManager();
-        assertTrue(latch1.await(1, TimeUnit.SECONDS));
+        assertTrue(oldPollerLatch.await(250, TimeUnit.MILLISECONDS));
         final var oldPollerProcess = pollerManager != null ? pollerManager.getPollerProcess() : null;
+
+        final var newPollerLatch = new CountDownLatch(1);
+        irReceiver.pollerProcessFactory = () -> new MockPollerProcess(newPollerLatch);
 
         // when
         if (oldPollerProcess != null) {
@@ -81,7 +78,7 @@ class IrReceiverComponentTest extends ComponentTest {
         // then
         assertNotNull(pollerManager);
         assertNotNull(oldPollerProcess);
-        assertTrue(latch2.await(1, TimeUnit.SECONDS));
+        assertTrue(newPollerLatch.await(250, TimeUnit.MILLISECONDS));
 
         final var newPollerProcess = pollerManager.getPollerProcess();
         assertNotEquals(oldPollerProcess, newPollerProcess);
@@ -103,7 +100,7 @@ class IrReceiverComponentTest extends ComponentTest {
         });
 
         // then
-        assertTrue(latch.await(1, TimeUnit.SECONDS));
+        assertTrue(latch.await(250, TimeUnit.MILLISECONDS));
         assertEquals(Key.PLAY_PAUSE, detectedKey.get());
     }
 
@@ -118,7 +115,7 @@ class IrReceiverComponentTest extends ComponentTest {
         irReceiver.onKeyPressed(key -> latch.countDown());
 
         // then
-        assertFalse(latch.await(1, TimeUnit.SECONDS));
+        assertFalse(latch.await(250, TimeUnit.MILLISECONDS));
         assertEquals(0, pollerProcess.getInputStream().available());
     }
 
@@ -133,24 +130,37 @@ class IrReceiverComponentTest extends ComponentTest {
         irReceiver.onKeyPressed(key -> latch.countDown());
 
         // then
-        assertFalse(latch.await(1, TimeUnit.SECONDS));
+        assertFalse(latch.await(250, TimeUnit.MILLISECONDS));
         assertEquals(0, pollerProcess.getInputStream().available());
     }
 
     private static final class MockPollerProcess implements PollerProcess {
         private final ByteArrayInputStream inputStream;
+        private final CountDownLatch isReadyLatch;
         private boolean isAlive = true;
 
         public MockPollerProcess() {
-            this("");
+            this("", null);
         }
 
         public MockPollerProcess(String stdout) {
-            inputStream = new ByteArrayInputStream(stdout.getBytes());
+            this(stdout, null);
+        }
+
+        public MockPollerProcess(CountDownLatch isReadyLatch) {
+            this("", isReadyLatch);
+        }
+
+        public MockPollerProcess(String stdout, CountDownLatch isReadyLatch) {
+            this.inputStream = new ByteArrayInputStream(stdout.getBytes());
+            this.isReadyLatch = isReadyLatch;
         }
 
         @Override
         public InputStream getInputStream() {
+            if (isReadyLatch != null) {
+                isReadyLatch.countDown();
+            }
             return inputStream;
         }
 
