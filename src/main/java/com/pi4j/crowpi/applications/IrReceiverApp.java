@@ -9,6 +9,10 @@ import com.pi4j.crowpi.components.IrReceiverComponent;
  * three small pinholes labelled as "IR" for this example to work. As Java does not allow for precise enough timings itself, this component
  * does not use Pi4J to retrieve the pulses of the GPIO pin for the IR sensor and instead relies on mode2, an executable provided as part of
  * LIRC for reading from an IR input.
+ * <p>
+ * A clean alternative would be using a separate microcontroller which handles the super precise timing-based communication itself and
+ * interacts with the Raspberry Pi using I²C, SPI or any other bus. This would offload the work and guarantee even more accurate results. As
+ * the CrowPi does not have such a dedicated microcontroller though, using `mode2` was the best available approach.
  */
 public class IrReceiverApp implements Application {
     @Override
