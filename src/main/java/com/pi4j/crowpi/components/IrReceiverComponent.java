@@ -42,6 +42,10 @@ public class IrReceiverComponent extends Component {
     private final String devicePath;
 
     /**
+     * Current instance of poller manager or null if not running
+     */
+    private PollerManager pollerManager;
+    /**
      * Current thread instance of the poller manager or null if not running
      */
     private Thread pollerManagerThread;
@@ -50,6 +54,11 @@ public class IrReceiverComponent extends Component {
      * Handler for received IR key press
      */
     private final AtomicReference<EventHandler<Key>> onKeyPressedHandler;
+
+    /**
+     * Default poller process factory, should only be changed during tests for proper mocking.
+     */
+    protected PollerProcessFactory pollerProcessFactory = this::createNativePollerProcess;
 
     /**
      * Creates a new IR receiver using the default binary and kernel device path.
@@ -87,6 +96,15 @@ public class IrReceiverComponent extends Component {
     }
 
     /**
+     * Returns the instance of the poller manager or null if currently not running.
+     *
+     * @return Poller manager instance or null
+     */
+    protected PollerManager getPollerManager() {
+        return pollerManager;
+    }
+
+    /**
      * Returns the instance of the poller manager thread or null if currently not running.
      *
      * @return Poller manager thread or null
@@ -100,7 +118,8 @@ public class IrReceiverComponent extends Component {
      */
     private void startPollerManager() {
         if (this.pollerManagerThread == null) {
-            this.pollerManagerThread = new Thread(new PollerManager());
+            this.pollerManager = new PollerManager();
+            this.pollerManagerThread = new Thread(this.pollerManager);
             this.pollerManagerThread.start();
         }
     }
@@ -117,7 +136,70 @@ public class IrReceiverComponent extends Component {
                 logger.warn("Could not stop IR signal poller manager", e);
             } finally {
                 this.pollerManagerThread = null;
+                this.pollerManager = null;
             }
+        }
+    }
+
+    /**
+     * Starts a new poller process using {@link ProcessBuilder} and returns a {@link NativePollerProcess} instance.
+     * This will use {@link #mode2Binary} and {@link #devicePath} for constructing the proper arguments.
+     * Using a separate method for this allows properly unit testing the poller thread itself.
+     *
+     * @return Process instance
+     */
+    private NativePollerProcess createNativePollerProcess() throws IOException {
+        final var processBuilder = new ProcessBuilder(
+            mode2Binary,
+            "--driver", "default",
+            "--device", devicePath
+        );
+        return new NativePollerProcess(processBuilder.start());
+    }
+
+    /**
+     * Functional interface for a poller process factory which creates new {@link PollerProcess} instances on demand.
+     */
+    @FunctionalInterface
+    protected interface PollerProcessFactory {
+        PollerProcess create() throws IOException;
+    }
+
+    /**
+     * Custom interface as an alternative to the Java native {@link Process} interface.
+     * This is required for proper unit testing of the poller as Java provides no sane way for mocking {@link Process} itself.
+     */
+    protected interface PollerProcess {
+        InputStream getInputStream();
+
+        boolean isAlive();
+
+        void destroy();
+    }
+
+    /**
+     * Implementation of {@link PollerProcess} which wraps around a regular Java {@link Process} instance.
+     */
+    private static final class NativePollerProcess implements PollerProcess {
+        private final Process process;
+
+        public NativePollerProcess(Process process) {
+            this.process = process;
+        }
+
+        @Override
+        public InputStream getInputStream() {
+            return process.getInputStream();
+        }
+
+        @Override
+        public boolean isAlive() {
+            return process.isAlive();
+        }
+
+        @Override
+        public void destroy() {
+            process.destroy();
         }
     }
 
@@ -127,10 +209,10 @@ public class IrReceiverComponent extends Component {
      * In case either the poller process or thread dies, it will be automatically restarted.
      * This thread continues to run until the interrupted flag gets set.
      */
-    private final class PollerManager implements Runnable {
+    protected final class PollerManager implements Runnable {
         private Poller poller;
+        private PollerProcess pollerProcess;
         private Thread pollerThread;
-        private Process pollerProcess;
 
         @Override
         public void run() {
@@ -157,6 +239,15 @@ public class IrReceiverComponent extends Component {
         }
 
         /**
+         * Returns the current poller process managed by this poller manager or null if not running.
+         *
+         * @return Instance of poller process
+         */
+        protected PollerProcess getPollerProcess() {
+            return pollerProcess;
+        }
+
+        /**
          * (Re-)start the poller process and thread.
          * If the poller is not already running, it will be just launched regularly.
          * If the poller is already running, it will be stopped and a new poller gets launched.
@@ -169,7 +260,7 @@ public class IrReceiverComponent extends Component {
             stopPoller();
 
             // Start poller process and thread
-            this.pollerProcess = buildProcessBuilder().start();
+            this.pollerProcess = pollerProcessFactory.create();
             this.poller = new Poller(pollerProcess.getInputStream());
             this.pollerThread = new Thread(poller);
             this.pollerThread.start();
@@ -196,20 +287,6 @@ public class IrReceiverComponent extends Component {
 
             // Kill previous poller instance
             this.poller = null;
-        }
-
-        /**
-         * Builds a new instance of {@link ProcessBuilder} for running the mode2 binary.
-         * This will use {@link #mode2Binary} and {@link #devicePath} for constructing the proper arguments.
-         *
-         * @return Process builder instance
-         */
-        private ProcessBuilder buildProcessBuilder() {
-            return new ProcessBuilder(
-                mode2Binary,
-                "--driver", "default",
-                "--device", devicePath
-            );
         }
     }
 
@@ -264,7 +341,7 @@ public class IrReceiverComponent extends Component {
                 try {
                     // Sleep shortly before retrying if no output is available
                     if (!stdout.ready()) {
-                        sleep(10);
+                        sleep(1);
                         continue;
                     }
 
