@@ -5,6 +5,7 @@ import com.pi4j.context.Context;
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.i2c.I2C;
+import com.pi4j.io.pwm.Pwm;
 import com.pi4j.io.spi.Spi;
 import com.pi4j.plugin.mock.platform.MockPlatform;
 import com.pi4j.plugin.mock.provider.gpio.analog.MockAnalogInputProvider;
@@ -15,12 +16,15 @@ import com.pi4j.plugin.mock.provider.gpio.digital.MockDigitalOutput;
 import com.pi4j.plugin.mock.provider.gpio.digital.MockDigitalOutputProvider;
 import com.pi4j.plugin.mock.provider.i2c.MockI2C;
 import com.pi4j.plugin.mock.provider.i2c.MockI2CProvider;
+import com.pi4j.plugin.mock.provider.pwm.MockPwm;
 import com.pi4j.plugin.mock.provider.pwm.MockPwmProvider;
 import com.pi4j.plugin.mock.provider.serial.MockSerialProvider;
 import com.pi4j.plugin.mock.provider.spi.MockSpi;
 import com.pi4j.plugin.mock.provider.spi.MockSpiProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
+import java.util.Arrays;
 
 public abstract class ComponentTest {
     protected Context pi4j;
@@ -45,7 +49,7 @@ public abstract class ComponentTest {
 
     @SuppressWarnings("RedundantThrows")
     @AfterEach
-    public void tearDown() throws Exception {
+    public void tearDownBase() throws Exception {
         pi4j.shutdown();
     }
 
@@ -55,6 +59,14 @@ public abstract class ComponentTest {
 
     protected MockDigitalOutput toMock(DigitalOutput digitalOutput) {
         return toMock(MockDigitalOutput.class, digitalOutput);
+    }
+
+    protected MockDigitalOutput[] toMock(DigitalOutput[] digitalOutputs) {
+        return Arrays.stream(digitalOutputs).map(this::toMock).toArray(MockDigitalOutput[]::new);
+    }
+
+    protected MockPwm toMock(Pwm pwm) {
+        return toMock(MockPwm.class, pwm);
     }
 
     protected MockI2C toMock(I2C i2c) {
