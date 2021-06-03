@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Script configuration
+declare -gr GLUON_JAVAFX_URL="https://gluonhq.com/download/javafx-17-ea-sdk-linux-arm32/"
+declare -gr GLUON_JAVAFX_PATH="/opt/javafx-sdk"
+declare -gr GLUON_JAVAFX_VERSION_PATH="/opt/javafx-sdk-17"
+
 # Basic configuration
 raspi-config nonint do_hostname crowpi
 
@@ -11,6 +16,10 @@ raspi-config nonint do_change_timezone Europe/Zurich
 # Enable remote management
 raspi-config nonint do_ssh 0
 raspi-config nonint do_vnc 0
+
+# Ensure required kernel modules are loaded
+truncate -s0 /etc/modprobe.d/raspi-blacklist.conf
+grep -qxF 'i2c-dev' || echo 'i2c-dev' >>/etc/modules
 
 # Enable additional interfaces
 raspi-config nonint do_i2c 0
@@ -32,50 +41,54 @@ apt-get -qqy -o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-co
 apt-get -qqy install \
   git \
   imagemagick \
+  lirc \
   maven \
-  openjdk-11-jdk \
+  openjdk-11-jdk
+rm -rf /var/lib/apt/lists/*
 
-# Customize UI settings based on "Set default for large screens" of pipanel
-# Logic has been taken from https://github.com/raspberrypi-ui/pipanel/blob/master/src/pipanel.c
-# > save_lxsession_settings()
-sudo -u pi install -Dm 0644 /tmp/resources/ui/lxde-desktop.conf /home/pi/.config/lxsession/LXDE-pi/desktop.conf
-# > save_pcman_g_settings()
-sudo -u pi install -Dm 0644 /tmp/resources/ui/pcmanfm-global.conf /home/pi/.config/pcmanfm/LXDE-pi/pcmanfm.conf
-# > save_pcman_settings(0)
-sudo -u pi install -Dm 0644 /tmp/resources/ui/pcmanfm-desktop.conf /home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf
-# > save_pcman_settings(1)
-sudo -u pi install -Dm 0644 /tmp/resources/ui/pcmanfm-desktop.conf /home/pi/.config/pcmanfm/LXDE-pi/desktop-items-1.conf
-echo "folder=/home/pi/Desktop" >> /home/pi/.config/pcmanfm/LXDE-pi/desktop-items-1.conf
-# > save_libfm_settings()
-sudo -u pi install -Dm 0644 /tmp/resources/ui/libfm.conf /home/pi/.config/libfm/libfm.conf
-# > save_obconf_settings()
-sudo -u pi install -Dm 0644 /tmp/resources/ui/openbox-session.xml /home/pi/.config/openbox/lxde-pi-rc.xml
-# > save_gtk3_settings() + save_scrollbar_settings()
-sudo -u pi install -Dm 0644 /tmp/resources/ui/gtk2-style.rc /home/pi/.gtkrc-2.0
-sudo -u pi install -Dm 0644 /tmp/resources/ui/gtk3-style.css /home/pi/.config/gtk-3.0/gtk.css
-# > save_lxpanel_settings()
-sudo -u pi install -Dm 0644 /etc/xdg/lxpanel/LXDE-pi/panels/panel /home/pi/.config/lxpanel/LXDE-pi/panels/panel
-sudo -u pi sed -i 's/iconsize=.*/iconsize=52/g' /home/pi/.config/lxpanel/LXDE-pi/panels/panel
-sudo -u pi sed -i 's/height=.*/height=52/g' /home/pi/.config/lxpanel/LXDE-pi/panels/panel
-sudo -u pi sed -i 's/MaxTaskWidth=.*/MaxTaskWidth=300/g' /home/pi/.config/lxpanel/LXDE-pi/panels/panel
-# > save_qt_settings()
-sudo -u pi install -Dm 0644 /tmp/resources/ui/qt5-global.conf /home/pi/.config/qt5ct/qt5ct.conf
-# > save_lxterm_settings()
-sudo -u pi install -Dm 0644 /tmp/resources/ui/lxterminal.conf /home/pi/.config/lxterminal/lxterminal.conf
+# Download and extract Gluon JavaFX
+wget -O /tmp/gluon-javafx.zip "${GLUON_JAVAFX_URL}"
+rm -rf "${GLUON_JAVAFX_VERSION_PATH}"
+unzip -d /tmp /tmp/gluon-javafx.zip
+rm -f /tmp/gluon-javafx.zip
+mv /tmp/javafx-sdk-17 "${GLUON_JAVAFX_VERSION_PATH}"
+ln -sf "${GLUON_JAVAFX_VERSION_PATH}" "${GLUON_JAVAFX_PATH}"
+
+# Create symlink to newest libgluon_drm
+GLUON_JAVAFX_DRM="$(ls -v "${GLUON_JAVAFX_VERSION_PATH}"/lib/libgluon_drm-*.so | tail -n1)"
+if [[ -n "${GLUON_JAVAFX_DRM}" ]]; then
+  ln -sf "${GLUON_JAVAFX_DRM}" "${GLUON_JAVAFX_VERSION_PATH}/lib/libgluon_drm.so"
+else
+  echo "Unable to determine latest version of libgluon_drm"
+  exit 1
+fi
+
+# Deploy system configuration via /boot/config.txt
+install -Dm 0644 /tmp/resources/system/config.txt /boot/config.txt
+
+# Deploy default WiFi configuration
+install -Dm 0644 /tmp/resources/system/wpa-supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
+
+# Disable getting started wizard
+rm /etc/xdg/autostart/piwiz.desktop
+
+# Disable screen blanking by default
+mkdir -p /etc/X11/xorg.conf.d/
+cp /usr/share/raspi-config/10-blanking.conf /etc/X11/xorg.conf.d/
+
+# Remove default backgrounds
+rm /usr/share/rpd-wallpaper/*.jpg
 
 # Override system-wide default wallpaper
 sed -i 's/wallpaper=.*/wallpaper=\/opt\/fhnw\/wallpaper-static.jpg/g' /etc/xdg/pcmanfm/LXDE-pi/desktop-items-*.conf
 sed -i 's/wallpaper_mode=.*/wallpaper_mode=stretch/g' /etc/xdg/pcmanfm/LXDE-pi/desktop-items-*.conf
 
 # Deploy dynamic wallpaper script and resources
-sudo -u pi install -Dm 0644 /tmp/resources/wallpaper-autostart.desktop /home/pi/.config/autostart/fhnw-wallpaper.desktop
-sudo -u pi install -Dm 0644 /tmp/resources/wallpaper-systemd.service /home/pi/.config/systemd/user/fhnw-wallpaper.service
-sudo -u pi install -Dm 0644 /tmp/resources/wallpaper-systemd.path /home/pi/.config/systemd/user/fhnw-wallpaper.path
-install -Dm 0755 /tmp/resources/wallpaper-hook.sh /lib/dhcpcd/dhcpcd-hooks/99-fhnw
-install -Dm 0644 /tmp/resources/wallpaper-static.jpg /opt/fhnw/wallpaper-static.jpg
+sudo -u pi install -Dm 0644 /tmp/resources/wallpaper/wallpaper-autostart.desktop /home/pi/.config/autostart/fhnw-wallpaper.desktop
+sudo -u pi install -Dm 0644 /tmp/resources/wallpaper/wallpaper-systemd.service /home/pi/.config/systemd/user/fhnw-wallpaper.service
+sudo -u pi install -Dm 0644 /tmp/resources/wallpaper/wallpaper-systemd.path /home/pi/.config/systemd/user/fhnw-wallpaper.path
+install -Dm 0755 /tmp/resources/wallpaper/wallpaper-hook.sh /lib/dhcpcd/dhcpcd-hooks/99-fhnw
+install -Dm 0644 /tmp/resources/wallpaper/wallpaper-static.jpg /opt/fhnw/wallpaper-static.jpg
 
-# Deploy default WiFi configuration
-install -Dm 0644 /tmp/resources/wpa-supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
-
-# Disable getting started wizard
-rm /etc/xdg/autostart/piwiz.desktop
+# Deploy java-kiosk helper script for JavaFX apps
+sudo install -Dm 0755 /tmp/resources/java/java-kiosk.py /usr/local/bin/java-kiosk
