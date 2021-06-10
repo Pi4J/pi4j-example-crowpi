@@ -34,7 +34,7 @@ public class LauncherTest {
     public void testExecuteManual() {
         // given
         InputStream stdinOriginal = System.in;
-        ByteArrayInputStream stdin = new ByteArrayInputStream("invalid-choice\n1".getBytes());
+        ByteArrayInputStream stdin = new ByteArrayInputStream("invalid-choice\n2".getBytes());
         System.setIn(stdin);
 
         // when
