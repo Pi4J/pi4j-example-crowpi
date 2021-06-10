@@ -52,5 +52,8 @@ public class LedMatrixApp implements Application {
         // In this example, "{HEART}" will be replaced with the actual "Symbol.HEART" value
         // If such a pattern exists but no symbol is found with that name, it gets ignored and printed as-is.
         matrix.print("CrowPi + Pi4J = {HEART}");
+
+        // Disable the LED matrix before exiting
+        matrix.setEnabled(false);
     }
 }
