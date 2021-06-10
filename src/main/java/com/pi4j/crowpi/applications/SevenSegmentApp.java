@@ -8,7 +8,7 @@ import com.pi4j.crowpi.components.SevenSegmentComponent.Segment;
 import java.time.LocalTime;
 
 /**
- * Shows some basic digits and a fake loading indicator before acting as a clock which endlessly displays the current time on the CrowPi.
+ * Shows some basic digits and a fake loading indicator before acting as a clock which displays the time on the CrowPi for 15 seconds.
  * The colon on the seven-segment display will blink for every odd second.
  */
 public class SevenSegmentApp implements Application {
@@ -45,13 +45,16 @@ public class SevenSegmentApp implements Application {
             }
         }
 
-        // Loop endlessly and print the current time every second
-        while (true) {
+        // Loop for 15 seconds and print the current time every second
+        for (int i = 0; i < 15; i++) {
             // Print current local time
             segment.print(LocalTime.now());
 
             // Sleep for one second before continuing
             sleep(1000);
         }
+
+        // Disable the seven-segment display
+        segment.setEnabled(false);
     }
 }
