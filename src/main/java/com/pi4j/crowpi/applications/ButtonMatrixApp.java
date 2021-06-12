@@ -89,6 +89,9 @@ public class ButtonMatrixApp implements Application {
         // Print the winner, which will be the last and single element in the list
         System.out.println("Congratulations, " + players.get(0) + ", you have won!");
         System.out.println("Your score: " + history.size() + " points");
+
+        // Stop the button matrix poller now that the application has ended
+        buttonMatrix.stopPoller();
     }
 
     private List<String> determinePlayers() {

@@ -31,8 +31,7 @@ public interface Application {
      * @return Human-readable application description
      */
     default String getDescription() {
-        final String classFqdn = this.getClass().getName();
-        return "Runs application " + classFqdn;
+        return this.getClass().getName();
     }
 
     /**

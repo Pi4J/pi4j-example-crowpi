@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="crowpi-examples [install]" type="MavenRunConfiguration" factoryName="Maven">
+  <configuration default="false" name="CrowPi Debug" type="MavenRunConfiguration" factoryName="Maven">
     <MavenSettings>
       <option name="myGeneralSettings" />
       <option name="myRunnerSettings">
@@ -16,7 +16,7 @@
           </option>
           <option name="passParentEnv" value="true" />
           <option name="runMavenInBackground" value="true" />
-          <option name="skipTests" value="false" />
+          <option name="skipTests" value="true" />
           <option name="vmOptions" value="" />
         </MavenRunnerSettings>
       </option>
@@ -33,7 +33,7 @@
           <option name="pomFileName" value="pom.xml" />
           <option name="profilesMap">
             <map>
-              <entry key="remote-run" value="true" />
+              <entry key="debug" value="true" />
             </map>
           </option>
           <option name="resolveToWorkspace" value="false" />
