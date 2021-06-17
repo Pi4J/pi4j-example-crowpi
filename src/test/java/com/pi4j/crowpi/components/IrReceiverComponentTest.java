@@ -78,7 +78,7 @@ class IrReceiverComponentTest extends ComponentTest {
         // then
         assertNotNull(pollerManager);
         assertNotNull(oldPollerProcess);
-        assertTrue(newPollerLatch.await(250, TimeUnit.MILLISECONDS));
+        assertTrue(newPollerLatch.await(1, TimeUnit.SECONDS));
 
         final var newPollerProcess = pollerManager.getPollerProcess();
         assertNotEquals(oldPollerProcess, newPollerProcess);
@@ -100,7 +100,7 @@ class IrReceiverComponentTest extends ComponentTest {
         });
 
         // then
-        assertTrue(latch.await(250, TimeUnit.MILLISECONDS));
+        assertTrue(latch.await(1, TimeUnit.SECONDS));
         assertEquals(Key.PLAY_PAUSE, detectedKey.get());
     }
 
@@ -115,7 +115,7 @@ class IrReceiverComponentTest extends ComponentTest {
         irReceiver.onKeyPressed(key -> latch.countDown());
 
         // then
-        assertFalse(latch.await(250, TimeUnit.MILLISECONDS));
+        assertFalse(latch.await(1, TimeUnit.SECONDS));
         assertEquals(0, pollerProcess.getInputStream().available());
     }
 
@@ -130,7 +130,7 @@ class IrReceiverComponentTest extends ComponentTest {
         irReceiver.onKeyPressed(key -> latch.countDown());
 
         // then
-        assertFalse(latch.await(250, TimeUnit.MILLISECONDS));
+        assertFalse(latch.await(1, TimeUnit.SECONDS));
         assertEquals(0, pollerProcess.getInputStream().available());
     }
 
