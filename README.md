@@ -49,9 +49,7 @@ The CrowPi OS image mentioned further down below supports both workarounds out o
 
 ## CUSTOM OS IMAGE
 
-Each [tagged GitHub release](https://github.com/Pi4J/pi4j-example-crowpi/releases/latest) provides a pre-built version of the custom OS
-image called "CrowPi OS". It is based on the official "Raspberry Pi OS 2021-03-25" and automatically built using Packer. Using this image
-provides the following set of benefits:
+The Pi4J-team provides several pre-built [custom OS images](https://github.com/Pi4J/pi4j-os). It's highly recommended to use the so called [CrowPi OS](https://pi4j-download.com/main-crowpi.img.zip) for your CrowPi experiments to get the following set of benefits:
 
 - Preconfigured locale (en_US), keyboard (US) and timezone (Europe/Zurich)
 - Preconfigured wireless country (Switzerland) by default
@@ -61,7 +59,7 @@ provides the following set of benefits:
 - Dynamic wallpaper which shows Ethernet/WLAN address and hostname
 - Comes with `lirc` preinstalled to run the IR receiver component
 
-You may download the zip-compressed archive `crowpi.img.zip`, extract it and flash it with the imaging tool of your choice to get started.
+Download the zip-compressed archive [main-crowpi.img.zip](https://pi4j-download.com/main-crowpi.img.zip), extract it and flash it with the imaging tool of your choice to get started.
 The default installation provides an user account `pi` with the password `crowpi` and sudo privileges.
 
 ## FRAMEWORK
@@ -117,7 +115,7 @@ dtparam = i2c_arm=on
 dtparam = spi=on
 
 # Enable audio
-dtparam = auto=on
+dtparam = audio=on
 
 # Enable GPIO-IR
 dtoverlay = gpio-ir,gpio_pin=20
