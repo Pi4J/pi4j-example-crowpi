@@ -59,7 +59,7 @@ The Pi4J-team provides several pre-built [custom OS images](https://github.com/P
 - Dynamic wallpaper which shows Ethernet/WLAN address and hostname
 - Comes with `lirc` preinstalled to run the IR receiver component
 
-Download the zip-compressed archive [main-crowpi.img.zip](https://pi4j-download.com/main-crowpi.img.zip), extract it and flash it with the imaging tool of your choice to get started.
+Download the [latest zip-compressed archive](https://pi4j-download.com/latest.php?flavor=crowpi), extract it and flash it with the imaging tool of your choice to get started.
 The default installation provides an user account `pi` with the password `crowpi` and sudo privileges.
 
 ## FRAMEWORK
