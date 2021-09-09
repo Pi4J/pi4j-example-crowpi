@@ -116,7 +116,7 @@ public final class Launcher implements Runnable {
             pi4j = CrowPiPlatform.buildNewContext();
             // Run the application
             getTargetInteractively(targets).run();
-            // clean up
+            // Clean up
             pi4j.shutdown();
         } while (demoMode);
     }
