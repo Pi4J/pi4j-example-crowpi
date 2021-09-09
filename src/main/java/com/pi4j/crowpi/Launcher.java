@@ -54,7 +54,7 @@ public final class Launcher implements Runnable {
     /**
      * Pi4J context for CrowPi platform
      */
-    private  Context pi4j;
+    private Context pi4j;
 
     /**
      * List of available applications to be executed
