@@ -1,14 +1,15 @@
 package com.pi4j.crowpi;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.pi4j.context.Context;
 import com.pi4j.crowpi.applications.*;
 import com.pi4j.crowpi.helpers.CrowPiPlatform;
+import com.pi4j.crowpi.helpers.SingletonAppHelper;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Command(name = "CrowPi Example Launcher", version = "1.0.0", mixinStandardHelpOptions = true)
 public final class Launcher implements Runnable {
@@ -182,7 +183,15 @@ public final class Launcher implements Runnable {
      * @return Exit code after running the requested command
      */
     public int execute(String[] args) {
-        return this.cmdLine.execute(args);
+        // first initialize a semaphore,
+        // so we don't initialize pi4j multiple times on the same host
+        SingletonAppHelper.initialize();
+
+        try {
+            return this.cmdLine.execute(args);
+        } finally {
+            SingletonAppHelper.close();
+        }
     }
 
     /**
