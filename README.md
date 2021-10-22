@@ -140,6 +140,44 @@ This project has the following runtime dependency requirements:
 - [**SLF4J-SIMPLE**](https://www.slf4j.org/)
 - [**PIGPIO Library**](http://abyz.me.uk/rpi/pigpio) (for the Raspberry Pi)
 
+## BUILD AND RUN ON RASPBERRY PI
+
+```shell
+$ git clone https://github.com/Pi4J/pi4j-example-crowpi.git
+$ cd pi4j-example-crowpi
+$ mvn package
+$ cd target/distribution/
+$ sudo java --module-path . --module com.pi4j.crowpi/com.pi4j.crowpi.Launcher $@
+
+> No application has been specified, defaulting to interactive selection
+> Run this launcher with --help for further information
+[main] INFO com.pi4j.Pi4J - New context builder
+[main] INFO com.pi4j.platform.impl.DefaultRuntimePlatforms - adding platform to managed platform map [id=raspberrypi; name=RaspberryPi Platform; priority=5; class=com.pi4j.crowpi.helpers.CrowPiPlatform]
+> The following launch targets are available:
+1) Exit launcher without running application
+2) ButtonApp (com.pi4j.crowpi.applications.ButtonApp)
+3) ButtonMatrixApp (com.pi4j.crowpi.applications.ButtonMatrixApp)
+4) BuzzerApp (com.pi4j.crowpi.applications.BuzzerApp)
+5) ExampleApp (com.pi4j.crowpi.applications.ExampleApp)
+6) HumiTempApp (com.pi4j.crowpi.applications.HumiTempApp)
+7) IrReceiverApp (com.pi4j.crowpi.applications.IrReceiverApp)
+8) LcdDisplayApp (com.pi4j.crowpi.applications.LcdDisplayApp)
+9) LedMatrixApp (com.pi4j.crowpi.applications.LedMatrixApp)
+10) LightSensorApp (com.pi4j.crowpi.applications.LightSensorApp)
+11) RfidApp (com.pi4j.crowpi.applications.RfidApp)
+12) PirMotionSensorApp (com.pi4j.crowpi.applications.PirMotionSensorApp)
+13) RelayApp (com.pi4j.crowpi.applications.RelayApp)
+14) ServoMotorApp (com.pi4j.crowpi.applications.ServoMotorApp)
+15) SevenSegmentApp (com.pi4j.crowpi.applications.SevenSegmentApp)
+16) SoundSensorApp (com.pi4j.crowpi.applications.SoundSensorApp)
+17) StepMotorApp (com.pi4j.crowpi.applications.StepMotorApp)
+18) TiltSensorApp (com.pi4j.crowpi.applications.TiltSensorApp)
+19) TouchSensorApp (com.pi4j.crowpi.applications.TouchSensorApp)
+20) UltrasonicDistanceSensorApp (com.pi4j.crowpi.applications.UltrasonicDistanceSensorApp)
+21) VibrationMotorApp (com.pi4j.crowpi.applications.VibrationMotorApp)
+> Please choose your desired launch target by typing its number:
+```
+
 ## LICENSE
 
 This repository is licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
