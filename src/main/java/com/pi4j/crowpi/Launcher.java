@@ -87,6 +87,9 @@ public final class Launcher implements Runnable {
         // Initialize PicoCLI instance
         this.cmdLine = new CommandLine(this);
 
+        // Initialize Pi4J context
+        this.pi4j = CrowPiPlatform.buildNewContext();
+
         // Register application runners as subcommands
         this.applications = applications;
         this.registerApplicationRunners();
@@ -113,12 +116,17 @@ public final class Launcher implements Runnable {
         // Interactively ask the user for a desired target and run it
         // This loop will either run only once or forever, depending on the state of `demoMode`
         do {
-            // Initialize Pi4J context
-            pi4j = CrowPiPlatform.buildNewContext();
+            // Re-initialize Pi4J context if needed
+            if (pi4j == null) {
+                pi4j = CrowPiPlatform.buildNewContext();
+            }
+
             // Run the application
             getTargetInteractively(targets).run();
-            // Clean up
+
+            // Cleanup Pi4J context
             pi4j.shutdown();
+            pi4j = null;
         } while (demoMode);
     }
 
