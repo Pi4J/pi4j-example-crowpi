@@ -4,6 +4,8 @@ import com.pi4j.crowpi.ComponentTest;
 import com.pi4j.io.pwm.Pwm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -43,6 +45,17 @@ public class BuzzerComponentTest extends ComponentTest {
     }
 
     @Test
+    public void testPlayToneWithDurationAndVolume() {
+        // when
+        this.buzzer.playTone(1000, 10, 50);
+
+        // then
+        assertTrue(this.buzzerPwm.isOff());
+        assertEquals(1000, buzzerPwm.frequency());
+        assertEquals(25, buzzerPwm.dutyCycle(), DUTY_CYCLE_DELTA);
+    }
+
+    @Test
     public void testPlayToneWithInterrupt() {
         // when
         Thread.currentThread().interrupt();
@@ -75,5 +88,17 @@ public class BuzzerComponentTest extends ComponentTest {
 
         // then
         assertTrue(buzzerPwm.isOff());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "0,0",
+        "25,12.5",
+        "50,25",
+        "75,37.5",
+        "100,50",
+    })
+    public void testCalculateDutyCycle(int volume, float expectedDutyCycle) {
+        assertEquals(expectedDutyCycle, BuzzerComponent.calculateDutyCycle(volume));
     }
 }

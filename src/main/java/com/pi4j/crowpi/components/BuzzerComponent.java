@@ -35,18 +35,18 @@ public class BuzzerComponent extends Component {
     }
 
     /**
-     * Plays a tone with the given frequency in Hz indefinitely.
+     * Plays a tone with the given frequency in Hz indefinitely with maximum volume.
      * This method is non-blocking and returns immediately.
      * A frequency of zero causes the buzzer to play silence.
      *
      * @param frequency Frequency in Hz
      */
     public void playTone(int frequency) {
-        playTone(frequency, 0);
+        playTone(frequency, 0, 100);
     }
 
     /**
-     * Plays a tone with the given frequency in Hz for a specific duration.
+     * Plays a tone with the given frequency in Hz with maximum volume for a specific duration.
      * This method is blocking and will sleep until the specified duration has passed.
      * A frequency of zero causes the buzzer to play silence.
      * A duration of zero to play the tone indefinitely and return immediately.
@@ -55,10 +55,24 @@ public class BuzzerComponent extends Component {
      * @param duration  Duration in milliseconds
      */
     public void playTone(int frequency, int duration) {
+        playTone(frequency, duration, 100);
+    }
+
+    /**
+     * Plays a tone with the given frequency in Hz and volume in percent for a specific duration.
+     * This method is blocking and will sleep until the specified duration has passed.
+     * A frequency or volume of zero causes the buzzer to play silence.
+     * A duration of zero to play the tone indefinitely and return immediately.
+     *
+     * @param frequency Frequency in Hz
+     * @param duration  Duration in milliseconds
+     * @param volume    Volume expressed as a percentage between 0-100
+     */
+    public void playTone(int frequency, int duration, int volume) {
         if (frequency > 0) {
             // Activate the PWM with a duty cycle of 50% and the given frequency in Hz.
             // This causes the buzzer to be on for half of the time during each cycle, resulting in the desired frequency.
-            pwm.on(50, frequency);
+            pwm.on(calculateDutyCycle(volume), frequency);
 
             // If the duration is larger than zero, the tone should be automatically stopped after the given duration.
             if (duration > 0) {
@@ -86,6 +100,24 @@ public class BuzzerComponent extends Component {
     public void playSilence(int duration) {
         this.playSilence();
         sleep(duration);
+    }
+
+    /**
+     * Calculates the PWM duty cycle for the volume given as a percentage.
+     * By adjusting the duty cycle between 0 and 50, with 0 being the quietest and 50 the loudest, volume control can
+     * be simulated by the acoustic effect this change has on the human ear.
+     *
+     * @param volume Volume as percentage between 0 and 100
+     * @return Duty cycle to be used for PWM control of the buzzer
+     */
+    protected static float calculateDutyCycle(int volume) {
+        // Ensure volume is within legitimate bounds
+        if (volume < 0 || volume > 100) {
+            throw new IllegalArgumentException("Volume must be between 0 and 100");
+        }
+
+        // Divide volume by two, as a duty cycle of 50 is considered as loudest, whereas 0 is fully quiet.
+        return (float) volume / 2;
     }
 
     /**

@@ -78,7 +78,7 @@ public class BuzzerApp implements Application {
 
         // Loop through all notes and play them one-by-one
         for (int i = 0; i < NOTES.length; i++) {
-            // Calculate duration of note by dividing one second with tempo
+            // Calculate duration of note by dividing one second with tempo.
             // Tempo represents the actual note type, e.g. tempo=4 -> quarter note -> 0.25s
             final var duration = 1000 / TEMPO[i];
 
