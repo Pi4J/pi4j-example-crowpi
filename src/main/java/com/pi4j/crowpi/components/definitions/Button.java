@@ -15,7 +15,7 @@ public enum Button {
     /**
      * LEFT button with board pin 22
      */
-    LEFT(25),
+    LEFT(26),
     /**
      * RIGHT button with board pin 35
      */

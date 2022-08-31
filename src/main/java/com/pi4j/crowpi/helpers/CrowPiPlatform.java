@@ -46,8 +46,4 @@ public class CrowPiPlatform extends RaspberryPiPlatform {
      *
      * @return Empty provider list
      */
-    @Override
-    protected String[] getProviders() {
-        return new String[]{};
-    }
 }

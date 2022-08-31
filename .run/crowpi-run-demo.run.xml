@@ -12,7 +12,7 @@
           <option name="mavenProperties">
             <map>
               <entry key="crowpi.launcher.args" value="--demo" />
-              <entry key="crowpi.remote.host" value="Add CrowPi IP here" />
+              <entry key="crowpi.remote.host" value="192.168.132.166" />
             </map>
           </option>
           <option name="passParentEnv" value="true" />
