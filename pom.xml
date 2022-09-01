@@ -25,11 +25,11 @@
         <crowpi.remote.jvmOptions/>
 
         <!-- Project Dependencies -->
-        <java.version>11</java.version>
-        <pi4j.version>2.0</pi4j.version>
+        <java.version>17</java.version>
+        <pi4j.version>2.2.0</pi4j.version>
         <slf4j.version>1.7.32</slf4j.version>
         <picocli.version>4.6.1</picocli.version>
-        <junit.version>5.7.1</junit.version>
+        <junit.version>5.9.0</junit.version>
 
         <!-- Maven Dependencies -->
         <maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
@@ -281,7 +281,7 @@
                                         <!-- Ensure target directory exists on CrowPi -->
                                         <sshexec host="${crowpi.remote.host}" port="${crowpi.remote.port}"
                                                  username="${crowpi.remote.username}" password="${crowpi.remote.password}"
-                                                 trust="true" command="mkdir --parents ${crowpi.remote.target}"/>
+                                                 trust="true" command="mkdir --parents ${crowpi.remote.target}; rm -f ${crowpi.remote.target}/*"/>
 
                                         <!-- Transfer distribution folder to CrowPi via SCP -->
                                         <scp trust="true"
