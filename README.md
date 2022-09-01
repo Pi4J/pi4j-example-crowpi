@@ -14,26 +14,27 @@ with electronics programming by testing and modifying the bundled examples or ev
 The provided component classes as part of this library provide an implementation for every available component of the CrowPi. The following
 table provides an overview of all supported components with a link to their implementation and example app:
 
-| **Component** | **Example App** | **Implementation** |
-|---|---|---|
-| Button | [ButtonApp.java](src/main/java/com/pi4j/crowpi/applications/ButtonApp.java) | [ButtonComponent.java](src/main/java/com/pi4j/crowpi/components/ButtonComponent.java) |
-| ButtonMatrix | [ButtonApp.java](src/main/java/com/pi4j/crowpi/applications/ButtonApp.java) | [ButtonComponent.java](src/main/java/com/pi4j/crowpi/components/ButtonMatrixComponent.java) |
-| Buzzer | [BuzzerApp.java](src/main/java/com/pi4j/crowpi/applications/BuzzerApp.java) | [BuzzerComponent.java](src/main/java/com/pi4j/crowpi/components/BuzzerComponent.java) |
-| Humidity/Temperature Sensor | [HumiTempApp.java](src/main/java/com/pi4j/crowpi/applications/HumiTempApp.java) | [HumiTempComponent.java](src/main/java/com/pi4j/crowpi/components/HumiTempComponent.java) |
-| IR Receiver | [IrReceiverApp.java](src/main/java/com/pi4j/crowpi/applications/IrReceiverApp.java) | [IrReceiverComponent.java](src/main/java/com/pi4j/crowpi/components/IrReceiverComponent.java) |
-| LCD Display | [IrReceiverApp.java](src/main/java/com/pi4j/crowpi/applications/IrReceiverApp.java) | [IrReceiverComponent.java](src/main/java/com/pi4j/crowpi/components/LcdDisplayComponent.java) |
-| LED Matrix | [IrReceiverApp.java](src/main/java/com/pi4j/crowpi/applications/IrReceiverApp.java) | [IrReceiverComponent.java](src/main/java/com/pi4j/crowpi/components/LcdDisplayComponent.java) |
-| Light Sensor | [LightSensorApp.java](src/main/java/com/pi4j/crowpi/applications/LightSensorApp.java) | [LightSensorComponent.java](src/main/java/com/pi4j/crowpi/components/LightSensorComponent.java) |
-| PIR Motion Sensor | [PirMotionSensorApp.java](src/main/java/com/pi4j/crowpi/applications/PirMotionSensorApp.java) | [PirMotionSensorComponent.java](src/main/java/com/pi4j/crowpi/components/PirMotionSensorComponent.java) |
-| Relay | [RelayApp.java](src/main/java/com/pi4j/crowpi/applications/RelayApp.java) | [RelayComponent.java](src/main/java/com/pi4j/crowpi/components/RelayComponent.java) |
-| RFID | [RfidApp.java](src/main/java/com/pi4j/crowpi/applications/RfidApp.java) | [RfidComponent.java](src/main/java/com/pi4j/crowpi/components/RfidComponent.java) |
-| Servo Motor | [ServoMotorApp.java](src/main/java/com/pi4j/crowpi/applications/ServoMotorApp.java) | [ServoMotorComponent.java](src/main/java/com/pi4j/crowpi/components/ServoMotorComponent.java) |
-| Seven Segment Display | [SevenSegmentApp.java](src/main/java/com/pi4j/crowpi/applications/SevenSegmentApp.java) | [SevenSegmentComponent.java](src/main/java/com/pi4j/crowpi/components/SevenSegmentComponent.java) |
-| Step Motor | [StepMotorApp.java](src/main/java/com/pi4j/crowpi/applications/StepMotorApp.java) | [StepMotorComponent.java](src/main/java/com/pi4j/crowpi/components/StepMotorComponent.java) |
-| Tilt Sensor | [StepMotorApp.java](src/main/java/com/pi4j/crowpi/applications/StepMotorApp.java) | [StepMotorComponent.java](src/main/java/com/pi4j/crowpi/components/TiltSensorComponent.java) |
-| Touch Sensor | [TouchSensorApp.java](src/main/java/com/pi4j/crowpi/applications/TouchSensorApp.java) | [TouchSensorComponent.java](src/main/java/com/pi4j/crowpi/components/TouchSensorComponent.java) |
-| Ultrasonic Distance Sensor | [UltrasonicDistanceSensorApp.java](src/main/java/com/pi4j/crowpi/applications/UltrasonicDistanceSensorApp.java) | [UltrasonicDistanceSensorComponent.java](src/main/java/com/pi4j/crowpi/components/UltrasonicDistanceSensorComponent.java) |
-| Vibration Motor | [VibrationMotorApp.java](src/main/java/com/pi4j/crowpi/applications/VibrationMotorApp.java) | [VibrationMotorComponent.java](src/main/java/com/pi4j/crowpi/components/VibrationMotorComponent.java) |
+
+| **Component**               | **Example App**                                                                                                 | **Implementation**                                                                                                        |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Button                      | [ButtonApp.java](src/main/java/com/pi4j/crowpi/applications/ButtonApp.java)                                     | [ButtonComponent.java](src/main/java/com/pi4j/crowpi/components/ButtonComponent.java)                                     |
+| ButtonMatrix                | [ButtonApp.java](src/main/java/com/pi4j/crowpi/applications/ButtonApp.java)                                     | [ButtonComponent.java](src/main/java/com/pi4j/crowpi/components/ButtonMatrixComponent.java)                               |
+| Buzzer                      | [BuzzerApp.java](src/main/java/com/pi4j/crowpi/applications/BuzzerApp.java)                                     | [BuzzerComponent.java](src/main/java/com/pi4j/crowpi/components/BuzzerComponent.java)                                     |
+| Humidity/Temperature Sensor | [HumiTempApp.java](src/main/java/com/pi4j/crowpi/applications/HumiTempApp.java)                                 | [HumiTempComponent.java](src/main/java/com/pi4j/crowpi/components/HumiTempComponent.java)                                 |
+| IR Receiver                 | [IrReceiverApp.java](src/main/java/com/pi4j/crowpi/applications/IrReceiverApp.java)                             | [IrReceiverComponent.java](src/main/java/com/pi4j/crowpi/components/IrReceiverComponent.java)                             |
+| LCD Display                 | [IrReceiverApp.java](src/main/java/com/pi4j/crowpi/applications/IrReceiverApp.java)                             | [IrReceiverComponent.java](src/main/java/com/pi4j/crowpi/components/LcdDisplayComponent.java)                             |
+| LED Matrix                  | [IrReceiverApp.java](src/main/java/com/pi4j/crowpi/applications/IrReceiverApp.java)                             | [IrReceiverComponent.java](src/main/java/com/pi4j/crowpi/components/LcdDisplayComponent.java)                             |
+| Light Sensor                | [LightSensorApp.java](src/main/java/com/pi4j/crowpi/applications/LightSensorApp.java)                           | [LightSensorComponent.java](src/main/java/com/pi4j/crowpi/components/LightSensorComponent.java)                           |
+| PIR Motion Sensor           | [PirMotionSensorApp.java](src/main/java/com/pi4j/crowpi/applications/PirMotionSensorApp.java)                   | [PirMotionSensorComponent.java](src/main/java/com/pi4j/crowpi/components/PirMotionSensorComponent.java)                   |
+| Relay                       | [RelayApp.java](src/main/java/com/pi4j/crowpi/applications/RelayApp.java)                                       | [RelayComponent.java](src/main/java/com/pi4j/crowpi/components/RelayComponent.java)                                       |
+| RFID                        | [RfidApp.java](src/main/java/com/pi4j/crowpi/applications/RfidApp.java)                                         | [RfidComponent.java](src/main/java/com/pi4j/crowpi/components/RfidComponent.java)                                         |
+| Servo Motor                 | [ServoMotorApp.java](src/main/java/com/pi4j/crowpi/applications/ServoMotorApp.java)                             | [ServoMotorComponent.java](src/main/java/com/pi4j/crowpi/components/ServoMotorComponent.java)                             |
+| Seven Segment Display       | [SevenSegmentApp.java](src/main/java/com/pi4j/crowpi/applications/SevenSegmentApp.java)                         | [SevenSegmentComponent.java](src/main/java/com/pi4j/crowpi/components/SevenSegmentComponent.java)                         |
+| Step Motor                  | [StepMotorApp.java](src/main/java/com/pi4j/crowpi/applications/StepMotorApp.java)                               | [StepMotorComponent.java](src/main/java/com/pi4j/crowpi/components/StepMotorComponent.java)                               |
+| Tilt Sensor                 | [StepMotorApp.java](src/main/java/com/pi4j/crowpi/applications/StepMotorApp.java)                               | [StepMotorComponent.java](src/main/java/com/pi4j/crowpi/components/TiltSensorComponent.java)                              |
+| Touch Sensor                | [TouchSensorApp.java](src/main/java/com/pi4j/crowpi/applications/TouchSensorApp.java)                           | [TouchSensorComponent.java](src/main/java/com/pi4j/crowpi/components/TouchSensorComponent.java)                           |
+| Ultrasonic Distance Sensor  | [UltrasonicDistanceSensorApp.java](src/main/java/com/pi4j/crowpi/applications/UltrasonicDistanceSensorApp.java) | [UltrasonicDistanceSensorComponent.java](src/main/java/com/pi4j/crowpi/components/UltrasonicDistanceSensorComponent.java) |
+| Vibration Motor             | [VibrationMotorApp.java](src/main/java/com/pi4j/crowpi/applications/VibrationMotorApp.java)                     | [VibrationMotorComponent.java](src/main/java/com/pi4j/crowpi/components/VibrationMotorComponent.java)                     |
 
 Due to very tight timing constraints, two of the components had to use an alternative implementation without relying on Java. This could be
 improved in the future by moving this logic into native code using JNI or putting these components behind a dedicated microcontroller:
@@ -54,7 +55,7 @@ The Pi4J-team provides several pre-built [custom OS images](https://github.com/P
 - Preconfigured locale (en_US), keyboard (US) and timezone (Europe/Zurich)
 - Preconfigured wireless country (Switzerland) by default
 - Remote management via SSH and VNC possible without configuration
-- Preinstalled OpenJDK 11 with Gluon JavaFX to get quickly started
+- Preinstalled OpenJDK 17 and JavaFX to get quickly started
 - Preconfigured `/boot/config.txt` which supports all components out of the box
 - Dynamic wallpaper which shows Ethernet/WLAN address and hostname
 - Comes with `lirc` preinstalled to run the IR receiver component
