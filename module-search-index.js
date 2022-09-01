@@ -1,1 +1,1 @@
-moduleSearchIndex = [{"l":"com.pi4j.crowpi"}]
+moduleSearchIndex = [{"l":"com.pi4j.crowpi"}];updateSearchResults();
