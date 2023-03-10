@@ -115,6 +115,7 @@ public class LauncherTest {
     private static final class AppA implements Application {
         @Override
         public void execute(Context pi4j) {
+            assertNotNull(pi4j);
             LauncherTest.EXECUTED_APP_A = true;
         }
     }
@@ -122,6 +123,7 @@ public class LauncherTest {
     private static final class AppB implements Application {
         @Override
         public void execute(Context pi4j) {
+            assertNotNull(pi4j);
             LauncherTest.EXECUTED_APP_B = true;
         }
     }
