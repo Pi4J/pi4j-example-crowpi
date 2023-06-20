@@ -29,13 +29,13 @@
         <!-- Project Properties -->
         <launcher.class>com.pi4j.crowpi/com.pi4j.crowpi.Launcher</launcher.class>
         <launcher.args></launcher.args>
-        <!-- <launcher.args>ButtonApp</launcher.args>   -->
+        <!-- <launcher.args>ButtonApp</launcher.args>  -->
 
-        <!-- CrowPi Remote Deployment -->
-        <crowpi.ipnumber/>
-        <crowpi.port>22</crowpi.port>
+        <!-- CrowPi Setup -->
+        <crowpi.ipnumber>crowpi.local</crowpi.ipnumber>
         <crowpi.username>pi</crowpi.username>
         <crowpi.password>pi4j</crowpi.password>
+        <crowpi.port>22</crowpi.port>
         <crowpi.deploydirectory>/home/pi/deploy</crowpi.deploydirectory>
         <crowpi.jvmOptions/>
 
@@ -229,11 +229,6 @@
         <!-- Run the JAR file locally -->
         <profile>
             <id>local-run</id>
-            <activation>
-                <property>
-                    <name>!crowpi.ipnumber</name>
-                </property>
-            </activation>
             <build>
                 <plugins>
                     <plugin>
