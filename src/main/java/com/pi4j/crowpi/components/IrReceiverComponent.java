@@ -366,7 +366,7 @@ public class IrReceiverComponent extends Component {
             long lastRaisingEdge = -1;
 
             // Output debug message informing about measurement start
-            logger.debug("Starting IR signal measurement with timeout of {}ms", SIGNAL_TIMEOUT_MILLISECONDS);
+            logger.debug("Starting IR signal measurement with timeout of %s ms", SIGNAL_TIMEOUT_MILLISECONDS);
 
             // Wait for 32 valid pulses or timeout to occur
             while (!Thread.interrupted() && System.currentTimeMillis() < deadline && pulses.size() < 32) {
@@ -380,7 +380,7 @@ public class IrReceiverComponent extends Component {
                 final var line = stdout.readLine();
                 final var pulseMatcher = pulsePattern.matcher(line);
                 final var spaceMatcher = spacePattern.matcher(line);
-                logger.trace("Received output from mode2: {}", line);
+                logger.trace("Received output from mode2: %s", line);
 
                 // If we have a pulse, store the time in `lastRaisingEdge` and continue loop
                 if (pulseMatcher.matches()) {
@@ -400,18 +400,18 @@ public class IrReceiverComponent extends Component {
 
                 // Skip this pulse if either edge has taken too long
                 if (pulse.getMaxEdgeTime() >= PULSE_TIMEOUT_MICROSECONDS) {
-                    logger.trace("Skipping pulse which took too long: {}", pulse);
+                    logger.trace("Skipping pulse which took too long: %s", pulse);
                     continue;
                 }
 
                 // Otherwise collect this pulse for later processing
-                logger.trace("Added pulse for later processing: {}", pulse);
+                logger.trace("Added pulse for later processing: %s", pulse);
                 pulses.add(pulse);
             }
 
             // Silently abort if we have not received enough pulses
             if (pulses.size() != 32) {
-                logger.debug("IR signal measurement timed out with {} detected pulses", pulses.size());
+                logger.debug("IR signal measurement timed out with %s detected pulses", pulses.size());
                 return;
             }
 
@@ -427,9 +427,9 @@ public class IrReceiverComponent extends Component {
                 // Check if we crossed the threshold to consider the current bit as set
                 if (count >= PULSE_SET_BIT_THRESHOLD) {
                     payload[payloadIndex] |= 1 << shiftOffset;
-                    logger.trace("Setting bit {} for payload[{}] for pulse length {}", shiftOffset, payloadIndex, count);
+                    logger.trace("Setting bit %s for payload[%s] for pulse length %s", shiftOffset, payloadIndex, count);
                 } else {
-                    logger.trace("Clearing bit {} for payload[{}] for pulse length {}", shiftOffset, payload, count);
+                    logger.trace("Clearing bit %s for payload[%s] for pulse length %s", shiftOffset, payload, count);
                 }
 
                 // Once we have reached bit 7 we will wrap around to the next bit
@@ -445,7 +445,7 @@ public class IrReceiverComponent extends Component {
             // Calculate checksums for IR signal
             final byte checksumA = (byte) (payload[0] + payload[1]);
             final byte checksumB = (byte) (payload[2] + payload[3]);
-            logger.debug("Calculated checksums {} and {} for IR payload {}",
+            logger.debug("Calculated checksums %s and %s for IR payload %s",
                 ByteHelpers.toString(checksumA), ByteHelpers.toString(checksumB), ByteHelpers.toString(payload));
 
             // Silently abort if checksum does not match expected values
@@ -458,17 +458,17 @@ public class IrReceiverComponent extends Component {
             final byte keyCode = payload[2];
             final var key = Key.fromCode(keyCode);
             if (key == null) {
-                logger.info("Ignoring unknown IR key code {}", ByteHelpers.toString(keyCode));
+                logger.info("Ignoring unknown IR key code %s", ByteHelpers.toString(keyCode));
                 return;
             }
 
             // Dispatch onKeyPressed handler with IR key if available
             final var handler = onKeyPressedHandler.get();
             if (handler != null) {
-                logger.debug("Dispatching onKeyPressed event for IR key {}", key);
+                logger.debug("Dispatching onKeyPressed event for IR key %s", key);
                 handler.handle(key);
             } else {
-                logger.debug("Skipping dispatch of IR key {} due to missing handler", key);
+                logger.debug("Skipping dispatch of IR key %s due to missing handler", key);
             }
         }
 

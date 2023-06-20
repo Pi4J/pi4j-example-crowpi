@@ -17,9 +17,8 @@ open module com.pi4j.crowpi {
     uses com.pi4j.extension.Extension;
     uses com.pi4j.provider.Provider;
 
-    // SLF4J Modules
-    requires org.slf4j;
-    requires org.slf4j.simple;
+    // Logging
+    requires java.logging;
 
     // PicoCLI Modules
     requires info.picocli;

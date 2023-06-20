@@ -28,13 +28,14 @@
     <properties>
         <!-- Project Properties -->
         <launcher.class>com.pi4j.crowpi/com.pi4j.crowpi.Launcher</launcher.class>
-        <launcher.args/>
+        <launcher.args></launcher.args>
+        <!-- <launcher.args>ButtonApp</launcher.args>   -->
 
         <!-- CrowPi Remote Deployment -->
         <crowpi.ipnumber/>
         <crowpi.port>22</crowpi.port>
         <crowpi.username>pi</crowpi.username>
-        <crowpi.password>crowpi</crowpi.password>
+        <crowpi.password>pi4j</crowpi.password>
         <crowpi.deploydirectory>/home/pi/deploy</crowpi.deploydirectory>
         <crowpi.jvmOptions/>
 
@@ -43,8 +44,6 @@
         <pi4j.version>2.3.0-SNAPSHOT</pi4j.version>
         <picocli.version>4.7.4</picocli.version>
         <junit.version>5.9.3</junit.version>
-        <mockito.version>5.3.1</mockito.version>
-        <slf4j.version>1.7.32</slf4j.version>
         <ant-jsch.version>1.10.9</ant-jsch.version>
 
         <!-- Maven Dependencies -->
@@ -90,20 +89,6 @@
             <artifactId>pi4j-plugin-mock</artifactId>
             <version>${pi4j.version}</version>
             <scope>test</scope>
-        </dependency>
-
-        <!-- SLF4J API -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-
-        <!-- SLF4J Simple -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
 
         <!-- PicoCLI -->
@@ -294,8 +279,8 @@
                                 <configuration>
                                     <target>
                                         <!-- Stop all running Java processes -->
-                                        <sshexec host="${pi.ipnumber}" port="${pi.port}"
-                                                 username="${pi.username}" password="${pi.password}" trust="true"
+                                        <sshexec host="${crowpi.ipnumber}" port="${crowpi.port}"
+                                                 username="${crowpi.username}" password="${crowpi.password}" trust="true"
                                                  failonerror="false" usepty="true" useSystemIn="false"
                                                  suppresssystemerr="true" suppresssystemout="true"
                                                  command="sudo killall -9 java"/>

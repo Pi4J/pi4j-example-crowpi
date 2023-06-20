@@ -23,7 +23,7 @@ public abstract class RfidCard {
     /**
      * Logger instance
      */
-    protected final Logger logger = new Logger(this.getClass());
+    protected final Logger logger = new Logger();
 
     /**
      * Creates a new RFID card instance for the given PICC UID.
@@ -66,7 +66,7 @@ public abstract class RfidCard {
         }
 
         // Write serialized bytes to card
-        logger.debug("Writing object with {} bytes to card", byteArrayOutputStream.size());
+        logger.debug("Writing object with %s bytes to card", byteArrayOutputStream.size());
         writeBytes(byteArrayOutputStream.toByteArray());
     }
 

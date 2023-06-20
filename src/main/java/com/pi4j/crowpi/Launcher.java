@@ -1,6 +1,9 @@
 package com.pi4j.crowpi;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.pi4j.context.Context;
@@ -73,6 +76,9 @@ public final class Launcher implements Runnable {
      * @param args Command line arguments
      */
     public static void main(String[] args) {
+        //set appropriate log level
+        LogManager.getLogManager().getLogger(Logger.GLOBAL_LOGGER_NAME).setLevel(Level.INFO);
+
         final var launcher = new Launcher(APPLICATIONS);
         System.exit(launcher.execute(args));
     }
@@ -86,6 +92,9 @@ public final class Launcher implements Runnable {
     public Launcher(List<Application> applications) {
         // Initialize PicoCLI instance
         this.cmdLine = new CommandLine(this);
+
+        // Initialize Pi4J context
+        this.pi4j = CrowPiPlatform.buildNewContext();
 
         // Register application runners as subcommands
         this.applications = applications;
@@ -113,12 +122,15 @@ public final class Launcher implements Runnable {
         // Interactively ask the user for a desired target and run it
         // This loop will either run only once or forever, depending on the state of `demoMode`
         do {
-            // Initialize Pi4J context
-            pi4j = CrowPiPlatform.buildNewContext();
+            // Re-initialize Pi4J context if needed
+            if (pi4j == null) {
+                pi4j = CrowPiPlatform.buildNewContext();
+            }
             // Run the application
             getTargetInteractively(targets).run();
             // Clean up
             pi4j.shutdown();
+            pi4j = null;
         } while (demoMode);
     }
 
