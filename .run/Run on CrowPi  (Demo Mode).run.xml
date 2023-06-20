@@ -11,7 +11,6 @@
           <option name="jreName" value="#USE_PROJECT_JDK" />
           <option name="mavenProperties">
             <map>
-              <entry key="crowpi.ipnumber" value="crowpi.local" />
               <entry key="launcher.args" value="--demo" />
             </map>
           </option>
