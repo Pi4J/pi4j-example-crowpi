@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="CrowPi Debug" type="MavenRunConfiguration" factoryName="Maven">
+  <configuration default="false" name="Debug on CrowPi " type="MavenRunConfiguration" factoryName="Maven">
     <MavenSettings>
       <option name="myGeneralSettings" />
       <option name="myRunnerSettings">
@@ -11,7 +11,7 @@
           <option name="jreName" value="#USE_PROJECT_JDK" />
           <option name="mavenProperties">
             <map>
-              <entry key="crowpi.remote.host" value="Add CrowPi IP here" />
+              <entry key="crowpi.remote.host" value="crowpi.local" />
             </map>
           </option>
           <option name="passParentEnv" value="true" />

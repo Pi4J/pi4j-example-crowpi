@@ -11,32 +11,48 @@
     <name>Pi4J CrowPi Examples</name>
     <url>https://github.com/Pi4J/pi4j-example-crowpi</url>
 
+    <repositories>
+       <repository>
+            <id>oss.sonatype.org-snapshot</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <!-- BUILD PROPERTIES -->
     <properties>
         <!-- Project Properties -->
-        <crowpi.launcher.class>com.pi4j.crowpi/com.pi4j.crowpi.Launcher</crowpi.launcher.class>
-        <crowpi.launcher.args/>
+        <launcher.class>com.pi4j.crowpi/com.pi4j.crowpi.Launcher</launcher.class>
+        <launcher.args/>
 
         <!-- CrowPi Remote Deployment -->
-        <crowpi.remote.host/>
-        <crowpi.remote.port>22</crowpi.remote.port>
-        <crowpi.remote.username>pi</crowpi.remote.username>
-        <crowpi.remote.password>crowpi</crowpi.remote.password>
-        <crowpi.remote.target>/home/pi/deploy</crowpi.remote.target>
-        <crowpi.remote.jvmOptions/>
+        <crowpi.ipnumber/>
+        <crowpi.port>22</crowpi.port>
+        <crowpi.username>pi</crowpi.username>
+        <crowpi.password>crowpi</crowpi.password>
+        <crowpi.deploydirectory>/home/pi/deploy</crowpi.deploydirectory>
+        <crowpi.jvmOptions/>
 
         <!-- Project Dependencies -->
         <java.version>17</java.version>
-        <pi4j.version>2.2.0</pi4j.version>
+        <pi4j.version>2.3.0-SNAPSHOT</pi4j.version>
+        <picocli.version>4.7.4</picocli.version>
+        <junit.version>5.9.3</junit.version>
+        <mockito.version>5.3.1</mockito.version>
         <slf4j.version>1.7.32</slf4j.version>
-        <picocli.version>4.6.1</picocli.version>
-        <junit.version>5.9.0</junit.version>
+        <ant-jsch.version>1.10.9</ant-jsch.version>
 
         <!-- Maven Dependencies -->
         <maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
-        <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
-        <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
+        <maven-dependency-plugin.version>3.2.0</maven-dependency-plugin.version>
+        <maven-jar-plugin.version>3.2.1</maven-jar-plugin.version>
+        <maven-javadoc-plugin.version>3.3.1</maven-javadoc-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
 
@@ -44,9 +60,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-
-        <!-- Ant Dependencies -->
-        <ant-jsch.version>1.10.9</ant-jsch.version>
     </properties>
 
     <dependencies>
@@ -137,6 +150,8 @@
                         <!-- Used by PicoCLI annotation processor -->
                         <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
                     </compilerArgs>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
 
@@ -231,7 +246,7 @@
             <id>local-run</id>
             <activation>
                 <property>
-                    <name>!crowpi.remote.host</name>
+                    <name>!crowpi.ipnumber</name>
                 </property>
             </activation>
             <build>
@@ -249,7 +264,7 @@
                         </executions>
                         <configuration>
                             <executable>sudo</executable>
-                            <commandlineArgs>java --module-path ${project.build.directory}/distribution --module ${crowpi.launcher.class} ${crowpi.launcher.args}</commandlineArgs>
+                            <commandlineArgs>java --module-path ${project.build.directory}/distribution --module ${launcher.class} ${launcher.args}</commandlineArgs>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -261,7 +276,7 @@
             <id>remote-run</id>
             <activation>
                 <property>
-                    <name>crowpi.remote.host</name>
+                    <name>crowpi.ipnumber</name>
                 </property>
             </activation>
             <build>
@@ -278,23 +293,30 @@
                                 </goals>
                                 <configuration>
                                     <target>
+                                        <!-- Stop all running Java processes -->
+                                        <sshexec host="${pi.ipnumber}" port="${pi.port}"
+                                                 username="${pi.username}" password="${pi.password}" trust="true"
+                                                 failonerror="false" usepty="true" useSystemIn="false"
+                                                 suppresssystemerr="true" suppresssystemout="true"
+                                                 command="sudo killall -9 java"/>
+
                                         <!-- Ensure target directory exists on CrowPi -->
-                                        <sshexec host="${crowpi.remote.host}" port="${crowpi.remote.port}"
-                                                 username="${crowpi.remote.username}" password="${crowpi.remote.password}"
-                                                 trust="true" command="mkdir --parents ${crowpi.remote.target}; rm -f ${crowpi.remote.target}/*"/>
+                                        <sshexec host="${crowpi.ipnumber}" port="${crowpi.port}"
+                                                 username="${crowpi.username}" password="${crowpi.password}"
+                                                 trust="true" command="mkdir --parents ${crowpi.deploydirectory}; rm -f ${crowpi.deploydirectory}/*"/>
 
                                         <!-- Transfer distribution folder to CrowPi via SCP -->
                                         <scp trust="true"
-                                             todir="${crowpi.remote.username}:${crowpi.remote.password}@${crowpi.remote.host}:${crowpi.remote.target}"
-                                             port="${crowpi.remote.port}">
+                                             todir="${crowpi.username}:${crowpi.password}@${crowpi.ipnumber}:${crowpi.deploydirectory}"
+                                             port="${crowpi.port}">
                                             <fileset dir="${project.build.directory}/distribution"/>
                                         </scp>
 
                                         <!-- Run application on Raspberry Pi -->
-                                        <sshexec host="${crowpi.remote.host}" port="${crowpi.remote.port}"
-                                                 username="${crowpi.remote.username}" password="${crowpi.remote.password}" trust="true"
+                                        <sshexec host="${crowpi.ipnumber}" port="${crowpi.port}"
+                                                 username="${crowpi.username}" password="${crowpi.password}" trust="true"
                                                  failonerror="false" usepty="true" useSystemIn="true"
-                                                 command="sudo java ${crowpi.remote.jvmOptions} --module-path ${crowpi.remote.target} --module ${crowpi.launcher.class} ${crowpi.launcher.args}"/>
+                                                 command="sudo java ${crowpi.jvmOptions} --module-path ${crowpi.deploydirectory} --module ${launcher.class} ${launcher.args}"/>
                                     </target>
                                 </configuration>
                             </execution>
@@ -315,9 +337,9 @@
         <profile>
             <id>debug</id>
             <properties>
-                <crowpi.remote.jvmOptions>
+                <crowpi.jvmOptions>
                     -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
-                </crowpi.remote.jvmOptions>
+                </crowpi.jvmOptions>
             </properties>
         </profile>
     </profiles>

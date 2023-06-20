@@ -6,8 +6,7 @@
 [![License](https://img.shields.io/github/license/Pi4J/pi4j-example-crowpi)](https://github.com/Pi4J/pi4j-example-crowpi/blob/main/LICENSE)
 
 This project contains both example applications and ready-made component classes for interacting with the
-[CrowPi](https://www.elecrow.com/crowpi-compact-raspberry-pi-educational-kit.html) using the Pi4J (V2) library. You can easily get started
-with electronics programming by testing and modifying the bundled examples or even write your own application.
+[CrowPi](https://www.elecrow.com/crowpi-compact-raspberry-pi-educational-kit.html) using the Pi4J (V2) library. You can easily get started with electronics programming by testing and modifying the bundled examples or even write your own application.
 
 ## COMPONENTS
 
@@ -50,7 +49,7 @@ The CrowPi OS image mentioned further down below supports both workarounds out o
 
 ## CUSTOM OS IMAGE
 
-The Pi4J-team provides several pre-built [custom OS images](https://github.com/Pi4J/pi4j-os). It's highly recommended to use the so called [CrowPi OS](https://pi4j-download.com/main-crowpi.img.zip) for your CrowPi experiments to get the following set of benefits:
+The Pi4J-team provides several pre-built [custom OS images](https://github.com/Pi4J/pi4j-os). It's highly recommended to use the so called [Pi4J CrowPi OS](https://pi4j-download.com/main-crowpi.img.zip) for your CrowPi experiments to get the following set of benefits:
 
 - Preconfigured locale (en_US), keyboard (US) and timezone (Europe/Zurich)
 - Preconfigured wireless country (Switzerland) by default
@@ -61,7 +60,7 @@ The Pi4J-team provides several pre-built [custom OS images](https://github.com/P
 - Comes with `lirc` preinstalled to run the IR receiver component
 
 Download the [latest zip-compressed archive](https://pi4j-download.com/latest.php?flavor=crowpi), extract it and flash it with the imaging tool of your choice to get started.
-The default installation provides an user account `pi` with the password `crowpi` and sudo privileges.
+The default installation provides an user account `pi` with the password `pi4j` and sudo privileges.
 
 ## FRAMEWORK
 
@@ -86,17 +85,17 @@ This project uses Maven for building, testing and running the various applicatio
 CrowPi, it also supports compiling everything together locally, then pushing the artifacts to the device and running them remotely. The
 build system defaults to local deployments, but the following set of Maven properties can be set for remote deployments:
 
-- **`crowpi.remote.host` (required):** Current IP address of the CrowPi, e.g. `192.168.1.2`, used for SCP/SSH
-- **`crowpi.remote.port` (optional):** Port to use for SCP/SSH communication, defaults to `22`
-- **`crowpi.remote.username` (optional):** Username to use for SCP/SSH, defaults to `pi`
-- **`crowpi.remote.password` (optional):** Password to use for SCP/SSH, defaults to `crowpi`
-- **`crowpi.remote.target` (optional):** Default directory to temporarily store built artifacts, defaults to `/home/pi/deploy`
-- **`crowpi.remote.jvmOptions` (optional):** Additional JVM options, defaults to an empty string
+- **`crowpi.ipnumber` (required):** Current IP address of the CrowPi, e.g. `192.168.1.2`, used for SCP/SSH
+- **`crowpi.port` (optional):** Port to use for SCP/SSH communication, defaults to `22`
+- **`crowpi.username` (optional):** Username to use for SCP/SSH, defaults to `pi`
+- **`crowpi.password` (optional):** Password to use for SCP/SSH, defaults to `crowpi`
+- **`crowpi.deploydirectory` (optional):** Default directory to temporarily store built artifacts, defaults to `/home/pi/deploy`
+- **`crowpi.jvmOptions` (optional):** Additional JVM options, defaults to an empty string
 
 In case of a remote deployment, the artifacts get pushed via SCP and will be automatically executed using SSH. Please note that any existing
 files in the deployment folder are being automatically overwritten.
 
-Regardless of which deployment mode you have chosen, the property `crowpi.launcher.args` can be set to specify which arguments should be
+Regardless of which deployment mode you have chosen, the property `launcher.args` can be set to specify which arguments should be
 passed as-is when running the launcher. This can be used for launching demo mode or directly executing a single application.
 
 ## SYSTEM REQUIREMENTS
