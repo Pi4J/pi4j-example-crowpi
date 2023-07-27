@@ -1,11 +1,16 @@
 package com.pi4j.crowpi.components.helpers;
 
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 public class Logger {
-    private final java.util.logging.Logger logger = LogManager.getLogManager().getLogger(java.util.logging.Logger.GLOBAL_LOGGER_NAME);
+    private final java.util.logging.Logger logger;
 
     public Logger() {
+        logger = LogManager.getLogManager().getLogger(java.util.logging.Logger.GLOBAL_LOGGER_NAME);
+
+        //set appropriate log level
+        logger.setLevel(Level.INFO);
     }
 
     public void trace(String message, Object... args) {

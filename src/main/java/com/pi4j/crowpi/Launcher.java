@@ -76,9 +76,6 @@ public final class Launcher implements Runnable {
      * @param args Command line arguments
      */
     public static void main(String[] args) {
-        //set appropriate log level
-        LogManager.getLogManager().getLogger(Logger.GLOBAL_LOGGER_NAME).setLevel(Level.INFO);
-
         final var launcher = new Launcher(APPLICATIONS);
         System.exit(launcher.execute(args));
     }
