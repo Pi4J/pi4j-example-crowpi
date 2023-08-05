@@ -92,6 +92,7 @@ public class ButtonMatrixApp implements Application {
 
         // Stop the button matrix poller now that the application has ended
         buttonMatrix.stopPoller();
+        sleep(3000);
     }
 
     private List<String> determinePlayers() {

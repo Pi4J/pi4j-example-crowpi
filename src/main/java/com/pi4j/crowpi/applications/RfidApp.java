@@ -64,7 +64,7 @@ public class RfidApp implements Application {
             // Read `Person` object from card and print it
             try {
                 final var person = card.readObject(Person.class);
-                System.out.println("Read person from card: " + person);
+                System.out.println("Hi, " + person.firstName + ". \uD83D\uDD96");
             } catch (RfidException e) {
                 System.out.println("Could not read person from card: " + e.getMessage());
             }
