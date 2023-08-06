@@ -71,25 +71,21 @@ The Pi4J-team provides several pre-built [custom OS images](https://github.com/P
 
 To simplify adding and launching new applications, a custom launcher has been built using PicoCLI.
 The [Launcher.java](src/main/java/com/pi4j/crowpi/Launcher.java)
-class contains a static list of available targets called `APPLICATIONS` which has to be adjusted when adding new applications to the
-project.
+class contains a static list of available targets called `APPLICATIONS` which has to be adjusted when adding new applications to the project.
 
-By default, an interactive menu gets shown which allows selecting a single target to launch. After executing this target, the application
-will automatically end. You may optionally specify the name of an application as the first argument, i.e. `BuzzerApp`, to directly launch
-this specific application.
+By default, an interactive menu gets shown which allows selecting a single target to launch. After executing this target, the application will automatically end. You may optionally specify the name of an application as the first argument, i.e. `BuzzerApp`, to directly launch this specific application.
 
 If you want to comfortably test all supported components at once, you may specify the flag `--demo` which will return to the interactive
 launcher menu once a target has been executed.
 
-Creating your own applications is as simple as implementing the provided [Application.java](src/main/java/com/pi4j/crowpi/Application.java)
-interface, which only requires a single `void execute(Context pi4j)` method.
+Creating your own applications is as simple as implementing the provided [Application.java](src/main/java/com/pi4j/crowpi/Application.java) interface, which only requires a single `void execute(Context pi4j)` method.
 
 ## BUILD SYSTEM
 
 This project uses Maven for building, testing and running the various applications. While it can be used directly on a Raspberry Pi /
 CrowPi, it's recommended to use a separate developer machine and deploy the artifacts to the CrowPi and running them remotely. The following set of Maven properties can be set for remote deployments:
 
-- **`crowpi.hostname` :** Hostname of the CrowPi, defaults to `crowpi` is displayed as part of the wallpaper if you use Pi4J-CrowPi-Image
+- **`crowpi.hostname` :** Hostname of the CrowPi, defaults to `crowpi` is displayed as part of the wallpaper if you use Pi4J-CrowPi-OS Image
 - **`crowpi.ipnumber` :** Current IP address of the CrowPi, e.g. `192.168.1.2`, used for SCP/SSH, also shown as part of the wallpaper
 - **`crowpi.port`:** Port to use for SCP/SSH communication, defaults to `22`
 - **`crowpi.username` :** Username to use for SCP/SSH, defaults to `pi`
@@ -97,15 +93,15 @@ CrowPi, it's recommended to use a separate developer machine and deploy the arti
 - **`crowpi.deploydirectory` :** Default directory to temporarily store built artifacts, defaults to `/home/pi/deploy`
 - **`crowpi.jvmOptions` :** Additional JVM options, defaults to an empty string
 
-In case of a remote deployment, the artifacts get pushed via SCP and will be automatically executed using SSH. Please note that any existing
-files in the deployment folder are being automatically overwritten.
+In case of a remote deployment, the artifacts get pushed via SCP and will be automatically executed using SSH. Please note that any existing files in the deployment folder are being automatically overwritten.
 
-Regardless of which deployment mode you have chosen, the property `launcher.args` can be set to specify which arguments should be
-passed as-is when running the launcher. This can be used for launching demo mode or directly executing a single application.
+Regardless of which deployment mode you have chosen, the property `launcher.args` can be set to specify which arguments should be passed as-is when running the launcher. This can be used for launching demo mode or directly executing a single application.
 
 ## SYSTEM REQUIREMENTS
 
-You may skip this section when using the pre-built CrowPi OS image. Should you choose to run your own image instead, you will need to ensure
+You may skip this section when using the pre-built Pi4J-CrowPi-OS image. 
+
+Should you choose to run your own image instead, you will need to ensure
 that the following lines are present in your `/boot/config.txt`:
 
 ```ini
@@ -133,8 +129,7 @@ dtoverlay = vc4-fkms-v3d
 max_framebuffers = 2
 ```
 
-If you want to use the IR receiver and/or humidity/temperature sensor component, you will have to ensure that the required dependencies
-mentioned in the "COMPONENTS" section of this README have also been fulfilled.
+If you want to use the IR receiver and/or humidity/temperature sensor component, you will have to ensure that the required dependencies mentioned in the "COMPONENTS" section of this README have also been fulfilled.
 
 ## RUNTIME DEPENDENCIES
 
@@ -146,7 +141,7 @@ This project has the following runtime dependency requirements:
 - [**PIGPIO Library**](http://abyz.me.uk/rpi/pigpio) (for the Raspberry Pi)
 
 ## BUILD AND RUN ON RASPBERRY PI
-Although not recommended, you can build and run this project on your Raspberry Pi without using a separate developer machine. 
+Although not recommended, you can build and run this project on your CrowPi without using a separate developer machine. 
 
 ```shell
 $ git clone https://github.com/Pi4J/pi4j-example-crowpi.git

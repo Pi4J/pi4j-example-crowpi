@@ -255,11 +255,6 @@
         <!-- Transfer and run JAR with dependencies on remote CrowPi -->
         <profile>
             <id>remote-run</id>
-            <activation>
-                <property>
-                    <name>crowpi.ipnumber</name>
-                </property>
-            </activation>
             <build>
                 <plugins>
                     <plugin>
