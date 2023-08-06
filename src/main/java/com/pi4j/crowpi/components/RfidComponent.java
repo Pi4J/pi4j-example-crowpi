@@ -284,11 +284,11 @@ public class RfidComponent extends MFRC522 {
             } catch (RfidUnsupportedCardException e) {
                 // While this card is unsupported, this is not an abnormal exception
                 // We therefore handle this situation separately from the generic RfidException to avoid resetting the MFRC522
-                logger.warn("Ignoring unsupported RFID card type: {}", e.getCardType());
+                logger.warn("Ignoring unsupported RFID card type: %s", e.getCardType());
             } catch (RfidException e) {
                 // Reset the MFRC522 for any abnormal exceptions
                 // This is required to ensure further operation is possible
-                logger.warn("Resetting RFID component due to abnormal exception: {}", e);
+                logger.warn("Resetting RFID component due to abnormal exception: %s", e);
                 reset();
             } finally {
                 // Always attempt to uninitialize the current card

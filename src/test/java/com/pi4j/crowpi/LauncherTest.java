@@ -5,12 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.pi4j.context.Context;
-import com.pi4j.crowpi.helpers.InstanceAlreadyRunningException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -83,38 +79,10 @@ public class LauncherTest {
         assertFalse(EXECUTED_APP_B);
     }
 
-	@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-	@Test
-	public void shouldNotStartTwice() throws ExecutionException, InterruptedException {
-		// given
-		final WaitApp waitApp = new WaitApp();
-		Launcher launcher = new Launcher(List.of(waitApp));
-
-		// when
-		ExecutorService executorService = Executors.newCachedThreadPool();
-		var future = executorService.submit(() -> launcher.execute(new String[] { "WaitApp" }));
-		Thread.sleep(50L);
-
-		// then 1
-		assertThrows(InstanceAlreadyRunningException.class, () -> launcher.execute(new String[] { "AppB" }));
-
-		// stop execution
-		synchronized (waitApp) {
-			System.out.println("Notifying  " + waitApp);
-			waitApp.notifyAll();
-		}
-		future.get();
-
-		// then 2
-		launcher.execute(new String[] { "AppB" });
-
-		// cleanup
-		executorService.shutdownNow();
-	}
-
     private static final class AppA implements Application {
         @Override
         public void execute(Context pi4j) {
+            assertNotNull(pi4j);
             LauncherTest.EXECUTED_APP_A = true;
         }
     }
@@ -122,6 +90,7 @@ public class LauncherTest {
     private static final class AppB implements Application {
         @Override
         public void execute(Context pi4j) {
+            assertNotNull(pi4j);
             LauncherTest.EXECUTED_APP_B = true;
         }
     }

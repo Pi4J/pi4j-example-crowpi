@@ -6,8 +6,7 @@
 [![License](https://img.shields.io/github/license/Pi4J/pi4j-example-crowpi)](https://github.com/Pi4J/pi4j-example-crowpi/blob/main/LICENSE)
 
 This project contains both example applications and ready-made component classes for interacting with the
-[CrowPi](https://www.elecrow.com/crowpi-compact-raspberry-pi-educational-kit.html) using the Pi4J (V2) library. You can easily get started
-with electronics programming by testing and modifying the bundled examples or even write your own application.
+[CrowPi](https://www.elecrow.com/crowpi-compact-raspberry-pi-educational-kit.html) using the Pi4J (V2) library. You can easily get started with electronics programming by testing and modifying the bundled examples or even write your own application.
 
 ## COMPONENTS
 
@@ -16,14 +15,14 @@ table provides an overview of all supported components with a link to their impl
 
 
 | **Component**               | **Example App**                                                                                                 | **Implementation**                                                                                                        |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+|-----------------------------|-----------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
 | Button                      | [ButtonApp.java](src/main/java/com/pi4j/crowpi/applications/ButtonApp.java)                                     | [ButtonComponent.java](src/main/java/com/pi4j/crowpi/components/ButtonComponent.java)                                     |
-| ButtonMatrix                | [ButtonApp.java](src/main/java/com/pi4j/crowpi/applications/ButtonApp.java)                                     | [ButtonComponent.java](src/main/java/com/pi4j/crowpi/components/ButtonMatrixComponent.java)                               |
+| ButtonMatrix                | [ButtonMatrixApp.java](src/main/java/com/pi4j/crowpi/applications/ButtonMatrixApp.java)                         | [ButtonMatrixComponent.java](src/main/java/com/pi4j/crowpi/components/ButtonMatrixComponent.java)                         |
 | Buzzer                      | [BuzzerApp.java](src/main/java/com/pi4j/crowpi/applications/BuzzerApp.java)                                     | [BuzzerComponent.java](src/main/java/com/pi4j/crowpi/components/BuzzerComponent.java)                                     |
 | Humidity/Temperature Sensor | [HumiTempApp.java](src/main/java/com/pi4j/crowpi/applications/HumiTempApp.java)                                 | [HumiTempComponent.java](src/main/java/com/pi4j/crowpi/components/HumiTempComponent.java)                                 |
 | IR Receiver                 | [IrReceiverApp.java](src/main/java/com/pi4j/crowpi/applications/IrReceiverApp.java)                             | [IrReceiverComponent.java](src/main/java/com/pi4j/crowpi/components/IrReceiverComponent.java)                             |
-| LCD Display                 | [IrReceiverApp.java](src/main/java/com/pi4j/crowpi/applications/IrReceiverApp.java)                             | [IrReceiverComponent.java](src/main/java/com/pi4j/crowpi/components/LcdDisplayComponent.java)                             |
-| LED Matrix                  | [IrReceiverApp.java](src/main/java/com/pi4j/crowpi/applications/IrReceiverApp.java)                             | [IrReceiverComponent.java](src/main/java/com/pi4j/crowpi/components/LcdDisplayComponent.java)                             |
+| LCD Display                 | [LcdDisplayApp.java](src/main/java/com/pi4j/crowpi/applications/LcdDisplayApp.java)                             | [LCDDisplayComponent.java](src/main/java/com/pi4j/crowpi/components/LcdDisplayComponent.java)                             |
+| LED Matrix                  | [LedMatrixApp.java](src/main/java/com/pi4j/crowpi/applications/LedMatrixApp.java)                               | [LedMatrixComponent.java](src/main/java/com/pi4j/crowpi/components/LedMatrixComponent.java)                               |
 | Light Sensor                | [LightSensorApp.java](src/main/java/com/pi4j/crowpi/applications/LightSensorApp.java)                           | [LightSensorComponent.java](src/main/java/com/pi4j/crowpi/components/LightSensorComponent.java)                           |
 | PIR Motion Sensor           | [PirMotionSensorApp.java](src/main/java/com/pi4j/crowpi/applications/PirMotionSensorApp.java)                   | [PirMotionSensorComponent.java](src/main/java/com/pi4j/crowpi/components/PirMotionSensorComponent.java)                   |
 | Relay                       | [RelayApp.java](src/main/java/com/pi4j/crowpi/applications/RelayApp.java)                                       | [RelayComponent.java](src/main/java/com/pi4j/crowpi/components/RelayComponent.java)                                       |
@@ -31,7 +30,7 @@ table provides an overview of all supported components with a link to their impl
 | Servo Motor                 | [ServoMotorApp.java](src/main/java/com/pi4j/crowpi/applications/ServoMotorApp.java)                             | [ServoMotorComponent.java](src/main/java/com/pi4j/crowpi/components/ServoMotorComponent.java)                             |
 | Seven Segment Display       | [SevenSegmentApp.java](src/main/java/com/pi4j/crowpi/applications/SevenSegmentApp.java)                         | [SevenSegmentComponent.java](src/main/java/com/pi4j/crowpi/components/SevenSegmentComponent.java)                         |
 | Step Motor                  | [StepMotorApp.java](src/main/java/com/pi4j/crowpi/applications/StepMotorApp.java)                               | [StepMotorComponent.java](src/main/java/com/pi4j/crowpi/components/StepMotorComponent.java)                               |
-| Tilt Sensor                 | [StepMotorApp.java](src/main/java/com/pi4j/crowpi/applications/StepMotorApp.java)                               | [StepMotorComponent.java](src/main/java/com/pi4j/crowpi/components/TiltSensorComponent.java)                              |
+| Tilt Sensor                 | [TiltSensorApp.java](src/main/java/com/pi4j/crowpi/applications/TiltSensorApp.java)                             | [TiltSensorComponent.java](src/main/java/com/pi4j/crowpi/components/TiltSensorComponent.java)                             |
 | Touch Sensor                | [TouchSensorApp.java](src/main/java/com/pi4j/crowpi/applications/TouchSensorApp.java)                           | [TouchSensorComponent.java](src/main/java/com/pi4j/crowpi/components/TouchSensorComponent.java)                           |
 | Ultrasonic Distance Sensor  | [UltrasonicDistanceSensorApp.java](src/main/java/com/pi4j/crowpi/applications/UltrasonicDistanceSensorApp.java) | [UltrasonicDistanceSensorComponent.java](src/main/java/com/pi4j/crowpi/components/UltrasonicDistanceSensorComponent.java) |
 | Vibration Motor             | [VibrationMotorApp.java](src/main/java/com/pi4j/crowpi/applications/VibrationMotorApp.java)                     | [VibrationMotorComponent.java](src/main/java/com/pi4j/crowpi/components/VibrationMotorComponent.java)                     |
@@ -50,7 +49,7 @@ The CrowPi OS image mentioned further down below supports both workarounds out o
 
 ## CUSTOM OS IMAGE
 
-The Pi4J-team provides several pre-built [custom OS images](https://github.com/Pi4J/pi4j-os). It's highly recommended to use the so called [CrowPi OS](https://pi4j-download.com/main-crowpi.img.zip) for your CrowPi experiments to get the following set of benefits:
+The Pi4J-team provides several pre-built [custom OS images](https://github.com/Pi4J/pi4j-os). It's highly recommended to use the so called [Pi4J CrowPi OS](https://pi4j-download.com/latest.php?flavor=crowpi) for your CrowPi experiments to get the following set of benefits:
 
 - Preconfigured locale (en_US), keyboard (US) and timezone (Europe/Zurich)
 - Preconfigured wireless country (Switzerland) by default
@@ -60,48 +59,49 @@ The Pi4J-team provides several pre-built [custom OS images](https://github.com/P
 - Dynamic wallpaper which shows Ethernet/WLAN address and hostname
 - Comes with `lirc` preinstalled to run the IR receiver component
 
-Download the [latest zip-compressed archive](https://pi4j-download.com/latest.php?flavor=crowpi), extract it and flash it with the imaging tool of your choice to get started.
-The default installation provides an user account `pi` with the password `crowpi` and sudo privileges.
+## Prepare CrowPi
+- download the latest [ Pi4J-CrowPi-OS](https://pi4j-download.com/latest.php?flavor=crowpi) image
+- extract the ZIP File
+- Use  [Raspberry Pi Imager](https://www.raspberrypi.org/blog/raspberry-pi-imager-imaging-utility/) 
+  - Specify a new user `pi` with password `pi4j` in preferences of  `Imager`.
+  - Write the image to an SD-Card.
+- Start the CrowPi with this SD-Card.
 
 ## FRAMEWORK
 
 To simplify adding and launching new applications, a custom launcher has been built using PicoCLI.
 The [Launcher.java](src/main/java/com/pi4j/crowpi/Launcher.java)
-class contains a static list of available targets called `APPLICATIONS` which has to be adjusted when adding new applications to the
-project.
+class contains a static list of available targets called `APPLICATIONS` which has to be adjusted when adding new applications to the project.
 
-By default, an interactive menu gets shown which allows selecting a single target to launch. After executing this target, the application
-will automatically end. You may optionally specify the name of an application as the first argument, i.e. `BuzzerApp`, to directly launch
-this specific application.
+By default, an interactive menu gets shown which allows selecting a single target to launch. After executing this target, the application will automatically end. You may optionally specify the name of an application as the first argument, i.e. `BuzzerApp`, to directly launch this specific application.
 
 If you want to comfortably test all supported components at once, you may specify the flag `--demo` which will return to the interactive
 launcher menu once a target has been executed.
 
-Creating your own applications is as simple as implementing the provided [Application.java](src/main/java/com/pi4j/crowpi/Application.java)
-interface, which only requires a single `void execute(Context pi4j)` method.
+Creating your own applications is as simple as implementing the provided [Application.java](src/main/java/com/pi4j/crowpi/Application.java) interface, which only requires a single `void execute(Context pi4j)` method.
 
 ## BUILD SYSTEM
 
 This project uses Maven for building, testing and running the various applications. While it can be used directly on a Raspberry Pi /
-CrowPi, it also supports compiling everything together locally, then pushing the artifacts to the device and running them remotely. The
-build system defaults to local deployments, but the following set of Maven properties can be set for remote deployments:
+CrowPi, it's recommended to use a separate developer machine and deploy the artifacts to the CrowPi and running them remotely. The following set of Maven properties can be set for remote deployments:
 
-- **`crowpi.remote.host` (required):** Current IP address of the CrowPi, e.g. `192.168.1.2`, used for SCP/SSH
-- **`crowpi.remote.port` (optional):** Port to use for SCP/SSH communication, defaults to `22`
-- **`crowpi.remote.username` (optional):** Username to use for SCP/SSH, defaults to `pi`
-- **`crowpi.remote.password` (optional):** Password to use for SCP/SSH, defaults to `crowpi`
-- **`crowpi.remote.target` (optional):** Default directory to temporarily store built artifacts, defaults to `/home/pi/deploy`
-- **`crowpi.remote.jvmOptions` (optional):** Additional JVM options, defaults to an empty string
+- **`crowpi.hostname` :** Hostname of the CrowPi, defaults to `crowpi` is displayed as part of the wallpaper if you use Pi4J-CrowPi-OS Image
+- **`crowpi.ipnumber` :** Current IP address of the CrowPi, e.g. `192.168.1.2`, used for SCP/SSH, also shown as part of the wallpaper
+- **`crowpi.port`:** Port to use for SCP/SSH communication, defaults to `22`
+- **`crowpi.username` :** Username to use for SCP/SSH, defaults to `pi`
+- **`crowpi.password` :** Password to use for SCP/SSH, defaults to `pi4j`
+- **`crowpi.deploydirectory` :** Default directory to temporarily store built artifacts, defaults to `/home/pi/deploy`
+- **`crowpi.jvmOptions` :** Additional JVM options, defaults to an empty string
 
-In case of a remote deployment, the artifacts get pushed via SCP and will be automatically executed using SSH. Please note that any existing
-files in the deployment folder are being automatically overwritten.
+In case of a remote deployment, the artifacts get pushed via SCP and will be automatically executed using SSH. Please note that any existing files in the deployment folder are being automatically overwritten.
 
-Regardless of which deployment mode you have chosen, the property `crowpi.launcher.args` can be set to specify which arguments should be
-passed as-is when running the launcher. This can be used for launching demo mode or directly executing a single application.
+Regardless of which deployment mode you have chosen, the property `launcher.args` can be set to specify which arguments should be passed as-is when running the launcher. This can be used for launching demo mode or directly executing a single application.
 
 ## SYSTEM REQUIREMENTS
 
-You may skip this section when using the pre-built CrowPi OS image. Should you choose to run your own image instead, you will need to ensure
+You may skip this section when using the pre-built Pi4J-CrowPi-OS image. 
+
+Should you choose to run your own image instead, you will need to ensure
 that the following lines are present in your `/boot/config.txt`:
 
 ```ini
@@ -129,8 +129,7 @@ dtoverlay = vc4-fkms-v3d
 max_framebuffers = 2
 ```
 
-If you want to use the IR receiver and/or humidity/temperature sensor component, you will have to ensure that the required dependencies
-mentioned in the "COMPONENTS" section of this README have also been fulfilled.
+If you want to use the IR receiver and/or humidity/temperature sensor component, you will have to ensure that the required dependencies mentioned in the "COMPONENTS" section of this README have also been fulfilled.
 
 ## RUNTIME DEPENDENCIES
 
@@ -142,6 +141,7 @@ This project has the following runtime dependency requirements:
 - [**PIGPIO Library**](http://abyz.me.uk/rpi/pigpio) (for the Raspberry Pi)
 
 ## BUILD AND RUN ON RASPBERRY PI
+Although not recommended, you can build and run this project on your CrowPi without using a separate developer machine. 
 
 ```shell
 $ git clone https://github.com/Pi4J/pi4j-example-crowpi.git

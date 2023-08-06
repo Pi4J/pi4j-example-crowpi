@@ -7,7 +7,7 @@ public abstract class Component {
     /**
      * Logger instance
      */
-    protected final Logger logger = new Logger(this.getClass());
+    protected final Logger logger = new Logger();
 
     /**
      * Utility function to sleep for the specified amount of milliseconds.

@@ -23,6 +23,24 @@ public class SevenSegmentApp implements Application {
         segment.setBlinkRate(0);
         segment.setBrightness(15);
 
+        for(int i=0; i<4;i++){
+            segment.setDigit(i, '8');
+            segment.setDecimalPoint(i, true);
+        }
+        segment.setColon(true);
+        segment.refresh();
+
+        sleep(2000);
+
+        for(int i=0; i<4;i++){
+            segment.clear();
+            segment.setDecimalPoint(i, false);
+        }
+        segment.setColon(false);
+        segment.refresh();
+
+        sleep(2000);
+
         // Manually set some digits and symbols to demonstrate the advanced API
         segment.setDigit(0, '1'); // Place the character "1" into the first digit
         segment.setDecimalPoint(0, true); // Activate the decimal point after the first digit

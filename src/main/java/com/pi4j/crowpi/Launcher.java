@@ -1,12 +1,15 @@
 package com.pi4j.crowpi;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.pi4j.context.Context;
 import com.pi4j.crowpi.applications.*;
 import com.pi4j.crowpi.helpers.CrowPiPlatform;
-import com.pi4j.crowpi.helpers.SingletonAppHelper;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -17,7 +20,7 @@ public final class Launcher implements Runnable {
      * This list must contain all applications which should be executable through the launcher.
      * Each class instance must implement the Application interface and gets automatically added as a subcommand.
      */
-    public static final List<Application> APPLICATIONS = new ArrayList<>(Arrays.asList(
+    public static final List<Application> APPLICATIONS = List.of(
         new ButtonApp(),
         new ButtonMatrixApp(),
         new BuzzerApp(),
@@ -38,7 +41,7 @@ public final class Launcher implements Runnable {
         new TouchSensorApp(),
         new UltrasonicDistanceSensorApp(),
         new VibrationMotorApp()
-    ));
+    );
 
     /**
      * Demo mode will keep the launcher running forever, allowing the consecutive execution of several applications.
@@ -87,6 +90,9 @@ public final class Launcher implements Runnable {
         // Initialize PicoCLI instance
         this.cmdLine = new CommandLine(this);
 
+        // Initialize Pi4J context
+        this.pi4j = CrowPiPlatform.buildNewContext();
+
         // Register application runners as subcommands
         this.applications = applications;
         this.registerApplicationRunners();
@@ -113,12 +119,15 @@ public final class Launcher implements Runnable {
         // Interactively ask the user for a desired target and run it
         // This loop will either run only once or forever, depending on the state of `demoMode`
         do {
-            // Initialize Pi4J context
-            pi4j = CrowPiPlatform.buildNewContext();
+            // Re-initialize Pi4J context if needed
+            if (pi4j == null) {
+                pi4j = CrowPiPlatform.buildNewContext();
+            }
             // Run the application
             getTargetInteractively(targets).run();
             // Clean up
             pi4j.shutdown();
+            pi4j = null;
         } while (demoMode);
     }
 
@@ -183,15 +192,7 @@ public final class Launcher implements Runnable {
      * @return Exit code after running the requested command
      */
     public int execute(String[] args) {
-        // first initialize a semaphore,
-        // so we don't initialize pi4j multiple times on the same host
-        SingletonAppHelper.initialize();
-
-        try {
-            return this.cmdLine.execute(args);
-        } finally {
-            SingletonAppHelper.close();
-        }
+        return this.cmdLine.execute(args);
     }
 
     /**

@@ -17,6 +17,23 @@ public class LedMatrixApp implements Application {
         matrix.setEnabled(true);
         matrix.setBrightness(7);
 
+        for(int row = 0; row < 8;row++){
+            for(int col = 0; col < 8; col++){
+                matrix.setPixel(row, col, true);
+            }
+        }
+        matrix.refresh();
+        sleep(2000);
+
+        for(int row = 0; row < 8;row++){
+            for(int col = 0; col < 8; col++){
+                matrix.setPixel(row, col, false);
+            }
+        }
+        matrix.refresh();
+        sleep(2000);
+
+
         // Draw a cross with a circle over it using a Graphics2D lambda function
         // Further commands for Graphics2D can be found in the official Java documentation
         // This can be adjusted to draw your own symbols and images on the LED matrix

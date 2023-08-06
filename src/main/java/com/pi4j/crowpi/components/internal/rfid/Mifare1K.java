@@ -80,7 +80,7 @@ public final class Mifare1K extends RfidCard {
         for (int blockAddr = 0; blockAddr < BLOCK_COUNT; blockAddr++) {
             // Skip block if marked as forbidden
             if (forbiddenBlocks.contains(blockAddr)) {
-                logger.trace("Skipping read of forbidden block #{}", blockAddr);
+                logger.trace("Skipping read of forbidden block #%s", blockAddr);
                 continue;
             }
 
@@ -120,11 +120,11 @@ public final class Mifare1K extends RfidCard {
             if (!forbiddenBlocks.contains(blockAddr)) {
                 final var chunk = chunks.pop();
 
-                logger.debug("Writing chunk {} to block #{}", ByteHelpers.toString(chunk), blockAddr);
+                logger.debug("Writing chunk %s to block #%s", ByteHelpers.toString(chunk), blockAddr);
                 authenticate(blockAddr);
                 mfrc522.mifareWrite((byte) blockAddr, chunk);
             } else {
-                logger.trace("Skipping write of forbidden block #{}", blockAddr);
+                logger.trace("Skipping write of forbidden block #%s", blockAddr);
             }
 
             // Advance to next block
@@ -149,7 +149,7 @@ public final class Mifare1K extends RfidCard {
     private void authenticate(int blockAddr) throws RfidException {
         final int sectorAddr = blockAddr / BLOCKS_PER_SECTOR;
         if (lastAuthedSector != sectorAddr) {
-            logger.debug("Using MIFARE authentication for block #{} in sector #{}", blockAddr, sectorAddr);
+            logger.debug("Using MIFARE authentication for block #%s in sector #%s", blockAddr, sectorAddr);
             mfrc522.mifareAuth(MifareKey.getDefaultKeyB(), (byte) blockAddr, getUid());
             lastAuthedSector = sectorAddr;
         }
