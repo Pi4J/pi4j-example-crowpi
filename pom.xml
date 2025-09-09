@@ -42,7 +42,7 @@
 
         <!-- Project Dependencies -->
         <java.version>17</java.version>
-        <pi4j.version>2.3.0-SNAPSHOT</pi4j.version>
+        <pi4j.version>3.0.2</pi4j.version>
         <picocli.version>4.7.4</picocli.version>
         <junit.version>5.10.0</junit.version>
         <ant-jsch.version>1.10.9</ant-jsch.version>
